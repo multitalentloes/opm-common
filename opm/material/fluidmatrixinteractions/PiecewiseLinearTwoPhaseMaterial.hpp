@@ -35,6 +35,10 @@
 #include <type_traits>
 
 namespace Opm {
+
+extern double xval;
+extern size_t xidx;
+extern int cnt_xskip;
 /*!
  * \ingroup FluidMatrixInteractions
  *
@@ -262,8 +266,35 @@ private:
         return evalDescending_(xValues, yValues, x);
     }
 
+    // Is execution correct when accessing a global variable in this file through a static function?
+    // this will not work unless we always interpolate using the same X values, not sure if this is true for a single update call
+    // if we interpolate different tables then this should fail
     template <class Evaluation>
     static Evaluation evalAscending_(const ValueVector& xValues,
+                                     const ValueVector& yValues,
+                                     const Evaluation& x)
+    {
+        double scalarX = scalarValue(x);
+        if (scalarX == xval){ // if we have computed this the index is known
+            return eval(xValues, yValues, x, xidx);
+        }
+        OPM_TIMEFUNCTION_LOCAL();
+        if (x <= xValues.front())
+            return yValues.front();
+        if (x >= xValues.back())
+            return yValues.back();
+
+        //size_t segIdx = findSegmentIndex_(xValues, scalarValue(x));
+
+        size_t segIdx = findSegmentIndexGuaranteedInInterval_(xValues, scalarX);
+        // update indices such that if we interpolate with same value we do not recompute
+        xval = scalarX;
+        xidx = segIdx;
+        return eval(xValues, yValues, x, segIdx);
+    }
+
+    template <class Evaluation>
+    static Evaluation evalAscendingOld_(const ValueVector& xValues,
                                      const ValueVector& yValues,
                                      const Evaluation& x)
     {
@@ -273,8 +304,8 @@ private:
         if (x >= xValues.back())
             return yValues.back();
 
-        size_t segIdx = findSegmentIndex_(xValues, scalarValue(x));
-
+               //size_t segIdx = findSegmentIndex_(xValues, scalarValue(x));
+        size_t segIdx = findSegmentIndexGuaranteedInInterval_(xValues, scalarValue(x));
         return eval(xValues, yValues, x, segIdx);
     }
 
@@ -326,6 +357,25 @@ private:
         else if (x <= xValues.front())
             return 0;
 
+        // bisection
+        size_t lowIdx = 0, highIdx = n;
+        while (lowIdx + 1 < highIdx) {
+            size_t curIdx = (lowIdx + highIdx)/2;
+            if (xValues[curIdx] < x)
+                lowIdx = curIdx;
+            else
+                highIdx = curIdx;
+        }
+
+        return lowIdx;
+    }
+
+    template<class ScalarT>
+    static size_t findSegmentIndexGuaranteedInInterval_(const ValueVector& xValues, const ScalarT& x)
+    {
+        OPM_TIMEFUNCTION_LOCAL();
+        assert(xValues.size() > 1); // we need at least two sampling points!
+        size_t n = xValues.size() - 1;
         // bisection
         size_t lowIdx = 0, highIdx = n;
         while (lowIdx + 1 < highIdx) {
