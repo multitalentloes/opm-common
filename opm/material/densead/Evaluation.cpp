@@ -34,7 +34,7 @@ namespace Opm {
 namespace DenseAd {
 
 template <class ValueT, int numDerivs, unsigned staticSize>
-void printEvaluation(std::ostream& os,
+__device__ __host__ void printEvaluation(std::ostream& os,
                      const Evaluation<ValueT,numDerivs,staticSize>& eval,
                      bool withDer)
 {
