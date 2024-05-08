@@ -32,6 +32,21 @@
 #ifndef OPM_DENSEAD_EVALUATION_HPP
 #define OPM_DENSEAD_EVALUATION_HPP
 
+//TODO: put somewhere else
+#if HAVE_CUDA // if we will compile with GPU support
+
+#if USE_HIP // if we compile for AMD architectures
+#include <hip/hip_runtime.h>
+#else // if we compile for Nvidia architectures
+#include <cuda_runtime.h>
+#endif
+
+// define host and device function attributes
+#define OPM_HOST_DEVICE __host__ __device__
+#else
+#define OPM_HOST_DEVICE
+#endif
+
 #ifndef NDEBUG
 #include <opm/material/common/Valgrind.hpp>
 #endif
@@ -58,13 +73,13 @@ class Evaluation
 public:
     //! the template argument which specifies the number of
     //! derivatives (-1 == "DynamicSize" means runtime determined)
-    static const int numVars = numDerivs;
+    OPM_HOST_DEVICE static const int numVars = numDerivs;
 
     //! field type
     typedef ValueT ValueType;
 
     //! number of derivatives
-    constexpr int size() const
+    OPM_HOST_DEVICE constexpr int size() const
     { return numDerivs; }
 
 protected:
