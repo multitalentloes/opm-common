@@ -87,6 +87,20 @@ specializationTemplate = \
 #include <iosfwd>
 #include <stdexcept>
 
+#if HAVE_CUDA // if we will compile with GPU support
+
+#if USE_HIP // if we compile for AMD architectures
+#include <hip/hip_runtime.h>
+#else // if we compile for Nvidia architectures
+#include <cuda_runtime.h>
+#endif
+#pragma message("WE ARE USING HIP/CUDA")
+#else
+#pragma message("WE ARE NOT USING HIP/CUDA")
+#define __host__
+#define __device__
+#endif
+
 namespace Opm {
 namespace DenseAd {
 
@@ -191,21 +205,21 @@ protected:
 
 public:
     //! default constructor
-    Evaluation() : data_()
+    __host__ __device__ Evaluation() : data_()
     {}
 
     //! copy other function evaluation
-    Evaluation(const Evaluation& other) = default;
+    __host__ __device__ Evaluation(const Evaluation& other) = default;
 
 {% if numDerivs < 0 %}\
     //! move other function evaluation (this only makes sense for dynamically
     //! allocated Evaluations)
-    Evaluation(Evaluation&& other)
+    __host__ __device__ Evaluation(Evaluation&& other)
         : data_(std::move(other.data_))
     { }
 
     //! move assignment
-    Evaluation& operator=(Evaluation&& other)
+    __host__ __device__ Evaluation& operator=(Evaluation&& other)
     {
         data_ = std::move(other.data_);
         return *this;
@@ -214,7 +228,7 @@ public:
 
 {% if numDerivs < 0 %}\
     // create a "blank" dynamic evaluation
-    explicit Evaluation(int numDerivatives)
+    __host__ __device__ explicit Evaluation(int numDerivatives)
         : data_(1 + numDerivatives)
     {}
 
@@ -223,7 +237,7 @@ public:
     // i.e., f(x) = c. this implies an evaluation with the given value and all
     // derivatives being zero.
     template <class RhsValueType>
-    Evaluation(int numDerivatives, const RhsValueType& c)
+    __host__ __device__ Evaluation(int numDerivatives, const RhsValueType& c)
         : data_(1 + numDerivatives, 0.0)
     {
         //clearDerivatives();
@@ -237,7 +251,7 @@ public:
     // i.e., f(x) = c. this implies an evaluation with the given value and all
     // derivatives being zero.
     template <class RhsValueType>
-    Evaluation(const RhsValueType& c)
+    __host__ __device__ Evaluation(const RhsValueType& c)
     {
         setValue(c);
         clearDerivatives();
@@ -252,7 +266,7 @@ public:
     // derivatives being zero.
 {% if numDerivs < 0 %}\
     template <class RhsValueType>
-    Evaluation(int nVars, const RhsValueType& c, int varPos)
+    __host__ __device__ Evaluation(int nVars, const RhsValueType& c, int varPos)
      : data_(1 + nVars, 0.0)
     {
         // The variable position must be in represented by the given variable descriptor
@@ -266,7 +280,7 @@ public:
     }
 {% else %}\
     template <class RhsValueType>
-    Evaluation(const RhsValueType& c, int varPos)
+    __host__ __device__ Evaluation(const RhsValueType& c, int varPos)
     {
         // The variable position must be in represented by the given variable descriptor
         assert(0 <= varPos && varPos < size());
@@ -281,7 +295,7 @@ public:
 {% endif %}\
 
     // set all derivatives to zero
-    void clearDerivatives()
+    __host__ __device__ void clearDerivatives()
     {
 {% if numDerivs <= 0 %}\
         for (int i = dstart_(); i < dend_(); ++i)
@@ -302,42 +316,42 @@ public:
     // constructor, while for dynamic evaluations, it creates an Evaluation
     // object which exhibits the same number of derivatives as the argument.
 {% if numDerivs < 0 %}\
-    static Evaluation createBlank(const Evaluation& x)
+    __host__ __device__ static Evaluation createBlank(const Evaluation& x)
     { return Evaluation(x.size()); }
 {% else %}\
-    static Evaluation createBlank(const Evaluation&)
+    __host__ __device__ static Evaluation createBlank(const Evaluation&)
     { return Evaluation(); }
 {% endif %}\
 
     // create an Evaluation with value and all the derivatives to be zero
 {% if numDerivs < 0 %}\
-    static Evaluation createConstantZero(const Evaluation& x)
+    __host__ __device__ static Evaluation createConstantZero(const Evaluation& x)
     { return Evaluation(x.size(), 0.0); }
 {% else %}\
-    static Evaluation createConstantZero(const Evaluation&)
+    __host__ __device__ static Evaluation createConstantZero(const Evaluation&)
     { return Evaluation(0.); }
 {% endif %}\
 
     // create an Evaluation with value to be one and all the derivatives to be zero
 {% if numDerivs < 0 %}\
-    static Evaluation createConstantOne(const Evaluation& x)
+    __host__ __device__ static Evaluation createConstantOne(const Evaluation& x)
     { return Evaluation(x.size(), 1.); }
 {% else %}\
-    static Evaluation createConstantOne(const Evaluation&)
+    __host__ __device__ static Evaluation createConstantOne(const Evaluation&)
     { return Evaluation(1.); }
 {% endif %}\
 
     // create a function evaluation for a "naked" depending variable (i.e., f(x) = x)
 {% if numDerivs < 0 %}\
     template <class RhsValueType>
-    static Evaluation createVariable(const RhsValueType&, int)
+    __host__ __device__ static Evaluation createVariable(const RhsValueType&, int)
     {
         throw std::logic_error("Dynamically sized evaluations require that the number of "
                                "derivatives is specified when creating an evaluation");
     }
 
     template <class RhsValueType>
-    static Evaluation createVariable(int nVars, const RhsValueType& value, int varPos)
+    __host__ __device__ static Evaluation createVariable(int nVars, const RhsValueType& value, int varPos)
     {
         // copy function value and set all derivatives to 0, except for the variable
         // which is represented by the value (which is set to 1.0)
@@ -345,7 +359,7 @@ public:
     }
 
     template <class RhsValueType>
-    static Evaluation createVariable(const Evaluation& x, const RhsValueType& value, int varPos)
+    __host__ __device__ static Evaluation createVariable(const Evaluation& x, const RhsValueType& value, int varPos)
     {
         // copy function value and set all derivatives to 0, except for the variable
         // which is represented by the value (which is set to 1.0)
@@ -353,7 +367,7 @@ public:
     }
 {% else %}\
     template <class RhsValueType>
-    static Evaluation createVariable(const RhsValueType& value, int varPos)
+    __host__ __device__ static Evaluation createVariable(const RhsValueType& value, int varPos)
     {
         // copy function value and set all derivatives to 0, except for the variable
         // which is represented by the value (which is set to 1.0)
@@ -361,7 +375,7 @@ public:
     }
 
     template <class RhsValueType>
-    static Evaluation createVariable(int nVars, const RhsValueType& value, int varPos)
+    __host__ __device__ static Evaluation createVariable(int nVars, const RhsValueType& value, int varPos)
     {
         if (nVars != {{numDerivs}})
             throw std::logic_error("This statically-sized evaluation can only represent objects"
@@ -373,7 +387,7 @@ public:
     }
 
     template <class RhsValueType>
-    static Evaluation createVariable(const Evaluation&, const RhsValueType& value, int varPos)
+    __host__ __device__ static Evaluation createVariable(const Evaluation&, const RhsValueType& value, int varPos)
     {
         // copy function value and set all derivatives to 0, except for the variable
         // which is represented by the value (which is set to 1.0)
@@ -386,7 +400,7 @@ public:
     // "evaluate" a constant function (i.e. a function that does not depend on the set of
     // relevant variables, f(x) = c).
     template <class RhsValueType>
-    static Evaluation createConstant(int nVars, const RhsValueType& value)
+    __host__ __device__ static Evaluation createConstant(int nVars, const RhsValueType& value)
     {
         return Evaluation(nVars, value);
     }
@@ -394,7 +408,7 @@ public:
     // "evaluate" a constant function (i.e. a function that does not depend on the set of
     // relevant variables, f(x) = c).
     template <class RhsValueType>
-    static Evaluation createConstant(const RhsValueType&)
+    __host__ __device__ static Evaluation createConstant(const RhsValueType&)
     {
         throw std::logic_error("Dynamically-sized evaluation objects require to specify the number of derivatives.");
     }
@@ -402,7 +416,7 @@ public:
     // "evaluate" a constant function (i.e. a function that does not depend on the set of
     // relevant variables, f(x) = c).
     template <class RhsValueType>
-    static Evaluation createConstant(const Evaluation& x, const RhsValueType& value)
+    __host__ __device__ static Evaluation createConstant(const Evaluation& x, const RhsValueType& value)
     {
         return Evaluation(x.size(), value);
     }
@@ -410,7 +424,7 @@ public:
     // "evaluate" a constant function (i.e. a function that does not depend on the set of
     // relevant variables, f(x) = c).
     template <class RhsValueType>
-    static Evaluation createConstant(int nVars, const RhsValueType& value)
+    __host__ __device__ static Evaluation createConstant(int nVars, const RhsValueType& value)
     {
         if (nVars != {{numDerivs}})
             throw std::logic_error("This statically-sized evaluation can only represent objects"
@@ -421,7 +435,7 @@ public:
     // "evaluate" a constant function (i.e. a function that does not depend on the set of
     // relevant variables, f(x) = c).
     template <class RhsValueType>
-    static Evaluation createConstant(const RhsValueType& value)
+    __host__ __device__ static Evaluation createConstant(const RhsValueType& value)
     {
         return Evaluation(value);
     }
@@ -429,14 +443,14 @@ public:
     // "evaluate" a constant function (i.e. a function that does not depend on the set of
     // relevant variables, f(x) = c).
     template <class RhsValueType>
-    static Evaluation createConstant(const Evaluation&, const RhsValueType& value)
+    __host__ __device__ static Evaluation createConstant(const Evaluation&, const RhsValueType& value)
     {
         return Evaluation(value);
     }
 {% endif %}\
 
     // copy all derivatives from other
-    void copyDerivatives(const Evaluation& other)
+    __host__ __device__ void copyDerivatives(const Evaluation& other)
     {
         assert(size() == other.size());
 
@@ -452,7 +466,7 @@ public:
 
 
     // add value and derivatives from other to this values and derivatives
-    Evaluation& operator+=(const Evaluation& other)
+    __host__ __device__ Evaluation& operator+=(const Evaluation& other)
     {
         assert(size() == other.size());
 
@@ -470,7 +484,7 @@ public:
 
     // add value from other to this values
     template <class RhsValueType>
-    Evaluation& operator+=(const RhsValueType& other)
+    __host__ __device__ Evaluation& operator+=(const RhsValueType& other)
     {
         // value is added, derivatives stay the same
         data_[valuepos_()] += other;
@@ -479,7 +493,7 @@ public:
     }
 
     // subtract other's value and derivatives from this values
-    Evaluation& operator-=(const Evaluation& other)
+    __host__ __device__ Evaluation& operator-=(const Evaluation& other)
     {
         assert(size() == other.size());
 
@@ -497,7 +511,7 @@ public:
 
     // subtract other's value from this values
     template <class RhsValueType>
-    Evaluation& operator-=(const RhsValueType& other)
+    __host__ __device__ Evaluation& operator-=(const RhsValueType& other)
     {
         // for constants, values are subtracted, derivatives stay the same
         data_[valuepos_()] -= other;
@@ -506,7 +520,7 @@ public:
     }
 
     // multiply values and apply chain rule to derivatives: (u*v)' = (v'u + u'v)
-    Evaluation& operator*=(const Evaluation& other)
+    __host__ __device__ Evaluation& operator*=(const Evaluation& other)
     {
         assert(size() == other.size());
 
@@ -533,7 +547,7 @@ public:
 
     // m(c*u)' = c*u'
     template <class RhsValueType>
-    Evaluation& operator*=(const RhsValueType& other)
+    __host__ __device__ Evaluation& operator*=(const RhsValueType& other)
     {
 {% if numDerivs <= 0 %}\
         for (int i = 0; i < length_(); ++i)
@@ -548,7 +562,7 @@ public:
     }
 
     // m(u*v)' = (vu' - uv')/v^2
-    Evaluation& operator/=(const Evaluation& other)
+    __host__ __device__ Evaluation& operator/=(const Evaluation& other)
     {
         assert(size() == other.size());
 
@@ -575,7 +589,7 @@ public:
 
     // divide value and derivatives by value of other
     template <class RhsValueType>
-    Evaluation& operator/=(const RhsValueType& other)
+    __host__ __device__ Evaluation& operator/=(const RhsValueType& other)
     {
         const ValueType tmp = 1.0/other;
 
@@ -592,7 +606,7 @@ public:
     }
 
     // add two evaluation objects
-    Evaluation operator+(const Evaluation& other) const
+    __host__ __device__ Evaluation operator+(const Evaluation& other) const
     {
         assert(size() == other.size());
 
@@ -605,7 +619,7 @@ public:
 
     // add constant to this object
     template <class RhsValueType>
-    Evaluation operator+(const RhsValueType& other) const
+    __host__ __device__ Evaluation operator+(const RhsValueType& other) const
     {
         Evaluation result(*this);
 
@@ -615,7 +629,7 @@ public:
     }
 
     // subtract two evaluation objects
-    Evaluation operator-(const Evaluation& other) const
+    __host__ __device__ Evaluation operator-(const Evaluation& other) const
     {
         assert(size() == other.size());
 
@@ -628,7 +642,7 @@ public:
 
     // subtract constant from evaluation object
     template <class RhsValueType>
-    Evaluation operator-(const RhsValueType& other) const
+    __host__ __device__ Evaluation operator-(const RhsValueType& other) const
     {
         Evaluation result(*this);
 
@@ -638,7 +652,7 @@ public:
     }
 
     // negation (unary minus) operator
-    Evaluation operator-() const
+    __host__ __device__ Evaluation operator-() const
     {
 {% if numDerivs < 0 %}\
         Evaluation result(*this);
@@ -659,7 +673,7 @@ public:
         return result;
     }
 
-    Evaluation operator*(const Evaluation& other) const
+    __host__ __device__ Evaluation operator*(const Evaluation& other) const
     {
         assert(size() == other.size());
 
@@ -671,7 +685,7 @@ public:
     }
 
     template <class RhsValueType>
-    Evaluation operator*(const RhsValueType& other) const
+    __host__ __device__ Evaluation operator*(const RhsValueType& other) const
     {
         Evaluation result(*this);
 
@@ -680,7 +694,7 @@ public:
         return result;
     }
 
-    Evaluation operator/(const Evaluation& other) const
+    __host__ __device__ Evaluation operator/(const Evaluation& other) const
     {
         assert(size() == other.size());
 
@@ -692,7 +706,7 @@ public:
     }
 
     template <class RhsValueType>
-    Evaluation operator/(const RhsValueType& other) const
+    __host__ __device__ Evaluation operator/(const RhsValueType& other) const
     {
         Evaluation result(*this);
 
@@ -702,7 +716,7 @@ public:
     }
 
     template <class RhsValueType>
-    Evaluation& operator=(const RhsValueType& other)
+    __host__ __device__ Evaluation& operator=(const RhsValueType& other)
     {
         setValue( other );
         clearDerivatives();
@@ -711,13 +725,13 @@ public:
     }
 
     // copy assignment from evaluation
-    Evaluation& operator=(const Evaluation& other) = default;
+    __host__ __device__ Evaluation& operator=(const Evaluation& other) = default;
 
     template <class RhsValueType>
-    bool operator==(const RhsValueType& other) const
+    __host__ __device__ bool operator==(const RhsValueType& other) const
     { return value() == other; }
 
-    bool operator==(const Evaluation& other) const
+    __host__ __device__ bool operator==(const Evaluation& other) const
     {
         assert(size() == other.size());
 
@@ -729,18 +743,18 @@ public:
         return true;
     }
 
-    bool operator!=(const Evaluation& other) const
+    __host__ __device__ bool operator!=(const Evaluation& other) const
     { return !operator==(other); }
 
     template <class RhsValueType>
-    bool operator!=(const RhsValueType& other) const
+    __host__ __device__ bool operator!=(const RhsValueType& other) const
     { return !operator==(other); }
 
     template <class RhsValueType>
-    bool operator>(RhsValueType other) const
+    __host__ __device__ bool operator>(RhsValueType other) const
     { return value() > other; }
 
-    bool operator>(const Evaluation& other) const
+    __host__ __device__ bool operator>(const Evaluation& other) const
     {
         assert(size() == other.size());
 
@@ -748,10 +762,10 @@ public:
     }
 
     template <class RhsValueType>
-    bool operator<(RhsValueType other) const
+    __host__ __device__ bool operator<(RhsValueType other) const
     { return value() < other; }
 
-    bool operator<(const Evaluation& other) const
+    __host__ __device__ bool operator<(const Evaluation& other) const
     {
         assert(size() == other.size());
 
@@ -759,10 +773,10 @@ public:
     }
 
     template <class RhsValueType>
-    bool operator>=(RhsValueType other) const
+    __host__ __device__ bool operator>=(RhsValueType other) const
     { return value() >= other; }
 
-    bool operator>=(const Evaluation& other) const
+    __host__ __device__ bool operator>=(const Evaluation& other) const
     {
         assert(size() == other.size());
 
@@ -770,10 +784,10 @@ public:
     }
 
     template <class RhsValueType>
-    bool operator<=(RhsValueType other) const
+    __host__ __device__ bool operator<=(RhsValueType other) const
     { return value() <= other; }
 
-    bool operator<=(const Evaluation& other) const
+    __host__ __device__ bool operator<=(const Evaluation& other) const
     {
         assert(size() == other.size());
 
@@ -781,16 +795,16 @@ public:
     }
 
     // return value of variable
-    const ValueType& value() const
+    __host__ __device__ const ValueType& value() const
     { return data_[valuepos_()]; }
 
     // set value of variable
     template <class RhsValueType>
-    void setValue(const RhsValueType& val)
+    __host__ __device__ void setValue(const RhsValueType& val)
     { data_[valuepos_()] = val; }
 
     // return varIdx'th derivative
-    const ValueType& derivative(int varIdx) const
+    __host__ __device__ const ValueType& derivative(int varIdx) const
     {
         assert(0 <= varIdx && varIdx < size());
 
@@ -798,7 +812,7 @@ public:
     }
 
     // set derivative at position varIdx
-    void setDerivative(int varIdx, const ValueType& derVal)
+    __host__ __device__ void setDerivative(int varIdx, const ValueType& derVal)
     {
         assert(0 <= varIdx && varIdx < size());
 
@@ -806,7 +820,7 @@ public:
     }
 
     template<class Serializer>
-    void serializeOp(Serializer& serializer)
+    __host__ __device__ void serializeOp(Serializer& serializer)
     {
         serializer(data_);
     }
@@ -824,27 +838,27 @@ private:
 {% if numDerivs == 0 %}\
 // the generic operators are only required for the unspecialized case
 template <class RhsValueType, class ValueType, int numVars, unsigned staticSize>
-bool operator<(const RhsValueType& a, const Evaluation<ValueType, numVars, staticSize>& b)
+__host__ __device__ bool operator<(const RhsValueType& a, const Evaluation<ValueType, numVars, staticSize>& b)
 { return b > a; }
 
 template <class RhsValueType, class ValueType, int numVars, unsigned staticSize>
-bool operator>(const RhsValueType& a, const Evaluation<ValueType, numVars, staticSize>& b)
+__host__ __device__ bool operator>(const RhsValueType& a, const Evaluation<ValueType, numVars, staticSize>& b)
 { return b < a; }
 
 template <class RhsValueType, class ValueType, int numVars, unsigned staticSize>
-bool operator<=(const RhsValueType& a, const Evaluation<ValueType, numVars, staticSize>& b)
+__host__ __device__ bool operator<=(const RhsValueType& a, const Evaluation<ValueType, numVars, staticSize>& b)
 { return b >= a; }
 
 template <class RhsValueType, class ValueType, int numVars, unsigned staticSize>
-bool operator>=(const RhsValueType& a, const Evaluation<ValueType, numVars, staticSize>& b)
+__host__ __device__ bool operator>=(const RhsValueType& a, const Evaluation<ValueType, numVars, staticSize>& b)
 { return b <= a; }
 
 template <class RhsValueType, class ValueType, int numVars, unsigned staticSize>
-bool operator!=(const RhsValueType& a, const Evaluation<ValueType, numVars, staticSize>& b)
+__host__ __device__ bool operator!=(const RhsValueType& a, const Evaluation<ValueType, numVars, staticSize>& b)
 { return a != b.value(); }
 
 template <class RhsValueType, class ValueType, int numVars, unsigned staticSize>
-Evaluation<ValueType, numVars, staticSize> operator+(const RhsValueType& a, const Evaluation<ValueType, numVars, staticSize>& b)
+__host__ __device__ Evaluation<ValueType, numVars, staticSize> operator+(const RhsValueType& a, const Evaluation<ValueType, numVars, staticSize>& b)
 {
     Evaluation<ValueType, numVars, staticSize> result(b);
     result += a;
@@ -852,13 +866,13 @@ Evaluation<ValueType, numVars, staticSize> operator+(const RhsValueType& a, cons
 }
 
 template <class RhsValueType, class ValueType, int numVars, unsigned staticSize>
-Evaluation<ValueType, numVars, staticSize> operator-(const RhsValueType& a, const Evaluation<ValueType, numVars, staticSize>& b)
+__host__ __device__ Evaluation<ValueType, numVars, staticSize> operator-(const RhsValueType& a, const Evaluation<ValueType, numVars, staticSize>& b)
 {
     return -(b - a);
 }
 
 template <class RhsValueType, class ValueType, int numVars, unsigned staticSize>
-Evaluation<ValueType, numVars, staticSize> operator/(const RhsValueType& a, const Evaluation<ValueType, numVars, staticSize>& b)
+__host__ __device__ Evaluation<ValueType, numVars, staticSize> operator/(const RhsValueType& a, const Evaluation<ValueType, numVars, staticSize>& b)
 {
     Evaluation<ValueType, numVars, staticSize> tmp(a);
     tmp /= b;
@@ -866,7 +880,7 @@ Evaluation<ValueType, numVars, staticSize> operator/(const RhsValueType& a, cons
 }
 
 template <class RhsValueType, class ValueType, int numVars, unsigned staticSize>
-Evaluation<ValueType, numVars, staticSize> operator*(const RhsValueType& a, const Evaluation<ValueType, numVars, staticSize>& b)
+__host__ __device__ Evaluation<ValueType, numVars, staticSize> operator*(const RhsValueType& a, const Evaluation<ValueType, numVars, staticSize>& b)
 {
     Evaluation<ValueType, numVars, staticSize> result(b);
     result *= a;
@@ -886,12 +900,12 @@ struct is_evaluation<Evaluation<ValueType,numVars,staticSize>>
 };
 
 template <class ValueType, int numVars, unsigned staticSize>
-void printEvaluation(std::ostream& os,
+__host__ __device__ void printEvaluation(std::ostream& os,
                      const Evaluation<ValueType, numVars, staticSize>& eval,
                      bool withDer = false);
 
 template <class ValueType, int numVars, unsigned staticSize>
-std::ostream& operator<<(std::ostream& os, const Evaluation<ValueType, numVars, staticSize>& eval)
+__host__ __device__ std::ostream& operator<<(std::ostream& os, const Evaluation<ValueType, numVars, staticSize>& eval)
 {
     if constexpr (is_evaluation<ValueType>::value)
         printEvaluation(os, eval.value(), false);
@@ -911,11 +925,11 @@ using DynamicEvaluation = Evaluation<Scalar, DynamicSize, staticSize>;
 {% if numDerivs < 0 %}\
 
 template <class Scalar, unsigned staticSize>
-DenseAd::Evaluation<Scalar, -1, staticSize> constant(int numDerivatives, const Scalar& value)
+__host__ __device__ DenseAd::Evaluation<Scalar, -1, staticSize> constant(int numDerivatives, const Scalar& value)
 { return DenseAd::Evaluation<Scalar, -1, staticSize>::createConstant(numDerivatives, value); }
 
 template <class Scalar, unsigned staticSize>
-DenseAd::Evaluation<Scalar, -1, staticSize> variable(int numDerivatives, const Scalar& value, unsigned idx)
+__host__ __device__ DenseAd::Evaluation<Scalar, -1, staticSize> variable(int numDerivatives, const Scalar& value, unsigned idx)
 { return DenseAd::Evaluation<Scalar, -1, staticSize>::createVariable(numDerivatives, value, idx); }
 
 {% endif %}\
