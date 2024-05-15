@@ -41,7 +41,7 @@ namespace Opm
  * \brief Specification of the material parameters for a two-phase material law which
  *        uses a table and piecewise constant interpolation.
  */
-template <class TraitsT, class VectorT = std::vector<typename TraitsT::Scalar>>
+template<class TraitsT, class VectorT=std::vector<typename TraitsT::Scalar>>
 class PiecewiseLinearTwoPhaseMaterialParams : public EnsureFinalized
 {
     using Scalar = typename TraitsT::Scalar;
