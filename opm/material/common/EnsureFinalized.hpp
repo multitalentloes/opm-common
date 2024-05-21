@@ -30,6 +30,9 @@
 #include <cassert>
 #include <stdexcept>
 
+#include <config.h>
+#include <opm/common/utility/gpuDecorators.hpp>
+
 // TODO: move this variable to config.h
 #define OPM_CHECK_PARAM_FINALIZED 1
 
@@ -53,14 +56,14 @@ protected:
     /*!
      * \brief The default constructor.
      */
-    EnsureFinalized()
+    OPM_HOST_DEVICE EnsureFinalized()
 #if USE_OPM_CHECK_PARAM_FINALIZED
         : finalized_( false )
 #endif
     {
     }
 
-    void check() const
+    OPM_HOST_DEVICE void check() const
     {
 #if USE_OPM_CHECK_PARAM_FINALIZED
         if (!finalized_)
@@ -72,7 +75,7 @@ public:
     /*!
      * \brief Mark the object as finalized.
      */
-    void finalize()
+    OPM_HOST_DEVICE void finalize()
     {
 #if USE_OPM_CHECK_PARAM_FINALIZED
         finalized_ = true;
