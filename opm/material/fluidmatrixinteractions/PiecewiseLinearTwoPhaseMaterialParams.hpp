@@ -145,7 +145,7 @@ public:
     /*!
      * \brief Return the wetting-phase saturation values of all sampling points.
      */
-    const ValueVector& SwKrwSamples() const
+    OPM_HOST_DEVICE const ValueVector& SwKrwSamples() const
     {
         EnsureFinalized::check();
         return SwKrwSamples_;
@@ -154,7 +154,7 @@ public:
     /*!
      * \brief Return the wetting-phase saturation values of all sampling points.
      */
-    const ValueVector& SwKrnSamples() const
+    OPM_HOST_DEVICE const ValueVector& SwKrnSamples() const
     {
         EnsureFinalized::check();
         return SwKrnSamples_;
@@ -163,7 +163,7 @@ public:
     /*!
      * \brief Return the wetting-phase saturation values of all sampling points.
      */
-    const ValueVector& SwPcwnSamples() const
+    OPM_HOST_DEVICE const ValueVector& SwPcwnSamples() const
     {
         EnsureFinalized::check();
         return SwPcwnSamples_;
@@ -174,7 +174,7 @@ public:
      *
      * This curve is assumed to depend on the wetting phase saturation
      */
-    const ValueVector& pcwnSamples() const
+    OPM_HOST_DEVICE const ValueVector& pcwnSamples() const
     {
         EnsureFinalized::check();
         return pcwnSamples_;
@@ -204,7 +204,7 @@ public:
      *
      * This curve is assumed to depend on the wetting phase saturation
      */
-    const ValueVector& krwSamples() const
+    OPM_HOST_DEVICE const ValueVector& krwSamples() const
     {
         EnsureFinalized::check();
         return krwSamples_;
@@ -235,7 +235,7 @@ public:
      *
      * This curve is assumed to depend on the wetting phase saturation
      */
-    const ValueVector& krnSamples() const
+    OPM_HOST_DEVICE const ValueVector& krnSamples() const
     {
         EnsureFinalized::check();
         return krnSamples_;
@@ -287,20 +287,18 @@ namespace Opm::cuistl{
 template <class TraitsT, class ContainerType, class ViewType>
 PiecewiseLinearTwoPhaseMaterialParams<TraitsT, ViewType> make_view(const PiecewiseLinearTwoPhaseMaterialParams<TraitsT, ContainerType>& params) {
     ViewType SwPcwnSamples = make_view<const float, float>(params.SwPcwnSamples());
-    ViewType pcwnSamples = make_view<const float, float>(params.pcnwSamples());
+    ViewType pcwnSamples = make_view<const float, float>(params.pcwnSamples());
     ViewType SwKrwSamples = make_view<const float, float>(params.SwKrwSamples());
     ViewType krwSamples = make_view<const float, float>(params.krwSamples());
     ViewType SwKrnSamples = make_view<const float, float>(params.SwKrnSamples());
     ViewType krnSamples = make_view<const float, float>(params.krnSamples());
 
-    PiecewiseLinearTwoPhaseMaterialParams<TraitsT, ViewType> res (SwPcwnSamples,
+    return PiecewiseLinearTwoPhaseMaterialParams<TraitsT, ViewType> (SwPcwnSamples,
                                                                         pcwnSamples,
                                                                         SwKrwSamples,
                                                                         krwSamples,
                                                                         SwKrnSamples,
                                                                         krnSamples);
-    res.finalize();
-    return res;
 }
 }
 
