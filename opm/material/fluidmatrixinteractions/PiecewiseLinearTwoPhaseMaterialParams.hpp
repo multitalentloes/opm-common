@@ -44,24 +44,39 @@ namespace std{
 #if defined(__NVCC__) | defined(__HIPCC__) // this is only true when we are compiling with CUDA/HIP support AND we are using nvcc/hipcc
 
 // overload std::swap to work from device code
-template <class T>
-__device__ void swap(T& a, T& b){
-    T tmp = a;
-    a = b;
-    b = tmp;
-}
+// template <class T>
+// __device__ void swap(T& a, T& b){
+//     // T tmp = a;
+//     // a = b;
+//     // b = tmp;
+// }
+// // template <class T>
+// // __host__ void swap(T& a, T& b){
+// //     T tmp = a;
+// //     a = b;
+// //     b = tmp;
+// // }
+// // example function from cpp reference copy
+// // overload std::copy to work from device code
+// template<class InputIt, class OutputIt>
+// __device__ OutputIt copy(InputIt first, InputIt last,
+//               OutputIt d_first)
+// {
+//     // for (; first != last; (void)++first, (void)++d_first)
+//     //     *d_first = *first;
 
-// example function from cpp reference copy
-// overload std::copy to work from device code
-template<class InputIt, class OutputIt>
-__device__ OutputIt copy(InputIt first, InputIt last,
-              OutputIt d_first)
-{
-    for (; first != last; (void)++first, (void)++d_first)
-        *d_first = *first;
+//     return d_first;
+// }
 
-    return d_first;
-}
+// template<class InputIt, class OutputIt>
+// __host__ OutputIt copy(InputIt first, InputIt last,
+//               OutputIt d_first)
+// {
+//     for (; first != last; (void)++first, (void)++d_first)
+//         *d_first = *first;
+
+//     return d_first;
+// }
 
 #endif // END gpucc
 }
@@ -83,7 +98,7 @@ public:
 
     using Traits = TraitsT;
 
-    OPM_HOST_DEVICE PiecewiseLinearTwoPhaseMaterialParams()
+    PiecewiseLinearTwoPhaseMaterialParams()
     {
     }
 
@@ -107,7 +122,7 @@ public:
      * \brief Calculate all dependent quantities once the independent
      *        quantities of the parameter object have been set.
      */
-    OPM_HOST_DEVICE void finalize()
+    void finalize()
     {
         EnsureFinalized ::finalize();
 
@@ -171,7 +186,7 @@ public:
      * This curve is assumed to depend on the wetting phase saturation
      */
     template <class Container>
-    OPM_HOST_DEVICE void setPcnwSamples(const Container& SwValues, const Container& values)
+    void setPcnwSamples(const Container& SwValues, const Container& values)
     {
         assert(SwValues.size() == values.size());
 
@@ -202,7 +217,7 @@ public:
      * This curve is assumed to depend on the wetting phase saturation
      */
     template <class Container>
-    OPM_HOST_DEVICE void setKrwSamples(const Container& SwValues, const Container& values)
+    void setKrwSamples(const Container& SwValues, const Container& values)
     {
         assert(SwValues.size() == values.size());
 
@@ -233,7 +248,7 @@ public:
      * This curve is assumed to depend on the wetting phase saturation
      */
     template <class Container>
-    OPM_HOST_DEVICE void setKrnSamples(const Container& SwValues, const Container& values)
+    void setKrnSamples(const Container& SwValues, const Container& values)
     {
         assert(SwValues.size() == values.size());
 
@@ -246,7 +261,7 @@ public:
     }
 
 private:
-    OPM_HOST_DEVICE void swapOrder_(ValueVector& swValues, ValueVector& values) const
+    void swapOrder_(ValueVector& swValues, ValueVector& values) const
     {
         if (swValues.front() > values.back()) {
             for (unsigned origSampleIdx = 0; origSampleIdx < swValues.size() / 2; ++origSampleIdx) {
@@ -266,5 +281,27 @@ private:
     ValueVector krnSamples_;
 };
 } // namespace Opm
+
+namespace Opm::cuistl{
+
+template <class TraitsT, class ContainerType, class ViewType>
+PiecewiseLinearTwoPhaseMaterialParams<TraitsT, ViewType> make_view(const PiecewiseLinearTwoPhaseMaterialParams<TraitsT, ContainerType>& params) {
+    ViewType SwPcwnSamples = make_view<const float, float>(params.SwPcwnSamples());
+    ViewType pcwnSamples = make_view<const float, float>(params.pcnwSamples());
+    ViewType SwKrwSamples = make_view<const float, float>(params.SwKrwSamples());
+    ViewType krwSamples = make_view<const float, float>(params.krwSamples());
+    ViewType SwKrnSamples = make_view<const float, float>(params.SwKrnSamples());
+    ViewType krnSamples = make_view<const float, float>(params.krnSamples());
+
+    PiecewiseLinearTwoPhaseMaterialParams<TraitsT, ViewType> res (SwPcwnSamples,
+                                                                        pcwnSamples,
+                                                                        SwKrwSamples,
+                                                                        krwSamples,
+                                                                        SwKrnSamples,
+                                                                        krnSamples);
+    res.finalize();
+    return res;
+}
+}
 
 #endif

@@ -44,8 +44,6 @@
     #define OPM_DEVICE __device__
     #define OPM_HOST __host__
     #define OPM_USING_GPU LITERALLY ANYTHING ELSE
-    #pragma message(PRINT_MACRO_VALUE(OPM_USING_GPU))
-    #pragma message(PRINT_MACRO_VALUE(OPM_HOST_DEVICE))
 
     // Define OPM_DEVICE_IF_GPUCC based on whether we are using a GPU compiler
     #if defined(__NVCC__) | defined(__HIPCC__)
