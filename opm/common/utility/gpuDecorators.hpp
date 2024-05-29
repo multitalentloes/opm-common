@@ -17,7 +17,7 @@
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
 */
 /*
-    This file will define the macro OPM_HOST_DEVICE to be empty if
+    The point of this file is defining macros like OPM_HOST_DEVICE to be empty if
     we do not compile for GPU architectures, otherwise we will
     set it to "__device__ __host__" to decorate functions that can
     be called from a hip/cuda kernel
@@ -27,9 +27,6 @@
 #ifndef OPM_GPUDECORATORS_HPP
   #define OPM_GPUDECORATORS_HPP
   #include <config.h>
-
-  #define STRINGIZE(x) #x
-  #define PRINT_MACRO_VALUE(x) #x " = " STRINGIZE(x)
 
   #if HAVE_CUDA // if we will compile with GPU support
 
@@ -43,7 +40,7 @@
     #define OPM_HOST_DEVICE __device__ __host__
     #define OPM_DEVICE __device__
     #define OPM_HOST __host__
-    #define OPM_USING_GPU LITERALLY ANYTHING ELSE
+    #define OPM_USING_GPU
 
     // Define OPM_DEVICE_IF_GPUCC based on whether we are using a GPU compiler
     #if defined(__NVCC__) | defined(__HIPCC__)
