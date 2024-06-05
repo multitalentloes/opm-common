@@ -264,6 +264,7 @@ private:
     void swapOrder_(ValueVector& swValues, ValueVector& values) const
     {
         if (swValues.front() > values.back()) {
+        // if (swValues.front() > swValues.back()) {
             for (unsigned origSampleIdx = 0; origSampleIdx < swValues.size() / 2; ++origSampleIdx) {
                 size_t newSampleIdx = swValues.size() - origSampleIdx - 1;
 
