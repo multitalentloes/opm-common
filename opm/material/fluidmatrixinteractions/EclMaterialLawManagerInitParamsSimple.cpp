@@ -59,32 +59,32 @@ run(const std::function<std::vector<int>(const FieldPropsManager&, const std::st
     readEffectiveParameters_();
     initSatnumRegionArray_(fieldPropIntOnLeafAssigner);
     copySatnumArrays_(fieldPropIntOnLeafAssigner);
-    initOilWaterScaledEpsInfo_();
+    // initOilWaterScaledEpsInfo_();
     initMaterialLawParamVectors_();
-    std::vector<std::vector<int>*> satnumArray;
-    std::vector<std::vector<int>*> imbnumArray;
-    std::vector<std::vector<MaterialLawParams>*> mlpArray;
-    initArrays_(satnumArray, imbnumArray, mlpArray);
-    auto num_arrays = mlpArray.size();
-    for (unsigned i=0; i<num_arrays; i++) {
-        for (unsigned elemIdx = 0; elemIdx < this->numCompressedElems_; ++elemIdx) {
-            unsigned satRegionIdx = satRegion_(*satnumArray[i], elemIdx);
-            //unsigned satNumCell = this->parent_.satnumRegionArray_[elemIdx];
-            HystParams hystParams {*this};
-            hystParams.setConfig(satRegionIdx);
-            hystParams.setDrainageParamsOilGas(elemIdx, satRegionIdx, lookupIdxOnLevelZeroAssigner);
-            hystParams.setDrainageParamsOilWater(elemIdx, satRegionIdx, lookupIdxOnLevelZeroAssigner);
-            hystParams.setDrainageParamsGasWater(elemIdx, satRegionIdx, lookupIdxOnLevelZeroAssigner);
-            if (this->parent_.enableHysteresis()) {
-                unsigned imbRegionIdx = imbRegion_(*imbnumArray[i], elemIdx);
-                hystParams.setImbibitionParamsOilGas(elemIdx, imbRegionIdx, lookupIdxOnLevelZeroAssigner);
-                hystParams.setImbibitionParamsOilWater(elemIdx, imbRegionIdx, lookupIdxOnLevelZeroAssigner);
-                hystParams.setImbibitionParamsGasWater(elemIdx, imbRegionIdx, lookupIdxOnLevelZeroAssigner);
-            }
-            hystParams.finalize();
-            initThreePhaseParams_(hystParams, (*mlpArray[i])[elemIdx], satRegionIdx, elemIdx);
-        }
-    }
+    // std::vector<std::vector<int>*> satnumArray;
+    // std::vector<std::vector<int>*> imbnumArray;
+    // std::vector<std::vector<MaterialLawParams>*> mlpArray;
+    // initArrays_(satnumArray, imbnumArray, mlpArray);
+    // auto num_arrays = mlpArray.size();
+    // for (unsigned i=0; i<num_arrays; i++) {
+    //     for (unsigned elemIdx = 0; elemIdx < this->numCompressedElems_; ++elemIdx) {
+    //         unsigned satRegionIdx = satRegion_(*satnumArray[i], elemIdx);
+    //         //unsigned satNumCell = this->parent_.satnumRegionArray_[elemIdx];
+    //         HystParams hystParams {*this};
+    //         hystParams.setConfig(satRegionIdx);
+    //         hystParams.setDrainageParamsOilGas(elemIdx, satRegionIdx, lookupIdxOnLevelZeroAssigner);
+    //         hystParams.setDrainageParamsOilWater(elemIdx, satRegionIdx, lookupIdxOnLevelZeroAssigner);
+    //         hystParams.setDrainageParamsGasWater(elemIdx, satRegionIdx, lookupIdxOnLevelZeroAssigner);
+    //         if (this->parent_.enableHysteresis()) {
+    //             unsigned imbRegionIdx = imbRegion_(*imbnumArray[i], elemIdx);
+    //             hystParams.setImbibitionParamsOilGas(elemIdx, imbRegionIdx, lookupIdxOnLevelZeroAssigner);
+    //             hystParams.setImbibitionParamsOilWater(elemIdx, imbRegionIdx, lookupIdxOnLevelZeroAssigner);
+    //             hystParams.setImbibitionParamsGasWater(elemIdx, imbRegionIdx, lookupIdxOnLevelZeroAssigner);
+    //         }
+    //         hystParams.finalize();
+    //         initThreePhaseParams_(hystParams, (*mlpArray[i])[elemIdx], satRegionIdx, elemIdx);
+    //     }
+    // }
 }
 
 /* private methods alphabetically sorted*/
@@ -194,70 +194,70 @@ initSatnumRegionArray_(const std::function<std::vector<int>(const FieldPropsMana
     }
 }
 
-template <class Traits>
-void
-EclMaterialLawManagerSimple<Traits>::InitParams::
-initThreePhaseParams_(HystParams &hystParams,
-                      MaterialLawParams& materialParams,
-                      unsigned satRegionIdx,
-                      unsigned elemIdx)
-{
-    const auto& epsInfo = this->parent_.oilWaterScaledEpsInfoDrainage_[elemIdx];
+// template <class Traits>
+// void
+// EclMaterialLawManagerSimple<Traits>::InitParams::
+// initThreePhaseParams_(HystParams &hystParams,
+//                       MaterialLawParams& materialParams,
+//                       unsigned satRegionIdx,
+//                       unsigned elemIdx)
+// {
+//     const auto& epsInfo = this->parent_.oilWaterScaledEpsInfoDrainage_[elemIdx];
 
-    auto oilWaterParams = hystParams.getOilWaterParams();
-    auto gasOilParams = hystParams.getGasOilParams();
-    auto gasWaterParams = hystParams.getGasWaterParams();
-    materialParams.setApproach(this->parent_.threePhaseApproach_);
-    switch (materialParams.approach()) {
-        case EclMultiplexerApproach::Stone1: {
-            auto& realParams = materialParams.template getRealParams<EclMultiplexerApproach::Stone1>();
-            realParams.setGasOilParams(gasOilParams);
-            realParams.setOilWaterParams(oilWaterParams);
-            realParams.setSwl(epsInfo.Swl);
+//     auto oilWaterParams = hystParams.getOilWaterParams();
+//     auto gasOilParams = hystParams.getGasOilParams();
+//     auto gasWaterParams = hystParams.getGasWaterParams();
+//     materialParams.setApproach(this->parent_.threePhaseApproach_);
+//     switch (materialParams.approach()) {
+//         case EclMultiplexerApproach::Stone1: {
+//             auto& realParams = materialParams.template getRealParams<EclMultiplexerApproach::Stone1>();
+//             realParams.setGasOilParams(gasOilParams);
+//             realParams.setOilWaterParams(oilWaterParams);
+//             realParams.setSwl(epsInfo.Swl);
 
-            if (!this->parent_.stoneEtas_.empty()) {
-                realParams.setEta(this->parent_.stoneEtas_[satRegionIdx]);
-            }
-            else
-                realParams.setEta(1.0);
-            realParams.finalize();
-            break;
-        }
+//             if (!this->parent_.stoneEtas_.empty()) {
+//                 realParams.setEta(this->parent_.stoneEtas_[satRegionIdx]);
+//             }
+//             else
+//                 realParams.setEta(1.0);
+//             realParams.finalize();
+//             break;
+//         }
 
-        case EclMultiplexerApproach::Stone2: {
-            auto& realParams = materialParams.template getRealParams<EclMultiplexerApproach::Stone2>();
-            realParams.setGasOilParams(gasOilParams);
-            realParams.setOilWaterParams(oilWaterParams);
-            realParams.setSwl(epsInfo.Swl);
-            realParams.finalize();
-            break;
-        }
+//         case EclMultiplexerApproach::Stone2: {
+//             auto& realParams = materialParams.template getRealParams<EclMultiplexerApproach::Stone2>();
+//             realParams.setGasOilParams(gasOilParams);
+//             realParams.setOilWaterParams(oilWaterParams);
+//             realParams.setSwl(epsInfo.Swl);
+//             realParams.finalize();
+//             break;
+//         }
 
-        case EclMultiplexerApproach::Default: {
-            auto& realParams = materialParams.template getRealParams<EclMultiplexerApproach::Default>();
-            realParams.setGasOilParams(gasOilParams);
-            realParams.setOilWaterParams(oilWaterParams);
-            realParams.setSwl(epsInfo.Swl);
-            realParams.finalize();
-            break;
-        }
+//         case EclMultiplexerApproach::Default: {
+//             auto& realParams = materialParams.template getRealParams<EclMultiplexerApproach::Default>();
+//             realParams.setGasOilParams(gasOilParams);
+//             realParams.setOilWaterParams(oilWaterParams);
+//             realParams.setSwl(epsInfo.Swl);
+//             realParams.finalize();
+//             break;
+//         }
 
-        case EclMultiplexerApproach::TwoPhase: {
-            auto& realParams = materialParams.template getRealParams<EclMultiplexerApproach::TwoPhase>();
-            realParams.setGasOilParams(gasOilParams);
-            realParams.setOilWaterParams(oilWaterParams);
-            realParams.setGasWaterParams(gasWaterParams);
-            realParams.setApproach(this->parent_.twoPhaseApproach_);
-            realParams.finalize();
-            break;
-        }
+//         case EclMultiplexerApproach::TwoPhase: {
+//             auto& realParams = materialParams.template getRealParams<EclMultiplexerApproach::TwoPhase>();
+//             realParams.setGasOilParams(gasOilParams);
+//             realParams.setOilWaterParams(oilWaterParams);
+//             realParams.setGasWaterParams(gasWaterParams);
+//             realParams.setApproach(this->parent_.twoPhaseApproach_);
+//             realParams.finalize();
+//             break;
+//         }
 
-        case EclMultiplexerApproach::OnePhase: {
-            // Nothing to do, no parameters.
-            break;
-        }
-    } // end switch()
-}
+//         case EclMultiplexerApproach::OnePhase: {
+//             // Nothing to do, no parameters.
+//             break;
+//         }
+//     } // end switch()
+// }
 
 template <class Traits>
 void

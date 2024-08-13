@@ -97,6 +97,49 @@ public:
     //! are dependent on the phase composition
     static const bool isCompositionDependent = false;
 
+
+    template <class Evaluation, class FluidState>
+    static Scalar relpermOilInOilGasSystem(const Params& /*params*/,
+                                                 const FluidState& /*fluidState*/) {
+        throw std::runtime_error {
+                "relpermOilInOilWaterSystem() is specific to three phases"
+        };
+        return 0.0;
+    }
+
+
+    template <class Evaluation, class FluidState>
+    static Scalar relpermOilInOilWaterSystem(const Params& /*params*/,
+                                                 const FluidState& /*fluidState*/) {
+        throw std::runtime_error {
+                "relpermOilInOilWaterSystem() is specific to three phases"
+        };
+        return 0.0;
+    }
+
+    static Scalar strandedGasSaturation(const Params& params, Scalar Sg, Scalar Kg) {
+        throw std::runtime_error {
+                "this is for hysteresis I think"
+        };
+        return 0.0;
+    }
+
+    static Scalar trappedWaterSaturation(const Params& params)
+    {
+        throw std::runtime_error {
+                "this is for hysteresis I think"
+        };
+        return 0.0;
+    }
+
+    static Scalar trappedGasSaturation(const Params& params, bool maximumTrapping)
+    {
+        throw std::runtime_error {
+                "this is for hysteresis I think"
+        };
+        return 0.0;
+    }
+
     /*!
      * \brief The capillary pressure-saturation curves depending on absolute saturations.
      *

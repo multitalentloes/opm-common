@@ -102,16 +102,22 @@ private:
     using GasWaterEpsTwoPhaseParams = typename GasWaterEpsTwoPhaseLaw::Params;
 
     // the scaled two-phase material laws with hystersis
-    using GasOilTwoPhaseLaw = EclHysteresisTwoPhaseLaw<GasOilEpsTwoPhaseLaw>;
-    using OilWaterTwoPhaseLaw = EclHysteresisTwoPhaseLaw<OilWaterEpsTwoPhaseLaw>;
-    using GasWaterTwoPhaseLaw = EclHysteresisTwoPhaseLaw<GasWaterEpsTwoPhaseLaw>;
+    // using GasOilTwoPhaseLaw = EclHysteresisTwoPhaseLaw<GasOilEpsTwoPhaseLaw>;
+    // using OilWaterTwoPhaseLaw = EclHysteresisTwoPhaseLaw<OilWaterEpsTwoPhaseLaw>;
+    // using GasWaterTwoPhaseLaw = EclHysteresisTwoPhaseLaw<GasWaterEpsTwoPhaseLaw>;
+    // using GasOilTwoPhaseHystParams = typename GasOilTwoPhaseLaw::Params;
+    // using OilWaterTwoPhaseHystParams = typename OilWaterTwoPhaseLaw::Params;
+    // using GasWaterTwoPhaseHystParams = typename GasWaterTwoPhaseLaw::Params;
+    using GasOilTwoPhaseLaw = GasOilEpsTwoPhaseLaw;
+    using OilWaterTwoPhaseLaw = OilWaterEpsTwoPhaseLaw;
+    using GasWaterTwoPhaseLaw = GasWaterEpsTwoPhaseLaw;
     using GasOilTwoPhaseHystParams = typename GasOilTwoPhaseLaw::Params;
     using OilWaterTwoPhaseHystParams = typename OilWaterTwoPhaseLaw::Params;
     using GasWaterTwoPhaseHystParams = typename GasWaterTwoPhaseLaw::Params;
 
 public:
     // the three-phase material law used by the simulation
-    using MaterialLaw = EclMultiplexerMaterial<Traits, GasOilTwoPhaseLaw, OilWaterTwoPhaseLaw, GasWaterTwoPhaseLaw>;
+    using MaterialLaw = GasWaterTwoPhaseLaw;
     using MaterialLawParams = typename MaterialLaw::Params;
     using DirectionalMaterialLawParamsPtr = std::unique_ptr<DirectionalMaterialLawParams<MaterialLawParams>>;
 
@@ -146,7 +152,7 @@ private:
         void run(const std::function<std::vector<int>(const FieldPropsManager&, const std::string&, bool)>& fieldPropIntOnLeafAssigner,
                  const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
     private:
-        class HystParams;
+        // class HystParams;
         // \brief Function argument 'fieldPropIntOnLeadAssigner' needed to lookup
         //        field properties of cells on the leaf grid view for CpGrid with local grid refinement.
         void copySatnumArrays_(const std::function<std::vector<int>(const FieldPropsManager&, const std::string&, bool)>&
@@ -167,11 +173,11 @@ private:
         //        field properties of cells on the leaf grid view for CpGrid with local grid refinement.
         void initSatnumRegionArray_(const std::function<std::vector<int>(const FieldPropsManager&, const std::string&, bool)>&
                                     fieldPropIntOnLeafAssigner);
-        void initThreePhaseParams_(
-                                   HystParams &hystParams,
-                                   MaterialLawParams& materialParams,
-                                   unsigned satRegionIdx,
-                                   unsigned elemIdx);
+        // void initThreePhaseParams_(
+        //                            HystParams &hystParams,
+        //                            MaterialLawParams& materialParams,
+        //                            unsigned satRegionIdx,
+        //                            unsigned elemIdx);
         void readEffectiveParameters_();
         void readUnscaledEpsPointsVectors_();
         template <class Container>
@@ -180,52 +186,52 @@ private:
         unsigned satOrImbRegion_(std::vector<int>& array, std::vector<int>& default_vec, unsigned elemIdx);
 
         // This class' implementation is defined in "EclMaterialLawManagerSimpleHystParams.cpp"
-        class HystParams {
-        public:
-            HystParams(EclMaterialLawManagerSimple<TraitsT>::InitParams& init_params);
-            void finalize();
-            std::shared_ptr<GasOilTwoPhaseHystParams> getGasOilParams();
-            std::shared_ptr<OilWaterTwoPhaseHystParams> getOilWaterParams();
-            std::shared_ptr<GasWaterTwoPhaseHystParams> getGasWaterParams();
-            void setConfig(unsigned satRegionIdx);
-            // Function argument 'lookupIdxOnLevelZeroAssigner' is added to lookup, for each
-            // leaf gridview cell with index 'elemIdx', its 'lookupIdx' (index of the parent/equivalent cell on level zero).
-            void setDrainageParamsOilGas(unsigned elemIdx, unsigned satRegionIdx,
-                                         const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
-            void setDrainageParamsOilWater(unsigned elemIdx, unsigned satRegionIdx,
-                                           const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
-            void setDrainageParamsGasWater(unsigned elemIdx, unsigned satRegionIdx,
-                                           const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
-            void setImbibitionParamsOilGas(unsigned elemIdx, unsigned satRegionIdx,
-                                           const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
-            void setImbibitionParamsOilWater(unsigned elemIdx, unsigned satRegionIdx,
-                                             const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
-            void setImbibitionParamsGasWater(unsigned elemIdx, unsigned satRegionIdx,
-                                             const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
-        private:
-            bool hasGasWater_();
-            bool hasGasOil_();
-            bool hasOilWater_();
+        // class HystParams {
+        // public:
+        //     HystParams(EclMaterialLawManagerSimple<TraitsT>::InitParams& init_params);
+        //     void finalize();
+        //     std::shared_ptr<GasOilTwoPhaseHystParams> getGasOilParams();
+        //     std::shared_ptr<OilWaterTwoPhaseHystParams> getOilWaterParams();
+        //     std::shared_ptr<GasWaterTwoPhaseHystParams> getGasWaterParams();
+        //     void setConfig(unsigned satRegionIdx);
+        //     // Function argument 'lookupIdxOnLevelZeroAssigner' is added to lookup, for each
+        //     // leaf gridview cell with index 'elemIdx', its 'lookupIdx' (index of the parent/equivalent cell on level zero).
+        //     void setDrainageParamsOilGas(unsigned elemIdx, unsigned satRegionIdx,
+        //                                  const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
+        //     void setDrainageParamsOilWater(unsigned elemIdx, unsigned satRegionIdx,
+        //                                    const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
+        //     void setDrainageParamsGasWater(unsigned elemIdx, unsigned satRegionIdx,
+        //                                    const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
+        //     void setImbibitionParamsOilGas(unsigned elemIdx, unsigned satRegionIdx,
+        //                                    const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
+        //     void setImbibitionParamsOilWater(unsigned elemIdx, unsigned satRegionIdx,
+        //                                      const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
+        //     void setImbibitionParamsGasWater(unsigned elemIdx, unsigned satRegionIdx,
+        //                                      const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
+        // private:
+        //     bool hasGasWater_();
+        //     bool hasGasOil_();
+        //     bool hasOilWater_();
 
-            // Function argument 'lookupIdxOnLevelZeroAssigner' is added to lookup, for each
-            // leaf gridview cell with index 'elemIdx', its 'lookupIdx' (index of the parent/equivalent cell on level zero).
-            std::tuple<EclEpsScalingPointsInfo<Scalar>, EclEpsScalingPoints<Scalar>>
-            readScaledEpsPoints_(const EclEpsGridProperties& epsGridProperties, unsigned elemIdx, EclTwoPhaseSystemType type,
-                                 const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
-            std::tuple<EclEpsScalingPointsInfo<Scalar>, EclEpsScalingPoints<Scalar>>
-            readScaledEpsPointsDrainage_(unsigned elemIdx, EclTwoPhaseSystemType type,
-                                         const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
-            std::tuple<EclEpsScalingPointsInfo<Scalar>, EclEpsScalingPoints<Scalar>>
-            readScaledEpsPointsImbibition_(unsigned elemIdx, EclTwoPhaseSystemType type,
-                                           const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
+        //     // Function argument 'lookupIdxOnLevelZeroAssigner' is added to lookup, for each
+        //     // leaf gridview cell with index 'elemIdx', its 'lookupIdx' (index of the parent/equivalent cell on level zero).
+        //     std::tuple<EclEpsScalingPointsInfo<Scalar>, EclEpsScalingPoints<Scalar>>
+        //     readScaledEpsPoints_(const EclEpsGridProperties& epsGridProperties, unsigned elemIdx, EclTwoPhaseSystemType type,
+        //                          const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
+        //     std::tuple<EclEpsScalingPointsInfo<Scalar>, EclEpsScalingPoints<Scalar>>
+        //     readScaledEpsPointsDrainage_(unsigned elemIdx, EclTwoPhaseSystemType type,
+        //                                  const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
+        //     std::tuple<EclEpsScalingPointsInfo<Scalar>, EclEpsScalingPoints<Scalar>>
+        //     readScaledEpsPointsImbibition_(unsigned elemIdx, EclTwoPhaseSystemType type,
+        //                                    const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
 
-            EclMaterialLawManagerSimple<TraitsT>::InitParams& init_params_;
-            EclMaterialLawManagerSimple<TraitsT>& parent_;
-            const EclipseState& eclState_;
-            std::shared_ptr<GasOilTwoPhaseHystParams> gasOilParams_;
-            std::shared_ptr<OilWaterTwoPhaseHystParams> oilWaterParams_;
-            std::shared_ptr<GasWaterTwoPhaseHystParams> gasWaterParams_;
-        };
+        //     EclMaterialLawManagerSimple<TraitsT>::InitParams& init_params_;
+        //     EclMaterialLawManagerSimple<TraitsT>& parent_;
+        //     const EclipseState& eclState_;
+        //     std::shared_ptr<GasOilTwoPhaseHystParams> gasOilParams_;
+        //     std::shared_ptr<OilWaterTwoPhaseHystParams> oilWaterParams_;
+        //     std::shared_ptr<GasWaterTwoPhaseHystParams> gasWaterParams_;
+        // };
 
         // This class' implementation is defined in "EclMaterialLawManagerSimpleReadEffectiveParams.cpp"
         class ReadEffectiveParams {
@@ -311,16 +317,20 @@ public:
     { return enablePpcwmax_; }
 
     bool enableHysteresis() const
-    { return hysteresisConfig_->enableHysteresis(); }
+    // { return hysteresisConfig_->enableHysteresis(); }
+    { return false; }
 
     bool enablePCHysteresis() const
-    { return (enableHysteresis() && hysteresisConfig_->pcHysteresisModel() >= 0); }
+    { return (enableHysteresis()); }
+    // { return (enableHysteresis() && hysteresisConfig_->pcHysteresisModel() >= 0); }
 
     bool enableWettingHysteresis() const
-    { return (enableHysteresis() && hysteresisConfig_->krHysteresisModel() >= 4); }
+    { return (enableHysteresis()); }
+    // { return (enableHysteresis() && hysteresisConfig_->krHysteresisModel() >= 4); }
 
     bool enableNonWettingHysteresis() const
-    { return (enableHysteresis() && hysteresisConfig_->krHysteresisModel() >= 0); }
+    { return (enableHysteresis()); }
+    // { return (enableHysteresis() && hysteresisConfig_->krHysteresisModel() >= 0); }
 
     MaterialLawParams& materialLawParams(unsigned elemIdx)
     {
@@ -380,17 +390,19 @@ public:
         OPM_TIMEFUNCTION_LOCAL();
         if (!enableHysteresis())
             return false;
-        bool changed = MaterialLaw::updateHysteresis(materialLawParams(elemIdx), fluidState);
-        if (hasDirectionalRelperms() || hasDirectionalImbnum()) {
-            using Dir = FaceDir::DirEnum;
-            constexpr int ndim = 3;
-            Dir facedirs[ndim] = {Dir::XPlus, Dir::YPlus, Dir::ZPlus};
-            for (int i = 0; i<ndim; i++) {
-                bool ischanged =  MaterialLaw::updateHysteresis(materialLawParams(elemIdx, facedirs[i]), fluidState);
-                changed = changed || ischanged;
-            }
-        }
-        return changed;
+        throw std::runtime_error("no hysteresis yet");
+        return true;
+        // bool changed = MaterialLaw::updateHysteresis(materialLawParams(elemIdx), fluidState);
+        // if (hasDirectionalRelperms() || hasDirectionalImbnum()) {
+        //     using Dir = FaceDir::DirEnum;
+        //     constexpr int ndim = 3;
+        //     Dir facedirs[ndim] = {Dir::XPlus, Dir::YPlus, Dir::ZPlus};
+        //     for (int i = 0; i<ndim; i++) {
+        //         bool ischanged =  MaterialLaw::updateHysteresis(materialLawParams(elemIdx, facedirs[i]), fluidState);
+        //         changed = changed || ischanged;
+        //     }
+        // }
+        // return changed;
     }
 
     void oilWaterHysteresisParams(Scalar& soMax,
@@ -433,11 +445,11 @@ public:
 private:
     const MaterialLawParams& materialLawParamsFunc_(unsigned elemIdx, FaceDir::DirEnum facedir) const;
 
-    void readGlobalEpsOptions_(const EclipseState& eclState);
+    // void readGlobalEpsOptions_(const EclipseState& eclState);
 
-    void readGlobalHysteresisOptions_(const EclipseState& state);
+    // void readGlobalHysteresisOptions_(const EclipseState& state);
 
-    void readGlobalThreePhaseOptions_(const Runspec& runspec);
+    // void readGlobalThreePhaseOptions_(const Runspec& runspec);
 
     bool enableEndPointScaling_;
     std::shared_ptr<EclHysteresisConfig> hysteresisConfig_;
