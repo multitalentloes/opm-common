@@ -24,7 +24,7 @@
 #include <opm/material/common/MathToolbox.hpp>
 #include <opm/material/common/UniformTabulated2DFunction.hpp>
 #include <opm/material/components/CO2Tables.hpp>
-#include "CO2tables.inc"
+#include "co2tables.inc"
 #include <vector>
 
 namespace Opm
