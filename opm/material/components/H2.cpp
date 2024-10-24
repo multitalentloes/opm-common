@@ -31,13 +31,6 @@
 namespace Opm {
 typedef Opm::UniformTabulated2DFunction< double > TabulatedFunction;
 
-// this class collects all the H2tabulated quantities in one convenient place
-struct H2Tables {
-	static const TabulatedFunction   tabulatedEnthalpy;
-	static const TabulatedFunction   tabulatedDensity;
-	static constexpr double brineSalinity = 1.000000000000000e-01;
-};
-
 inline const TabulatedFunction H2Tables::tabulatedEnthalpy
     {H2TabulatedEnthalpyTraits::xMin,
      H2TabulatedEnthalpyTraits::xMax,
