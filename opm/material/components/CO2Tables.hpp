@@ -32,30 +32,29 @@
 namespace Opm
 {
 
-struct TabulatedDensityTraits {
+struct co2TabulatedDensityTraits {
     typedef double Scalar;
-    const char* name;
-    const int numX;
-    const Scalar xMin;
-    const Scalar xMax;
-    const int numY;
-    const Scalar yMin;
-    const Scalar yMax;
-    const std::vector<std::vector<Scalar>> vals;
-    TabulatedDensityTraits();
+    static const char  *name;
+    static const int    numX = 200;
+    static const Scalar xMin;
+    static const Scalar xMax;
+    static const int    numY = 500;
+    static const Scalar yMin;
+    static const Scalar yMax;
+
+    static const Scalar vals[200][500];
 };
 
-struct TabulatedEnthalpyTraits {
+struct co2TabulatedEnthalpyTraits {
     typedef double Scalar;
-    const char* name;
-    const int numX;
-    const Scalar xMin;
-    const Scalar xMax;
-    const int numY;
-    const Scalar yMin;
-    const Scalar yMax;
-    const std::vector<std::vector<Scalar>> vals;
-    TabulatedEnthalpyTraits();
+    static const char  *name;
+    static const int    numX = 200;
+    static const Scalar xMin;
+    static const Scalar xMax;
+    static const int    numY = 500;
+    static const Scalar yMin;
+    static const Scalar yMax;
+    static const Scalar vals[200][500];
 };
 
 class CO2Tables
