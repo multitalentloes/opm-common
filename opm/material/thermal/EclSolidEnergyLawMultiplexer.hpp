@@ -48,8 +48,6 @@ template <class ScalarT,
           class ParamsT = EclSolidEnergyLawMultiplexerParams<ScalarT>>
 class EclSolidEnergyLawMultiplexer
 {
-    enum { numPhases = FluidSystem::numPhases };
-
     using HeatcrLaw = EclHeatcrLaw<ScalarT, FluidSystem, typename ParamsT::HeatcrLawParams>;
     using SpecrockLaw = EclSpecrockLaw<ScalarT, typename ParamsT::SpecrockLawParams>;
     using NullLaw = NullSolidEnergyLaw<ScalarT>;

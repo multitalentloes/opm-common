@@ -48,8 +48,6 @@ template <class ScalarT,
           class ParamsT = EclThermalConductionLawMultiplexerParams<ScalarT>>
 class EclThermalConductionLawMultiplexer
 {
-    enum { numPhases = FluidSystem::numPhases };
-
     using ThconrLaw = EclThconrLaw<ScalarT, FluidSystem, typename ParamsT::ThconrLawParams>;
     using ThcLaw = EclThcLaw<ScalarT, typename ParamsT::ThcLawParams>;
     using NullLaw = NullThermalConductionLaw<ScalarT>;

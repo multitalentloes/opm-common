@@ -365,7 +365,7 @@ public:
     Scalar surfacePressure;
 
     //! The temperature at the surface
-    Scalar surfaceTemperature;
+    static Scalar surfaceTemperature;
 
     //! \copydoc BaseFluidSystem::phaseName
     std::string_view phaseName(unsigned phaseIdx);
