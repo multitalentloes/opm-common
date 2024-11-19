@@ -167,6 +167,44 @@ public:
     using OilPvt = OilPvtMultiplexer<Scalar>;
     using WaterPvt = WaterPvtMultiplexer<Scalar>;
 
+public:
+    BlackOilFluidSystemNonStatic(Scalar reservoirTemperature,
+                                 std::shared_ptr<GasPvt> gasPvt,
+                                 std::shared_ptr<OilPvt> oilPvt,
+                                 std::shared_ptr<WaterPvt> waterPvt,
+                                 bool enableDissolvedGas,
+                                 bool enableDissolvedGasInWater,
+                                 bool enableVaporizedOil,
+                                 bool enableVaporizedWater,
+                                 bool enableDiffusion,
+                                 std::vector<std::array<Scalar, 3>> referenceDensity,
+                                 std::vector<std::array<Scalar, 3>> molarMass,
+                                 std::vector<std::array<Scalar, 3 * 3>> diffusionCoefficients,
+                                 std::array<short, 3> activeToCanonicalPhaseIdx,
+                                 std::array<short, 3> canonicalToActivePhaseIdx,
+                                 bool isInitialized,
+                                 bool useSaturatedTables,
+                                 bool enthalpy_eq_energy)
+        : reservoirTemperature_(reservoirTemperature),
+          gasPvt_(gasPvt),
+          oilPvt_(oilPvt),
+          waterPvt_(waterPvt),
+          enableDissolvedGas_(enableDissolvedGas),
+          enableDissolvedGasInWater_(enableDissolvedGasInWater),
+          enableVaporizedOil_(enableVaporizedOil),
+          enableVaporizedWater_(enableVaporizedWater),
+          enableDiffusion_(enableDiffusion),
+          referenceDensity_(referenceDensity),
+          molarMass_(molarMass),
+          diffusionCoefficients_(diffusionCoefficients),
+          activeToCanonicalPhaseIdx_(activeToCanonicalPhaseIdx),
+          canonicalToActivePhaseIdx_(canonicalToActivePhaseIdx),
+          isInitialized_(isInitialized),
+          useSaturatedTables_(useSaturatedTables),
+          enthalpy_eq_energy_(enthalpy_eq_energy)
+    {
+    }
+
     //! \copydoc BaseFluidSystem::ParameterCache
     template <class EvaluationT>
     struct ParameterCache : public NullParameterCache<EvaluationT>
