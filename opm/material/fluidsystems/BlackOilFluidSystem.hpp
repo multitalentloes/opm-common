@@ -164,6 +164,7 @@ class BlackOilFluidSystem : public BaseFluidSystem<Scalar, BlackOilFluidSystem<S
     using ThisType = BlackOilFluidSystem;
 
 public:
+    using NonStaticBlackOilFluidSystem = BlackOilFluidSystemNonStatic<Scalar, IndexTraits>;
     using GasPvt = GasPvtMultiplexer<Scalar>;
     using OilPvt = OilPvtMultiplexer<Scalar>;
     using WaterPvt = WaterPvtMultiplexer<Scalar>;
