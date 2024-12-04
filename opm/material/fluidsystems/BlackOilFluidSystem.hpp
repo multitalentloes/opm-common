@@ -58,99 +58,102 @@ class EclipseState;
 class Schedule;
 #endif
 
-// namespace BlackOil {
-// OPM_GENERATE_HAS_MEMBER(Rs, ) // Creates 'HasMember_Rs<T>'.
-// OPM_GENERATE_HAS_MEMBER(Rv, ) // Creates 'HasMember_Rv<T>'.
-// OPM_GENERATE_HAS_MEMBER(Rvw, ) // Creates 'HasMember_Rvw<T>'.
-// OPM_GENERATE_HAS_MEMBER(Rsw, ) // Creates 'HasMember_Rsw<T>'.
-// OPM_GENERATE_HAS_MEMBER(saltConcentration, )
-// OPM_GENERATE_HAS_MEMBER(saltSaturation, )
+namespace BlackOil {
+OPM_GENERATE_HAS_MEMBER(Rs, ) // Creates 'HasMember_Rs<T>'.
+OPM_GENERATE_HAS_MEMBER(Rv, ) // Creates 'HasMember_Rv<T>'.
+OPM_GENERATE_HAS_MEMBER(Rvw, ) // Creates 'HasMember_Rvw<T>'.
+OPM_GENERATE_HAS_MEMBER(Rsw, ) // Creates 'HasMember_Rsw<T>'.
+OPM_GENERATE_HAS_MEMBER(saltConcentration, )
+OPM_GENERATE_HAS_MEMBER(saltSaturation, )
 
-// template <class FluidSystem, class FluidState, class LhsEval>
-// LhsEval getRs_(typename std::enable_if<!HasMember_Rs<FluidState>::value, const FluidState&>::type fluidState,
-//                unsigned regionIdx)
-// {
-//     const auto& XoG =
-//         decay<LhsEval>(fluidState.massFraction(FluidSystem::oilPhaseIdx, FluidSystem::gasCompIdx));
-//     return FluidSystem::convertXoGToRs(XoG, regionIdx);
-// }
+template <class FluidSystem, class FluidState, class LhsEval>
+LhsEval getRs_(typename std::enable_if<!HasMember_Rs<FluidState>::value, const FluidState&>::type fluidState,
+               unsigned regionIdx)
+{
+    const auto& XoG =
+        decay<LhsEval>(fluidState.massFraction(FluidSystem::oilPhaseIdx, FluidSystem::gasCompIdx));
+    return FluidSystem::convertXoGToRs(XoG, regionIdx);
+}
 
-// template <class FluidSystem, class FluidState, class LhsEval>
-// auto getRs_(typename std::enable_if<HasMember_Rs<FluidState>::value, const FluidState&>::type fluidState,
-//             unsigned)
-//     -> decltype(decay<LhsEval>(fluidState.Rs()))
-// { return decay<LhsEval>(fluidState.Rs()); }
+template <class FluidSystem, class FluidState, class LhsEval>
+auto getRs_(typename std::enable_if<HasMember_Rs<FluidState>::value, const FluidState&>::type fluidState,
+            unsigned)
+    -> decltype(decay<LhsEval>(fluidState.Rs()))
+{ return decay<LhsEval>(fluidState.Rs()); }
 
-// template <class FluidSystem, class FluidState, class LhsEval>
-// LhsEval getRv_(typename std::enable_if<!HasMember_Rv<FluidState>::value, const FluidState&>::type fluidState,
-//                unsigned regionIdx)
-// {
-//     const auto& XgO =
-//         decay<LhsEval>(fluidState.massFraction(FluidSystem::gasPhaseIdx, FluidSystem::oilCompIdx));
-//     return FluidSystem::convertXgOToRv(XgO, regionIdx);
-// }
+template <class FluidSystem, class FluidState, class LhsEval>
+LhsEval getRv_(typename std::enable_if<!HasMember_Rv<FluidState>::value, const FluidState&>::type fluidState,
+               unsigned regionIdx)
+{
+    const auto& XgO =
+        decay<LhsEval>(fluidState.massFraction(FluidSystem::gasPhaseIdx, FluidSystem::oilCompIdx));
+    return FluidSystem::convertXgOToRv(XgO, regionIdx);
+}
 
-// template <class FluidSystem, class FluidState, class LhsEval>
-// auto getRv_(typename std::enable_if<HasMember_Rv<FluidState>::value, const FluidState&>::type fluidState,
-//             unsigned)
-//     -> decltype(decay<LhsEval>(fluidState.Rv()))
-// { return decay<LhsEval>(fluidState.Rv()); }
+template <class FluidSystem, class FluidState, class LhsEval>
+auto getRv_(typename std::enable_if<HasMember_Rv<FluidState>::value, const FluidState&>::type fluidState,
+            unsigned)
+    -> decltype(decay<LhsEval>(fluidState.Rv()))
+{ return decay<LhsEval>(fluidState.Rv()); }
 
-// template <class FluidSystem, class FluidState, class LhsEval>
-// LhsEval getRvw_(typename std::enable_if<!HasMember_Rvw<FluidState>::value, const FluidState&>::type fluidState,
-//                unsigned regionIdx)
-// {
-//     const auto& XgW =
-//         decay<LhsEval>(fluidState.massFraction(FluidSystem::gasPhaseIdx, FluidSystem::waterCompIdx));
-//     return FluidSystem::convertXgWToRvw(XgW, regionIdx);
-// }
+template <class FluidSystem, class FluidState, class LhsEval>
+LhsEval getRvw_(typename std::enable_if<!HasMember_Rvw<FluidState>::value, const FluidState&>::type fluidState,
+               unsigned regionIdx)
+{
+    const auto& XgW =
+        decay<LhsEval>(fluidState.massFraction(FluidSystem::gasPhaseIdx, FluidSystem::waterCompIdx));
+    return FluidSystem::convertXgWToRvw(XgW, regionIdx);
+}
 
-// template <class FluidSystem, class FluidState, class LhsEval>
-// auto getRvw_(typename std::enable_if<HasMember_Rvw<FluidState>::value, const FluidState&>::type fluidState,
-//             unsigned)
-//     -> decltype(decay<LhsEval>(fluidState.Rvw()))
-// { return decay<LhsEval>(fluidState.Rvw()); }
+template <class FluidSystem, class FluidState, class LhsEval>
+auto getRvw_(typename std::enable_if<HasMember_Rvw<FluidState>::value, const FluidState&>::type fluidState,
+            unsigned)
+    -> decltype(decay<LhsEval>(fluidState.Rvw()))
+{ return decay<LhsEval>(fluidState.Rvw()); }
 
-// template <class FluidSystem, class FluidState, class LhsEval>
-// LhsEval getRsw_(typename std::enable_if<!HasMember_Rsw<FluidState>::value, const FluidState&>::type fluidState,
-//                unsigned regionIdx)
-// {
-//     const auto& XwG =
-//         decay<LhsEval>(fluidState.massFraction(FluidSystem::waterPhaseIdx, FluidSystem::gasCompIdx));
-//     return FluidSystem::convertXwGToRsw(XwG, regionIdx);
-// }
+template <class FluidSystem, class FluidState, class LhsEval>
+LhsEval getRsw_(typename std::enable_if<!HasMember_Rsw<FluidState>::value, const FluidState&>::type fluidState,
+               unsigned regionIdx)
+{
+    const auto& XwG =
+        decay<LhsEval>(fluidState.massFraction(FluidSystem::waterPhaseIdx, FluidSystem::gasCompIdx));
+    return FluidSystem::convertXwGToRsw(XwG, regionIdx);
+}
 
-// template <class FluidSystem, class FluidState, class LhsEval>
-// auto getRsw_(typename std::enable_if<HasMember_Rsw<FluidState>::value, const FluidState&>::type fluidState,
-//             unsigned)
-//     -> decltype(decay<LhsEval>(fluidState.Rsw()))
-// { return decay<LhsEval>(fluidState.Rsw()); }
+template <class FluidSystem, class FluidState, class LhsEval>
+auto getRsw_(typename std::enable_if<HasMember_Rsw<FluidState>::value, const FluidState&>::type fluidState,
+            unsigned)
+    -> decltype(decay<LhsEval>(fluidState.Rsw()))
+{ return decay<LhsEval>(fluidState.Rsw()); }
 
-// template <class FluidSystem, class FluidState, class LhsEval>
-// LhsEval getSaltConcentration_(typename std::enable_if<!HasMember_saltConcentration<FluidState>::value,
-//                               const FluidState&>::type,
-//                               unsigned)
-// {return 0.0;}
+template <class FluidSystem, class FluidState, class LhsEval>
+LhsEval getSaltConcentration_(typename std::enable_if<!HasMember_saltConcentration<FluidState>::value,
+                              const FluidState&>::type,
+                              unsigned)
+{return 0.0;}
 
-// template <class FluidSystem, class FluidState, class LhsEval>
-// auto getSaltConcentration_(typename std::enable_if<HasMember_saltConcentration<FluidState>::value, const FluidState&>::type fluidState,
-//             unsigned)
-//     -> decltype(decay<LhsEval>(fluidState.saltConcentration()))
-// { return decay<LhsEval>(fluidState.saltConcentration()); }
+template <class FluidSystem, class FluidState, class LhsEval>
+auto getSaltConcentration_(typename std::enable_if<HasMember_saltConcentration<FluidState>::value, const FluidState&>::type fluidState,
+            unsigned)
+    -> decltype(decay<LhsEval>(fluidState.saltConcentration()))
+{ return decay<LhsEval>(fluidState.saltConcentration()); }
 
-// template <class FluidSystem, class FluidState, class LhsEval>
-// LhsEval getSaltSaturation_(typename std::enable_if<!HasMember_saltSaturation<FluidState>::value,
-//                               const FluidState&>::type,
-//                               unsigned)
-// {return 0.0;}
+template <class FluidSystem, class FluidState, class LhsEval>
+LhsEval getSaltSaturation_(typename std::enable_if<!HasMember_saltSaturation<FluidState>::value,
+                              const FluidState&>::type,
+                              unsigned)
+{return 0.0;}
 
-// template <class FluidSystem, class FluidState, class LhsEval>
-// auto getSaltSaturation_(typename std::enable_if<HasMember_saltSaturation<FluidState>::value, const FluidState&>::type fluidState,
-//             unsigned)
-//     -> decltype(decay<LhsEval>(fluidState.saltSaturation()))
-// { return decay<LhsEval>(fluidState.saltSaturation()); }
+template <class FluidSystem, class FluidState, class LhsEval>
+auto getSaltSaturation_(typename std::enable_if<HasMember_saltSaturation<FluidState>::value, const FluidState&>::type fluidState,
+            unsigned)
+    -> decltype(decay<LhsEval>(fluidState.saltSaturation()))
+{ return decay<LhsEval>(fluidState.saltSaturation()); }
 
-// }
+}
+
+template <class Scalar, class IndexTraits>
+class BlackOilFluidSystemNonStatic;
 
 /*!
  * \brief A fluid system which uses the black-oil model assumptions to calculate
@@ -168,6 +171,13 @@ public:
     using GasPvt = GasPvtMultiplexer<Scalar>;
     using OilPvt = OilPvtMultiplexer<Scalar>;
     using WaterPvt = WaterPvtMultiplexer<Scalar>;
+
+public:
+
+    static const NonStaticBlackOilFluidSystem& getNonStatic()
+    {
+        return NonStaticBlackOilFluidSystem::getInstance();
+    }
 
     //! \copydoc BaseFluidSystem::ParameterCache
     template <class EvaluationT>
@@ -422,6 +432,10 @@ public:
     static Scalar molarMass(unsigned compIdx, unsigned regionIdx = 0)
     { return molarMass_[regionIdx][compIdx]; }
 
+    //! \copydoc BaseFluidSystem::molarMass
+    static std::vector<std::array<Scalar, 3>> molarMass()
+    { return molarMass_; }
+
     //! \copydoc BaseFluidSystem::isIdealMixture
     static bool isIdealMixture(unsigned /*phaseIdx*/)
     {
@@ -510,6 +524,26 @@ public:
      */
     static Scalar referenceDensity(unsigned phaseIdx, unsigned regionIdx)
     { return referenceDensity_[regionIdx][phaseIdx]; }
+
+    /*!
+     * \brief Returns the density of a fluid phase at surface pressure [kg/m^3]
+     *
+     * \copydoc Doxygen::phaseIdxParam
+     */
+    static std::vector<std::array<Scalar, 3>> referenceDensity()
+    { return referenceDensity_; }
+
+    /*!
+     * \brief Returns the canonical to active phase idx mapping
+     */
+    static std::array<short, numPhases> canonicalToActivePhaseIdx()
+    { return canonicalToActivePhaseIdx_; }
+
+    /*!
+     * \brief Returns the active to canonical phase idx mapping
+     */
+    static std::array<short, numPhases> activeToCanonicalPhaseIdx()
+    { return activeToCanonicalPhaseIdx_; }
 
     /****************************************
      * thermodynamic quantities (generic version)
@@ -1611,6 +1645,9 @@ public:
     static const GasPvt& gasPvt()
     { return *gasPvt_; }
 
+    static const std::shared_ptr<GasPvt>& gasPvtSharedPtr()
+    { return gasPvt_; }
+
     /*!
      * \brief Return a reference to the low-level object which calculates the oil phase
      *        quantities.
@@ -1621,6 +1658,9 @@ public:
     static const OilPvt& oilPvt()
     { return *oilPvt_; }
 
+    static const std::shared_ptr<OilPvt>& oilPvtSharedPtr()
+    { return oilPvt_; }
+
     /*!
      * \brief Return a reference to the low-level object which calculates the water phase
      *        quantities.
@@ -1630,6 +1670,9 @@ public:
      */
     static const WaterPvt& waterPvt()
     { return *waterPvt_; }
+
+    static const std::shared_ptr<WaterPvt>& waterPvtSharedPtr()
+    { return waterPvt_; }
 
     /*!
      * \brief Set the temperature of the reservoir.
@@ -1654,6 +1697,10 @@ public:
     //! \copydoc BaseFluidSystem::diffusionCoefficient
     static Scalar diffusionCoefficient(unsigned compIdx, unsigned phaseIdx, unsigned regionIdx = 0)
     { return diffusionCoefficients_[regionIdx][numPhases*compIdx + phaseIdx]; }
+
+    //! \copydoc BaseFluidSystem::diffusionCoefficient
+    static std::vector<std::array<Scalar, 9>> diffusionCoefficient()
+    { return diffusionCoefficients_; }
 
     //! \copydoc BaseFluidSystem::setDiffusionCoefficient
     static void setDiffusionCoefficient(Scalar coefficient, unsigned compIdx, unsigned phaseIdx, unsigned regionIdx = 0)
