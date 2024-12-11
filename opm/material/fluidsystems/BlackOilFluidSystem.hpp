@@ -161,16 +161,17 @@ class BlackOilFluidSystemNonStatic;
  *
  * \tparam Scalar The type used for scalar floating point values
  */
-template <class Scalar, class IndexTraits = BlackOilDefaultIndexTraits>
-class BlackOilFluidSystem : public BaseFluidSystem<Scalar, BlackOilFluidSystem<Scalar, IndexTraits> >
+template <class Scalar, class IndexTraits_ = BlackOilDefaultIndexTraits>
+class BlackOilFluidSystem : public BaseFluidSystem<Scalar, BlackOilFluidSystem<Scalar, IndexTraits_> >
 {
     using ThisType = BlackOilFluidSystem;
 
 public:
-    using NonStaticBlackOilFluidSystem = BlackOilFluidSystemNonStatic<Scalar, IndexTraits>;
+    using NonStaticBlackOilFluidSystem = BlackOilFluidSystemNonStatic<Scalar, IndexTraits_>;
     using GasPvt = GasPvtMultiplexer<Scalar>;
     using OilPvt = OilPvtMultiplexer<Scalar>;
     using WaterPvt = WaterPvtMultiplexer<Scalar>;
+    using IndexTraits = IndexTraits_;
 
 public:
 
@@ -1771,6 +1772,12 @@ private:
     static bool useSaturatedTables_;
     inline static bool enthalpy_eq_energy_ = false;
 };
+
+
+template<class FluidSystem>
+constexpr bool is_a_blackoil_system() {
+    return std::is_same_v<BlackOilFluidSystem<typename FluidSystem::Scalar, typename FluidSystem::IndexTraits>, FluidSystem>;
+}
 
 template <typename T> using BOFS = BlackOilFluidSystem<T, BlackOilDefaultIndexTraits>;
 
