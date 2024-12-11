@@ -163,13 +163,14 @@ class BlackOilFluidSystem;
  *
  * \tparam Scalar The type used for scalar floating point values
  */
-template <class Scalar, class IndexTraits = BlackOilDefaultIndexTraits>
-class BlackOilFluidSystemNonStatic : public BaseFluidSystem<Scalar, BlackOilFluidSystemNonStatic<Scalar, IndexTraits> >
+template <class Scalar, class IndexTraits_ = BlackOilDefaultIndexTraits>
+class BlackOilFluidSystemNonStatic : public BaseFluidSystem<Scalar, BlackOilFluidSystemNonStatic<Scalar, IndexTraits_> >
 {
     using ThisType = BlackOilFluidSystemNonStatic;
-    using StaticType = BlackOilFluidSystem<Scalar, IndexTraits>;
+    using StaticType = BlackOilFluidSystem<Scalar, IndexTraits_>;
 
 public:
+    using IndexTraits = IndexTraits_;
     using GasPvt = GasPvtMultiplexer<Scalar>;
     using OilPvt = OilPvtMultiplexer<Scalar>;
     using WaterPvt = WaterPvtMultiplexer<Scalar>;
@@ -438,11 +439,11 @@ public:
     static constexpr unsigned numPhases = 3;
 
     //! Index of the water phase
-    static constexpr unsigned waterPhaseIdx = IndexTraits::waterPhaseIdx;
+    static constexpr unsigned waterPhaseIdx = IndexTraits_::waterPhaseIdx;
     //! Index of the oil phase
-    static constexpr unsigned oilPhaseIdx = IndexTraits::oilPhaseIdx;
+    static constexpr unsigned oilPhaseIdx = IndexTraits_::oilPhaseIdx;
     //! Index of the gas phase
-    static constexpr unsigned gasPhaseIdx = IndexTraits::gasPhaseIdx;
+    static constexpr unsigned gasPhaseIdx = IndexTraits_::gasPhaseIdx;
 
     //! The pressure at the surface
     Scalar surfacePressure;
@@ -468,11 +469,11 @@ public:
     static constexpr unsigned numComponents = 3;
 
     //! Index of the oil component
-    static constexpr unsigned oilCompIdx = IndexTraits::oilCompIdx;
+    static constexpr unsigned oilCompIdx = IndexTraits_::oilCompIdx;
     //! Index of the water component
-    static constexpr unsigned waterCompIdx = IndexTraits::waterCompIdx;
+    static constexpr unsigned waterCompIdx = IndexTraits_::waterCompIdx;
     //! Index of the gas component
-    static constexpr unsigned gasCompIdx = IndexTraits::gasCompIdx;
+    static constexpr unsigned gasCompIdx = IndexTraits_::gasCompIdx;
 
 protected:
     unsigned char numActivePhases_;

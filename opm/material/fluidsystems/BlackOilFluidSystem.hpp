@@ -1777,9 +1777,38 @@ private:
 };
 
 
+// Helper trait to check for the existence of member types Scalar and IndexTraits
+template<typename, typename = std::void_t<>>
+struct has_Scalar_and_IndexTraits : std::false_type {};
+
+template<typename FluidSystem>
+struct has_Scalar_and_IndexTraits<
+    FluidSystem,
+    std::void_t<typename FluidSystem::Scalar, typename FluidSystem::IndexTraits>
+> : std::true_type {};
+
+// Adjusted function
 template<class FluidSystem>
 constexpr bool is_a_blackoil_system() {
-    return std::is_same_v<BlackOilFluidSystem<typename FluidSystem::Scalar, typename FluidSystem::IndexTraits>, FluidSystem>;
+    if constexpr (std::is_same_v<FluidSystem, void*>) {
+        return false;
+    } else if constexpr (std::is_same_v<FluidSystem, std::nullptr_t>) {
+        return false;
+    } else if constexpr (!std::is_class_v<FluidSystem>) {
+        return false;
+    } else if constexpr (!has_Scalar_and_IndexTraits<FluidSystem>::value) {
+        return false;
+    } else if constexpr (
+        !std::is_class_v<typename FluidSystem::Scalar> ||
+        !std::is_class_v<typename FluidSystem::IndexTraits>
+    ) {
+        return false;
+    } else {
+        return std::is_same_v<
+            BlackOilFluidSystem<typename FluidSystem::Scalar, typename FluidSystem::IndexTraits>,
+            FluidSystem
+        >;
+    }
 }
 
 template <typename T> using BOFS = BlackOilFluidSystem<T, BlackOilDefaultIndexTraits>;
