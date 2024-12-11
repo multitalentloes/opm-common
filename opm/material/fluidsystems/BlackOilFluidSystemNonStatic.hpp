@@ -152,6 +152,8 @@ auto getSaltSaturation_(typename std::enable_if<HasMember_saltSaturation<FluidSt
 
 }
 
+// TODO: format
+
 template <class Scalar, class IndexTraits>
 class BlackOilFluidSystem;
 
@@ -172,43 +174,49 @@ public:
     using OilPvt = OilPvtMultiplexer<Scalar>;
     using WaterPvt = WaterPvtMultiplexer<Scalar>;
 
-// TODO: the public member variables are not included in this class yet, for instance surfaceTemperature
-
 private:
-    BlackOilFluidSystemNonStatic(Scalar reservoirTemperature,
-                                 std::shared_ptr<GasPvt> gasPvt,
-                                 std::shared_ptr<OilPvt> oilPvt,
-                                 std::shared_ptr<WaterPvt> waterPvt,
-                                 bool enableDissolvedGas,
-                                 bool enableDissolvedGasInWater,
-                                 bool enableVaporizedOil,
-                                 bool enableVaporizedWater,
-                                 bool enableDiffusion,
-                                 std::vector<std::array<Scalar, 3>> referenceDensity,
-                                 std::vector<std::array<Scalar, 3>> molarMass,
-                                 std::vector<std::array<Scalar, 3 * 3>> diffusionCoefficients,
-                                 std::array<short, 3> activeToCanonicalPhaseIdx,
-                                 std::array<short, 3> canonicalToActivePhaseIdx,
-                                 bool isInitialized,
-                                 bool useSaturatedTables,
-                                 bool enthalpy_eq_energy)
-        : reservoirTemperature_(reservoirTemperature),
-          gasPvt_(gasPvt),
-          oilPvt_(oilPvt),
-          waterPvt_(waterPvt),
-          enableDissolvedGas_(enableDissolvedGas),
-          enableDissolvedGasInWater_(enableDissolvedGasInWater),
-          enableVaporizedOil_(enableVaporizedOil),
-          enableVaporizedWater_(enableVaporizedWater),
-          enableDiffusion_(enableDiffusion),
-          referenceDensity_(referenceDensity),
-          molarMass_(molarMass),
-          diffusionCoefficients_(diffusionCoefficients),
-          activeToCanonicalPhaseIdx_(activeToCanonicalPhaseIdx),
-          canonicalToActivePhaseIdx_(canonicalToActivePhaseIdx),
-          isInitialized_(isInitialized),
-          useSaturatedTables_(useSaturatedTables),
-          enthalpy_eq_energy_(enthalpy_eq_energy)
+    BlackOilFluidSystemNonStatic(Scalar _surfacePressure_,
+                                 Scalar _surfaceTemperature_,
+                                 unsigned _numActivePhases_,
+                                    std::array<bool, 3> _phaseIsActive_,
+                                 Scalar _reservoirTemperature_,
+                                 std::shared_ptr<GasPvt> _gasPvt_,
+                                 std::shared_ptr<OilPvt> _oilPvt_,
+                                 std::shared_ptr<WaterPvt> _waterPvt_,
+                                 bool _enableDissolvedGas_,
+                                 bool _enableDissolvedGasInWater_,
+                                 bool _enableVaporizedOil_,
+                                 bool _enableVaporizedWater_,
+                                 bool _enableDiffusion_,
+                                 std::vector<std::array<Scalar, 3>> _referenceDensity_,
+                                 std::vector<std::array<Scalar, 3>> _molarMass_,
+                                 std::vector<std::array<Scalar, 3 * 3>> _diffusionCoefficients_,
+                                 std::array<short, 3> _activeToCanonicalPhaseIdx_,
+                                 std::array<short, 3> _canonicalToActivePhaseIdx_,
+                                 bool _isInitialized_,
+                                 bool _useSaturatedTables_,
+                                 bool _enthalpy_eq_energy_)
+        : surfacePressure(_surfacePressure_),
+          surfaceTemperature(_surfaceTemperature_),
+        numActivePhases_(_numActivePhases_),
+        phaseIsActive_(_phaseIsActive_),
+          reservoirTemperature_(_reservoirTemperature_),
+          gasPvt_(_gasPvt_),
+          oilPvt_(_oilPvt_),
+          waterPvt_(_waterPvt_),
+          enableDissolvedGas_(_enableDissolvedGas_),
+          enableDissolvedGasInWater_(_enableDissolvedGasInWater_),
+          enableVaporizedOil_(_enableVaporizedOil_),
+          enableVaporizedWater_(_enableVaporizedWater_),
+          enableDiffusion_(_enableDiffusion_),
+          referenceDensity_(_referenceDensity_),
+          molarMass_(_molarMass_),
+          diffusionCoefficients_(_diffusionCoefficients_),
+          activeToCanonicalPhaseIdx_(_activeToCanonicalPhaseIdx_),
+          canonicalToActivePhaseIdx_(_canonicalToActivePhaseIdx_),
+          isInitialized_(_isInitialized_),
+          useSaturatedTables_(_useSaturatedTables_),
+          enthalpy_eq_energy_(_enthalpy_eq_energy_)
     {
     }
 
@@ -216,7 +224,11 @@ public:
 
     static const ThisType& getInstance()
     {
-        static ThisType instance(StaticType::reservoirTemperature(),
+        static ThisType instance(StaticType::surfacePressure,
+                                 StaticType::surfaceTemperature,
+                                 StaticType::numActivePhases(),
+                                    StaticType::phaseIsActiveArray(),
+                                 StaticType::reservoirTemperature(),
                                  StaticType::gasPvtSharedPtr(),
                                  StaticType::oilPvtSharedPtr(),
                                  StaticType::waterPvtSharedPtr(),

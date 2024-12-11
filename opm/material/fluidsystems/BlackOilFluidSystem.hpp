@@ -420,6 +420,9 @@ public:
         return phaseIsActive_[phaseIdx];
     }
 
+    static std::array<bool,numPhases> phaseIsActiveArray()
+    { return phaseIsActive_; }
+
     //! \brief returns the index of "primary" component of a phase (solvent)
     static unsigned solventComponentIndex(unsigned phaseIdx);
 
