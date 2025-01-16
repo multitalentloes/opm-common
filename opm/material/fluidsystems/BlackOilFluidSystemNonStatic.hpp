@@ -170,7 +170,7 @@ class BlackOilFluidSystem;
  *
  * \tparam Scalar The type used for scalar floating point values
  */
-template <class Scalar, class IndexTraits_ = BlackOilDefaultIndexTraits>
+template <class Scalar, class IndexTraits_ = BlackOilDefaultIndexTraits, template <class...> class ContainerT = std::vector, template<typename> class PtrType = std::shared_ptr>
 class BlackOilFluidSystemNonStatic : public BaseFluidSystem<Scalar, BlackOilFluidSystemNonStatic<Scalar, IndexTraits_>>
 {
     using ThisType = BlackOilFluidSystemNonStatic;
@@ -188,17 +188,17 @@ private:
                                  unsigned _numActivePhases_,
                                  std::array<bool, 3> _phaseIsActive_,
                                  Scalar _reservoirTemperature_,
-                                 std::shared_ptr<GasPvt> _gasPvt_,
-                                 std::shared_ptr<OilPvt> _oilPvt_,
-                                 std::shared_ptr<WaterPvt> _waterPvt_,
+                                 PtrType<GasPvt> _gasPvt_,
+                                 PtrType<OilPvt> _oilPvt_,
+                                 PtrType<WaterPvt> _waterPvt_,
                                  bool _enableDissolvedGas_,
                                  bool _enableDissolvedGasInWater_,
                                  bool _enableVaporizedOil_,
                                  bool _enableVaporizedWater_,
                                  bool _enableDiffusion_,
-                                 std::vector<std::array<Scalar, 3>> _referenceDensity_,
-                                 std::vector<std::array<Scalar, 3>> _molarMass_,
-                                 std::vector<std::array<Scalar, 3 * 3>> _diffusionCoefficients_,
+                                 ContainerT<std::array<Scalar, 3>> _referenceDensity_,
+                                 ContainerT<std::array<Scalar, 3>> _molarMass_,
+                                 ContainerT<std::array<Scalar, 3 * 3>> _diffusionCoefficients_,
                                  std::array<short, 3> _activeToCanonicalPhaseIdx_,
                                  std::array<short, 3> _canonicalToActivePhaseIdx_,
                                  bool _isInitialized_,
@@ -344,7 +344,7 @@ public:
     /*!
      * \brief Set the pressure-volume-saturation (PVT) relations for the gas phase.
      */
-    void setGasPvt(std::shared_ptr<GasPvt> pvtObj)
+    void setGasPvt(PtrType<GasPvt> pvtObj)
     {
         gasPvt_ = pvtObj;
     }
@@ -352,7 +352,7 @@ public:
     /*!
      * \brief Set the pressure-volume-saturation (PVT) relations for the oil phase.
      */
-    void setOilPvt(std::shared_ptr<OilPvt> pvtObj)
+    void setOilPvt(PtrType<OilPvt> pvtObj)
     {
         oilPvt_ = pvtObj;
     }
@@ -360,7 +360,7 @@ public:
     /*!
      * \brief Set the pressure-volume-saturation (PVT) relations for the water phase.
      */
-    void setWaterPvt(std::shared_ptr<WaterPvt> pvtObj)
+    void setWaterPvt(PtrType<WaterPvt> pvtObj)
     {
         waterPvt_ = pvtObj;
     }
@@ -1534,36 +1534,15 @@ public:
 
     /*!
      * \brief Convert the mass fraction of the gas component in the water phase to the
-     *        corresponding gas dissolution factor.
-     */
-    template <class LhsEval>
-    LhsEval convertXwGToRsw(const LhsEval& XwG, unsigned regionIdx)
-    {
-        Scalar rho_wRef = referenceDensity_[regionIdx][waterPhaseIdx];
-        Scalar rho_gRef = referenceDensity_[regionIdx][gasPhaseIdx];
-
-        return XwG / (1.0 - XwG) * (rho_wRef / rho_gRef);
-    }
-
-    /*!
-     * \brief Convert the mass fraction of the oil component in the gas phase to the
-     *        corresponding oil vaporization factor.
-     */
-    template <class LhsEval>
-    LhsEval convertXgOToRv(const LhsEval& XgO, unsigned regionIdx) const
-    {
-        Scalar rho_oRef = referenceDensity_[regionIdx][oilPhaseIdx];
-        Scalar rho_gRef = referenceDensity_[regionIdx][gasPhaseIdx];
-
-        return XgO / (1.0 - XgO) * (rho_gRef / rho_oRef);
-    }
-
-    /*!
-     * \brief Convert the mass fraction of the water component in the gas phase to the
-     *        corresponding water vaporization factor.
-     */
-    template <class LhsEval>
-    LhsEval convertXgWToRvw(const LhsEval& XgW, unsigned regionIdx)
+     *        corresponding gas dissolution factor.std::shared_ptr
+std::shared_ptr
+std::shared_ptr
+std::shared_ptr
+std::shared_ptr
+std::shared_ptr
+std::shared_ptr
+std::shared_ptr
+std::shared_ptrregionIdx)
     {
         Scalar rho_wRef = referenceDensity_[regionIdx][waterPhaseIdx];
         Scalar rho_gRef = referenceDensity_[regionIdx][gasPhaseIdx];
@@ -1819,9 +1798,9 @@ private:
 
     Scalar reservoirTemperature_;
 
-    std::shared_ptr<GasPvt> gasPvt_;
-    std::shared_ptr<OilPvt> oilPvt_;
-    std::shared_ptr<WaterPvt> waterPvt_;
+    PtrType<GasPvt> gasPvt_;
+    PtrType<OilPvt> oilPvt_;
+    PtrType<WaterPvt> waterPvt_;
 
     // TODO: make these bools compile-time arguments, increasing compilation time?
 
@@ -1834,9 +1813,9 @@ private:
     // HACK for GCC 4.4: the array size has to be specified using the literal value '3'
     // here, because GCC 4.4 seems to be unable to determine the number of phases from
     // the BlackOil fluid system in the attribute declaration below...
-    std::vector<std::array<Scalar, /*numPhases=*/3>> referenceDensity_;
-    std::vector<std::array<Scalar, /*numComponents=*/3>> molarMass_;
-    std::vector<std::array<Scalar, /*numComponents=*/3 * /*numPhases=*/3>> diffusionCoefficients_;
+    ContainerT<std::array<Scalar, /*numPhases=*/3>> referenceDensity_;
+    ContainerT<std::array<Scalar, /*numComponents=*/3>> molarMass_;
+    ContainerT<std::array<Scalar, /*numComponents=*/3 * /*numPhases=*/3>> diffusionCoefficients_;
 
     std::array<short, numPhases> activeToCanonicalPhaseIdx_;
     std::array<short, numPhases> canonicalToActivePhaseIdx_;
