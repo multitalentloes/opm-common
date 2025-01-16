@@ -347,25 +347,25 @@ public:
     /*!
      * \brief Return the pressure of a fluid phase [Pa]
      */
-    OPM_HOST_DEVICE Scalar& pressure(unsigned phaseIdx) const
+    OPM_HOST_DEVICE const Scalar& pressure(unsigned phaseIdx) const
     { return pressure_[canonicalToStoragePhaseIndex_(phaseIdx)]; }
 
     /*!
      * \brief Return the saturation of a fluid phase [-]
      */
-    OPM_HOST_DEVICE Scalar& saturation(unsigned phaseIdx) const
+    OPM_HOST_DEVICE const Scalar& saturation(unsigned phaseIdx) const
     { return saturation_[canonicalToStoragePhaseIndex_(phaseIdx)]; }
 
     /*!
      * \brief Return the capillary pressure of a fluid phase [-]
      */
-    OPM_HOST_DEVICE Scalar& pc(unsigned phaseIdx) const
+    OPM_HOST_DEVICE const Scalar& pc(unsigned phaseIdx) const
     { return pc_[canonicalToStoragePhaseIndex_(phaseIdx)]; }
 
     /*!
      * \brief Return the total saturation needed for sequential
      */
-    OPM_HOST_DEVICE Scalar& totalSaturation() const
+    OPM_HOST_DEVICE const Scalar& totalSaturation() const
     {
         return totalSaturation_;
     }
@@ -373,7 +373,7 @@ public:
     /*!
      * \brief Return the temperature [K]
      */
-    OPM_HOST_DEVICE Scalar& temperature(unsigned) const
+    OPM_HOST_DEVICE const Scalar& temperature(unsigned) const
     {
         if constexpr (enableTemperature || enableEnergy) {
             return *temperature_;
@@ -389,7 +389,7 @@ public:
      * This factor expresses the change of density of a pure phase due to increased
      * pressure and temperature at reservoir conditions compared to surface conditions.
      */
-    OPM_HOST_DEVICE Scalar& invB(unsigned phaseIdx) const
+    OPM_HOST_DEVICE const Scalar& invB(unsigned phaseIdx) const
     { return invB_[canonicalToStoragePhaseIndex_(phaseIdx)]; }
 
     /*!
@@ -399,7 +399,7 @@ public:
      * of gas at surface conditions per cubic meter of liquid oil at surface
      * conditions. This method is specific to the black-oil model.
      */
-    OPM_HOST_DEVICE Scalar& Rs() const
+    OPM_HOST_DEVICE const Scalar& Rs() const
     {
         if constexpr (enableDissolution) {
             return *Rs_;
@@ -416,7 +416,7 @@ public:
      * of liquid oil at surface conditions per cubic meter of gas at surface
      * conditions. This method is specific to the black-oil model.
      */
-    OPM_HOST_DEVICE Scalar& Rv() const
+    OPM_HOST_DEVICE const Scalar& Rv() const
     {
         if constexpr (!enableDissolution) {
             static Scalar null = 0.0;
@@ -433,7 +433,7 @@ public:
      * of liquid water at surface conditions per cubic meter of gas at surface
      * conditions. This method is specific to the black-oil model.
      */
-    OPM_HOST_DEVICE Scalar& Rvw() const
+    OPM_HOST_DEVICE const Scalar& Rvw() const
     {
         if constexpr (enableVapwat) {
             return *Rvw_;
@@ -450,7 +450,7 @@ public:
      * of gas at surface conditions per cubic meter of water at surface
      * conditions. This method is specific to the black-oil model.
      */
-    OPM_HOST_DEVICE Scalar& Rsw() const
+    OPM_HOST_DEVICE const Scalar& Rsw() const
     {
         if constexpr (enableDissolutionInWater) {
             return *Rsw_;
@@ -463,7 +463,7 @@ public:
     /*!
      * \brief Return the concentration of salt in water
      */
-    OPM_HOST_DEVICE Scalar& saltConcentration() const
+    OPM_HOST_DEVICE const Scalar& saltConcentration() const
     {
         if constexpr (enableBrine) {
             return *saltConcentration_;
@@ -476,7 +476,7 @@ public:
     /*!
      * \brief Return the saturation of solid salt
      */
-    OPM_HOST_DEVICE Scalar& saltSaturation() const
+    OPM_HOST_DEVICE const Scalar& saltSaturation() const
     {
         if constexpr (enableSaltPrecipitation) {
             return *saltSaturation_;
@@ -490,13 +490,13 @@ public:
      * \brief Return the PVT region where the current fluid state is assumed to be part of.
      *
      */
-    unsigned short pvtRegionIndex() const
+    OPM_HOST_DEVICE unsigned short pvtRegionIndex() const
     { return pvtRegionIdx_; }
 
     /*!
      * \brief Return the density [kg/m^3] of a given fluid phase.
       */
-    Scalar density(unsigned phaseIdx) const
+    OPM_HOST_DEVICE Scalar density(unsigned phaseIdx) const
     { return density_[canonicalToStoragePhaseIndex_(phaseIdx)]; }
 
     /*!
@@ -505,7 +505,7 @@ public:
      * If the EnableEnergy property is not set to true, this method will throw an
      * exception!
      */
-    OPM_HOST_DEVICE Scalar& enthalpy(unsigned phaseIdx) const
+    OPM_HOST_DEVICE const Scalar& enthalpy(unsigned phaseIdx) const
     { return (*enthalpy_)[canonicalToStoragePhaseIndex_(phaseIdx)]; }
 
     /*!
