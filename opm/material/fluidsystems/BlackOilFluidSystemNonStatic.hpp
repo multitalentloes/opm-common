@@ -1534,15 +1534,36 @@ public:
 
     /*!
      * \brief Convert the mass fraction of the gas component in the water phase to the
-     *        corresponding gas dissolution factor.std::shared_ptr
-std::shared_ptr
-std::shared_ptr
-std::shared_ptr
-std::shared_ptr
-std::shared_ptr
-std::shared_ptr
-std::shared_ptr
-std::shared_ptrregionIdx)
+     *        corresponding gas dissolution factor.
+     */
+    template <class LhsEval>
+    LhsEval convertXwGToRsw(const LhsEval& XwG, unsigned regionIdx)
+    {
+        Scalar rho_wRef = referenceDensity_[regionIdx][waterPhaseIdx];
+        Scalar rho_gRef = referenceDensity_[regionIdx][gasPhaseIdx];
+
+        return XwG / (1.0 - XwG) * (rho_wRef / rho_gRef);
+    }
+
+    /*!
+     * \brief Convert the mass fraction of the oil component in the gas phase to the
+     *        corresponding oil vaporization factor.
+     */
+    template <class LhsEval>
+    LhsEval convertXgOToRv(const LhsEval& XgO, unsigned regionIdx) const
+    {
+        Scalar rho_oRef = referenceDensity_[regionIdx][oilPhaseIdx];
+        Scalar rho_gRef = referenceDensity_[regionIdx][gasPhaseIdx];
+
+        return XgO / (1.0 - XgO) * (rho_gRef / rho_oRef);
+    }
+
+    /*!
+     * \brief Convert the mass fraction of the water component in the gas phase to the
+     *        corresponding water vaporization factor.
+     */
+    template <class LhsEval>
+    LhsEval convertXgWToRvw(const LhsEval& XgW, unsigned regionIdx)
     {
         Scalar rho_wRef = referenceDensity_[regionIdx][waterPhaseIdx];
         Scalar rho_gRef = referenceDensity_[regionIdx][gasPhaseIdx];

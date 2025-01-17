@@ -40,9 +40,9 @@ namespace Opm
 {
 
 #if HAVE_ECL_INPUT
-template <class Scalar, class IndexTraits>
+template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
 void
-BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::initFromState(const EclipseState& eclState, const Schedule& schedule)
+BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::initFromState(const EclipseState& eclState, const Schedule& schedule)
 {
     if (eclState.getSimulationConfig().useEnthalpy()) {
         enthalpy_eq_energy_ = false;
@@ -103,17 +103,17 @@ BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::initFromState(const EclipseSt
     }
 
     if (phaseIsActive(gasPhaseIdx)) {
-        gasPvt_ = std::make_shared<GasPvt>();
+        gasPvt_ = PtrType<GasPvt>();
         gasPvt_->initFromState(eclState, schedule);
     }
 
     if (phaseIsActive(oilPhaseIdx)) {
-        oilPvt_ = std::make_shared<OilPvt>();
+        oilPvt_ = PtrType<OilPvt>();
         oilPvt_->initFromState(eclState, schedule);
     }
 
     if (phaseIsActive(waterPhaseIdx)) {
-        waterPvt_ = std::make_shared<WaterPvt>();
+        waterPvt_ = PtrType<WaterPvt>();
         waterPvt_->initFromState(eclState, schedule);
     }
 
@@ -222,9 +222,9 @@ BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::initFromState(const EclipseSt
 }
 #endif
 
-template <class Scalar, class IndexTraits>
+template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
 void
-BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::initBegin(std::size_t numPvtRegions)
+BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::initBegin(std::size_t numPvtRegions)
 {
     isInitialized_ = false;
     useSaturatedTables_ = true;
@@ -249,9 +249,9 @@ BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::initBegin(std::size_t numPvtR
     resizeArrays_(numPvtRegions);
 }
 
-template <class Scalar, class IndexTraits>
+template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
 void
-BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::setReferenceDensities(Scalar rhoOil,
+BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::setReferenceDensities(Scalar rhoOil,
                                                                          Scalar rhoWater,
                                                                          Scalar rhoGas,
                                                                          unsigned regionIdx)
@@ -261,9 +261,9 @@ BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::setReferenceDensities(Scalar 
     referenceDensity_[regionIdx][gasPhaseIdx] = rhoGas;
 }
 
-template <class Scalar, class IndexTraits>
+template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
 void
-BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::initEnd()
+BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::initEnd()
 {
     // calculate the final 2D functions which are used for interpolation.
     const std::size_t num_regions = molarMass_.size();
@@ -299,9 +299,9 @@ BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::initEnd()
     isInitialized_ = true;
 }
 
-template <class Scalar, class IndexTraits>
+template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
 std::string_view
-BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::phaseName(unsigned phaseIdx)
+BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::phaseName(unsigned phaseIdx)
 {
     switch (phaseIdx) {
     case waterPhaseIdx:
@@ -318,7 +318,7 @@ BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::phaseName(unsigned phaseIdx)
 
 template <class Scalar, class IndexTraits>
 unsigned
-BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::solventComponentIndex(unsigned phaseIdx)
+BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::solventComponentIndex(unsigned phaseIdx)
 {
     switch (phaseIdx) {
     case waterPhaseIdx:
@@ -335,7 +335,7 @@ BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::solventComponentIndex(unsigne
 
 template <class Scalar, class IndexTraits>
 unsigned
-BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::soluteComponentIndex(unsigned phaseIdx)
+BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::soluteComponentIndex(unsigned phaseIdx)
 {
     switch (phaseIdx) {
     case waterPhaseIdx:
@@ -357,7 +357,7 @@ BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::soluteComponentIndex(unsigned
 
 template <class Scalar, class IndexTraits>
 std::string_view
-BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::componentName(unsigned compIdx)
+BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::componentName(unsigned compIdx)
 {
     switch (compIdx) {
     case waterCompIdx:
@@ -374,7 +374,7 @@ BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::componentName(unsigned compId
 
 template <class Scalar, class IndexTraits>
 short
-BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::activeToCanonicalPhaseIdx(unsigned activePhaseIdx)
+BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::activeToCanonicalPhaseIdx(unsigned activePhaseIdx)
 {
     assert(activePhaseIdx < numActivePhases());
     return activeToCanonicalPhaseIdx_[activePhaseIdx];
@@ -382,7 +382,7 @@ BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::activeToCanonicalPhaseIdx(uns
 
 template <class Scalar, class IndexTraits>
 short
-BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::canonicalToActivePhaseIdx(unsigned phaseIdx)
+BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::canonicalToActivePhaseIdx(unsigned phaseIdx)
 {
     assert(phaseIdx < numPhases);
     assert(phaseIsActive(phaseIdx));
@@ -391,7 +391,7 @@ BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::canonicalToActivePhaseIdx(uns
 
 template <class Scalar, class IndexTraits>
 void
-BlackOilFluidSystemNonStatic<Scalar, IndexTraits>::resizeArrays_(std::size_t numRegions)
+BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::resizeArrays_(std::size_t numRegions)
 {
     molarMass_.resize(numRegions);
     referenceDensity_.resize(numRegions);
