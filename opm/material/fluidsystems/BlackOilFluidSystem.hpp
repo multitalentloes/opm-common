@@ -152,7 +152,7 @@ auto getSaltSaturation_(typename std::enable_if<HasMember_saltSaturation<FluidSt
 
 }
 
-template <class Scalar, class IndexTraits>
+template <class Scalar, class IndexTraits, template<class...> class ContainerT, template<typename> class PtrType>
 class BlackOilFluidSystemNonStatic;
 
 /*!
@@ -161,8 +161,8 @@ class BlackOilFluidSystemNonStatic;
  *
  * \tparam Scalar The type used for scalar floating point values
  */
-template <class Scalar, class IndexTraits_ = BlackOilDefaultIndexTraits>
-class BlackOilFluidSystem : public BaseFluidSystem<Scalar, BlackOilFluidSystem<Scalar, IndexTraits_> >
+template <class Scalar, class IndexTraits_ = BlackOilDefaultIndexTraits, template<class...> class ContainerT = std::vector, template<typename> class PtrType = std::shared_ptr>
+class BlackOilFluidSystem : public BaseFluidSystem<Scalar, BlackOilFluidSystem<Scalar, IndexTraits_, ContainerT, PtrType> >
 {
     using ThisType = BlackOilFluidSystem;
 
