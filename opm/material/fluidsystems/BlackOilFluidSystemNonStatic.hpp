@@ -161,6 +161,8 @@ namespace BlackOilTwo
 
 } // namespace BlackOilTwo
 
+// template <class Scalar, class IndexTraits>
+// class BlackOilFluidSystem;
 template <class Scalar, class IndexTraits>
 class BlackOilFluidSystem;
 
@@ -177,6 +179,10 @@ class BlackOilFluidSystemNonStatic : public BaseFluidSystem<Scalar, BlackOilFlui
     using StaticType = BlackOilFluidSystem<Scalar, IndexTraits_>;
 
 public:
+    template <class T>
+    using ContainerType = ContainerT<T>;
+    template <class T>
+    using PointerType = PtrType<T>;
     using IndexTraits = IndexTraits_;
     using GasPvt = GasPvtMultiplexer<Scalar>;
     using OilPvt = OilPvtMultiplexer<Scalar>;

@@ -316,7 +316,7 @@ BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::phaseNam
     }
 }
 
-template <class Scalar, class IndexTraits>
+template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
 unsigned
 BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::solventComponentIndex(unsigned phaseIdx)
 {
@@ -333,7 +333,7 @@ BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::solventC
     }
 }
 
-template <class Scalar, class IndexTraits>
+template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
 unsigned
 BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::soluteComponentIndex(unsigned phaseIdx)
 {
@@ -355,7 +355,7 @@ BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::soluteCo
     }
 }
 
-template <class Scalar, class IndexTraits>
+template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
 std::string_view
 BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::componentName(unsigned compIdx)
 {
@@ -372,7 +372,7 @@ BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::componen
     }
 }
 
-template <class Scalar, class IndexTraits>
+template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
 short
 BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::activeToCanonicalPhaseIdx(unsigned activePhaseIdx)
 {
@@ -380,7 +380,7 @@ BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::activeTo
     return activeToCanonicalPhaseIdx_[activePhaseIdx];
 }
 
-template <class Scalar, class IndexTraits>
+template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
 short
 BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::canonicalToActivePhaseIdx(unsigned phaseIdx)
 {
@@ -389,7 +389,7 @@ BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::canonica
     return canonicalToActivePhaseIdx_[phaseIdx];
 }
 
-template <class Scalar, class IndexTraits>
+template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
 void
 BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerT, PtrType>::resizeArrays_(std::size_t numRegions)
 {

@@ -39,8 +39,8 @@
 namespace Opm {
 
 #if HAVE_ECL_INPUT
-template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
-void BlackOilFluidSystem<Scalar,IndexTraits, ContainerT, PtrType>::
+template <class Scalar, class IndexTraits>
+void BlackOilFluidSystem<Scalar,IndexTraits>::
 initFromState(const EclipseState& eclState, const Schedule& schedule)
 {
     if (eclState.getSimulationConfig().useEnthalpy()) {
@@ -224,8 +224,8 @@ initFromState(const EclipseState& eclState, const Schedule& schedule)
 }
 #endif
 
-template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
-void BlackOilFluidSystem<Scalar,IndexTraits, ContainerT, PtrType>::
+template <class Scalar, class IndexTraits>
+void BlackOilFluidSystem<Scalar,IndexTraits>::
 initBegin(std::size_t numPvtRegions)
 {
     isInitialized_ = false;
@@ -251,8 +251,8 @@ initBegin(std::size_t numPvtRegions)
     resizeArrays_(numPvtRegions);
 }
 
-template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
-void BlackOilFluidSystem<Scalar,IndexTraits, ContainerT, PtrType>::
+template <class Scalar, class IndexTraits>
+void BlackOilFluidSystem<Scalar,IndexTraits>::
 setReferenceDensities(Scalar rhoOil,
                       Scalar rhoWater,
                       Scalar rhoGas,
@@ -263,8 +263,8 @@ setReferenceDensities(Scalar rhoOil,
     referenceDensity_[regionIdx][gasPhaseIdx] = rhoGas;
 }
 
-template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
-void BlackOilFluidSystem<Scalar,IndexTraits, ContainerT, PtrType>::initEnd()
+template <class Scalar, class IndexTraits>
+void BlackOilFluidSystem<Scalar,IndexTraits>::initEnd()
 {
     // calculate the final 2D functions which are used for interpolation.
     const std::size_t num_regions = molarMass_.size();
@@ -301,7 +301,7 @@ void BlackOilFluidSystem<Scalar,IndexTraits, ContainerT, PtrType>::initEnd()
     isInitialized_ = true;
 }
 
-template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
+template <class Scalar, class IndexTraits>
 std::string_view BlackOilFluidSystem<Scalar,IndexTraits>::
 phaseName(unsigned phaseIdx)
 {
@@ -318,7 +318,7 @@ phaseName(unsigned phaseIdx)
     }
 }
 
-template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
+template <class Scalar, class IndexTraits>
 unsigned BlackOilFluidSystem<Scalar,IndexTraits>::
 solventComponentIndex(unsigned phaseIdx)
 {
@@ -335,7 +335,7 @@ solventComponentIndex(unsigned phaseIdx)
     }
 }
 
-template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
+template <class Scalar, class IndexTraits>
 unsigned BlackOilFluidSystem<Scalar,IndexTraits>::
 soluteComponentIndex(unsigned phaseIdx)
 {
@@ -357,7 +357,7 @@ soluteComponentIndex(unsigned phaseIdx)
     }
 }
 
-template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
+template <class Scalar, class IndexTraits>
 std::string_view BlackOilFluidSystem<Scalar,IndexTraits>::
 componentName(unsigned compIdx)
 {
@@ -374,7 +374,7 @@ componentName(unsigned compIdx)
     }
 }
 
-template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
+template <class Scalar, class IndexTraits>
 short BlackOilFluidSystem<Scalar,IndexTraits>::
 activeToCanonicalPhaseIdx(unsigned activePhaseIdx)
 {
@@ -382,7 +382,7 @@ activeToCanonicalPhaseIdx(unsigned activePhaseIdx)
     return activeToCanonicalPhaseIdx_[activePhaseIdx];
 }
 
-template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
+template <class Scalar, class IndexTraits>
 short BlackOilFluidSystem<Scalar,IndexTraits>::
 canonicalToActivePhaseIdx(unsigned phaseIdx)
 {
@@ -391,8 +391,8 @@ canonicalToActivePhaseIdx(unsigned phaseIdx)
     return canonicalToActivePhaseIdx_[phaseIdx];
 }
 
-template <class Scalar, class IndexTraits, template <class...> class ContainerT, template<typename> class PtrType>
-void BlackOilFluidSystem<Scalar,IndexTraits, ContainerT, PtrType>::
+template <class Scalar, class IndexTraits>
+void BlackOilFluidSystem<Scalar,IndexTraits>::
 resizeArrays_(std::size_t numRegions)
 {
     molarMass_.resize(numRegions);

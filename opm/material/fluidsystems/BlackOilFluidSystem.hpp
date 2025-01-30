@@ -161,23 +161,22 @@ class BlackOilFluidSystemNonStatic;
  *
  * \tparam Scalar The type used for scalar floating point values
  */
-template <class Scalar, class IndexTraits_ = BlackOilDefaultIndexTraits, template<class...> class ContainerT = std::vector, template<typename> class PtrType = std::shared_ptr>
-class BlackOilFluidSystem : public BaseFluidSystem<Scalar, BlackOilFluidSystem<Scalar, IndexTraits_, ContainerT, PtrType> >
+template <class Scalar, class IndexTraits_ = BlackOilDefaultIndexTraits>
+class BlackOilFluidSystem : public BaseFluidSystem<Scalar, BlackOilFluidSystem<Scalar, IndexTraits_> >
 {
     using ThisType = BlackOilFluidSystem;
 
 public:
-    using NonStaticBlackOilFluidSystem = BlackOilFluidSystemNonStatic<Scalar, IndexTraits_>;
     using GasPvt = GasPvtMultiplexer<Scalar>;
     using OilPvt = OilPvtMultiplexer<Scalar>;
     using WaterPvt = WaterPvtMultiplexer<Scalar>;
     using IndexTraits = IndexTraits_;
 
 public:
-
-    static const NonStaticBlackOilFluidSystem& getNonStatic()
+    template <template<class...> class ContainerT = std::vector, template<typename> class PtrType = std::shared_ptr>
+    static const BlackOilFluidSystemNonStatic<Scalar, IndexTraits_, ContainerT, PtrType>& getNonStatic()
     {
-        return NonStaticBlackOilFluidSystem::getInstance();
+        return BlackOilFluidSystemNonStatic<Scalar, IndexTraits_, ContainerT, PtrType>::getInstance();
     }
 
     //! \copydoc BaseFluidSystem::ParameterCache
@@ -1778,64 +1777,87 @@ private:
 
 
 // Helper trait to check for the existence of member types Scalar and IndexTraits
-template<typename, typename = std::void_t<>>
-struct has_Scalar_and_IndexTraits : std::false_type {};
+// template<typename, typename = std::void_t<>>
+// struct has_Scalar_and_IndexTraits : std::false_type {};
 
-template<typename FluidSystem>
-struct has_Scalar_and_IndexTraits<
-    FluidSystem,
-    std::void_t<typename FluidSystem::Scalar, typename FluidSystem::IndexTraits>
-> : std::true_type {};
+// template<typename FluidSystem>
+// struct has_Scalar_and_IndexTraits<
+//     FluidSystem,
+//     std::void_t<typename FluidSystem::Scalar, typename FluidSystem::IndexTraits>
+// > : std::true_type {};
+
+class hasGetNonStatic {
+    template<class T>
+    static std::false_type test(decltype(&T::getNonStatic));
+    template<class>
+    static std::true_type test(...);
+
+public:
+    static constexpr bool value = std::is_same_v<decltype(test<BlackOilFluidSystem<float>> (0)), std::true_type>;
+};
 
 // Adjusted function
-template<class FluidSystem>
-constexpr bool is_a_blackoil_system() {
-    if constexpr (std::is_same_v<FluidSystem, void*>) {
-        return false;
-    } else if constexpr (std::is_same_v<FluidSystem, std::nullptr_t>) {
-        return false;
-    } else if constexpr (!std::is_class_v<FluidSystem>) {
-        return false;
-    } else if constexpr (!has_Scalar_and_IndexTraits<FluidSystem>::value) {
-        return false;
-    } else if constexpr (
-        // !std::is_class_v<typename FluidSystem::Scalar> ||
-        !std::is_class_v<typename FluidSystem::IndexTraits>
-    ) {
-        return false;
-    } else {
-        return \
-            std::is_same_v<BlackOilFluidSystem<typename FluidSystem::Scalar, typename FluidSystem::IndexTraits>, FluidSystem>
-            || std::is_same_v<const BlackOilFluidSystem<typename FluidSystem::Scalar, typename FluidSystem::IndexTraits>,FluidSystem>
-            || std::is_same_v<const BlackOilFluidSystem<typename FluidSystem::Scalar, typename FluidSystem::IndexTraits>&,FluidSystem>
-            || std::is_same_v<BlackOilFluidSystemNonStatic<typename FluidSystem::Scalar, typename FluidSystem::IndexTraits>, FluidSystem>
-            || std::is_same_v<const BlackOilFluidSystemNonStatic<typename FluidSystem::Scalar, typename FluidSystem::IndexTraits>,FluidSystem>
-            || std::is_same_v<const BlackOilFluidSystemNonStatic<typename FluidSystem::Scalar, typename FluidSystem::IndexTraits>&,FluidSystem>;
-    }
-}
+// template<class FluidSystem>
+// constexpr bool is_a_blackoil_system() {
+//     if constexpr (std::is_same_v<FluidSystem, void*>) {
+//         return false;
+//     } else if constexpr (std::is_same_v<FluidSystem, std::nullptr_t>) {
+//         return false;
+//     } else if constexpr (!std::is_class_v<FluidSystem>) {
+//         return false;
+//     } else if constexpr (!has_Scalar_and_IndexTraits<FluidSystem>::value) {
+//         return false;
+//     } else if constexpr (
+//         // !std::is_class_v<typename FluidSystem::Scalar> ||
+//         !std::is_class_v<typename FluidSystem::IndexTraits>
+//         || !std::is_class_v<typename FluidSystem::ContainerType>
+//         || !std::is_class_v<typename FluidSystem::PointerType>
+//     ) {
+//         return false;
+//     } else {
+//         using ScalarT = typename FluidSystem::Scalar;
+//         using IndexTraitsT = typename FluidSystem::IndexTraits;
+//         using ContainerT = typename FluidSystem::ContainerType;
+//         using PtrType = typename FluidSystem::PointerType;
+//         using BOFS = BlackOilFluidSystem<ScalarT, IndexTraitsT, typename FluidSystem::template ContainerType, typename FluidSystem::template PointerType>;
+//         using BOFS_NS = BlackOilFluidSystemNonStatic<ScalarT, IndexTraitsT, typename FluidSystem::template ContainerType, typename FluidSystem::template PointerType>; // non-static version
+//         return \
+//             std::is_same_v<BOFS, FluidSystem>
+//             || std::is_same_v<const BOFS,FluidSystem>
+//             || std::is_same_v<const BOFS&,FluidSystem>
+//             || std::is_same_v<BOFS_NS, FluidSystem>
+//             || std::is_same_v<const BOFS_NS,FluidSystem>
+//             || std::is_same_v<const BOFS_NS&,FluidSystem>;
+//     }
+// }
 
-template<class FluidSystem>
-constexpr bool is_a_dynamic_blackoil_system() {
-    if constexpr (std::is_same_v<FluidSystem, void*>) {
-        return false;
-    } else if constexpr (std::is_same_v<FluidSystem, std::nullptr_t>) {
-        return false;
-    } else if constexpr (!std::is_class_v<FluidSystem>) {
-        return false;
-    } else if constexpr (!has_Scalar_and_IndexTraits<FluidSystem>::value) {
-        return false;
-    } else if constexpr (
-        // !std::is_class_v<typename FluidSystem::Scalar> ||
-        !std::is_class_v<typename FluidSystem::IndexTraits>
-    ) {
-        return false;
-    } else {
-        return \
-            std::is_same_v<BlackOilFluidSystemNonStatic<typename FluidSystem::Scalar, typename FluidSystem::IndexTraits>, FluidSystem>
-            || std::is_same_v<const BlackOilFluidSystemNonStatic<typename FluidSystem::Scalar, typename FluidSystem::IndexTraits>,FluidSystem>
-            || std::is_same_v<const BlackOilFluidSystemNonStatic<typename FluidSystem::Scalar, typename FluidSystem::IndexTraits>&,FluidSystem>;
-    }
-}
+// template<class FluidSystem>
+// constexpr bool is_a_dynamic_blackoil_system() {
+//     if constexpr (std::is_same_v<FluidSystem, void*>) {
+//         return false;
+//     } else if constexpr (std::is_same_v<FluidSystem, std::nullptr_t>) {
+//         return false;
+//     } else if constexpr (!std::is_class_v<FluidSystem>) {
+//         return false;
+//     } else if constexpr (!has_Scalar_and_IndexTraits<FluidSystem>::value) {
+//         return false;
+//     } else if constexpr (
+//         // !std::is_class_v<typename FluidSystem::Scalar> ||
+//         !std::is_class_v<typename FluidSystem::IndexTraits>
+//     ) {
+//         return false;
+//     } else {
+//         using ScalarT = typename FluidSystem::Scalar;
+//         using IndexTraitsT = typename FluidSystem::IndexTraits;
+//         using ContainerT = typename FluidSystem::template ContainerType;
+//         using PtrType = typename FluidSystem::template PointerType;
+//         using BOFS_NS = BlackOilFluidSystemNonStatic<ScalarT, IndexTraitsT, ContainerT, PtrType>; // non-static version
+//         return \
+//             std::is_same_v<BOFS_NS, FluidSystem>
+//             || std::is_same_v<const BOFS_NS,FluidSystem>
+//             || std::is_same_v<const BOFS_NS&,FluidSystem>;
+//     }
+// }
 
 template <typename T> using BOFS = BlackOilFluidSystem<T, BlackOilDefaultIndexTraits>;
 
