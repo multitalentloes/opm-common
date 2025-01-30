@@ -1130,7 +1130,7 @@ public:
                     return gasPvt_->viscosity(regionIdx, T, p, Rv, Rvw);
                 }
             }
-            if (enableVaporizedWater()) {
+            if (enableVaporizedWater()) {GPUContainer
                 const auto& Rvw = BlackOilTwo::template getRvw_<ThisType, FluidState, LhsEval>(fluidState, regionIdx);
                 if (useSaturatedTables() && fluidState.saturation(waterPhaseIdx) > 0.0
                     && Rvw >= (1.0 - 1e-10)
@@ -1895,7 +1895,7 @@ make_view(const BlackOilFluidSystemNonStatic<Scalar, ContainerType>& oldFluidSys
     );
 }
 
-template <class Scalar, class OldContainerType, class NewContainerType>
+template <class Scalar, class OldContainerType, template <class...> class ContainerT, template<typename> class PtrType>
 BlackOilFluidSystemNonStatic<Scalar, NewContainerType>
 copy_to_gpu(const BlackOilFluidSystemNonStatic<Scalar, OldContainerType>& oldFluidSystem) {
     auto newGasPvt = ViewPointer(copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.gasPvt()));
