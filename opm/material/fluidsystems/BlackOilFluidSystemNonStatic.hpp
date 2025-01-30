@@ -1857,4 +1857,80 @@ using BOFSNS = BlackOilFluidSystemNonStatic<T, BlackOilDefaultIndexTraits>;
 
 } // namespace Opm
 
+namespace Opm::gpuistl {
+
+template <class ViewType, class Scalar, class ContainerType>
+BlackOilFluidSystemNonStatic<Scalar, ViewType>
+make_view(const BlackOilFluidSystemNonStatic<Scalar, ContainerType>& oldFluidSystem) {
+    auto newGasPvt = ViewPointer(make_view<ViewType>(oldFluidSystem.gasPvt()));
+    auto newOilPvt = ViewPointer(make_view<ViewType>(oldFluidSystem.oilPvt()));
+    auto newWaterPvt = ViewPointer(make_view<ViewType>(oldFluidSystem.waterPvt()));
+
+    auto newReferenceDensity = make_view<ViewType>(oldFluidSystem.referenceDensity());
+    auto newMolarMass = make_view<ViewType>(oldFluidSystem.molarMass());
+    auto newDiffusionCoefficients = make_view<ViewType>(oldFluidSystem.diffusionCoefficients());
+
+    return BlackOilFluidSystemNonStatic<Scalar, ViewType>(
+        oldFluidSystem.surfacePressure,
+        oldFluidSystem.surfaceTemperature,
+        oldFluidSystem.numActivePhases(),
+        oldFluidSystem.phaseIsActiveArray(),
+        oldFluidSystem.reservoirTemperature(),
+        newGasPvt,
+        newOilPvt,
+        newWaterPvt,
+        oldFluidSystem.enableDissolvedGas(),
+        oldFluidSystem.enableDissolvedGasInWater(),
+        oldFluidSystem.enableVaporizedOil(),
+        oldFluidSystem.enableVaporizedWater(),
+        oldFluidSystem.enableDiffusion(),
+        newReferenceDensity,
+        newMolarMass,
+        newDiffusionCoefficients,
+        oldFluidSystem.activeToCanonicalPhaseIdx(),
+        oldFluidSystem.canonicalToActivePhaseIdx(),
+        oldFluidSystem.isInitialized(),
+        oldFluidSystem.useSaturatedTables(),
+        oldFluidSystem.enthalpyEqualEnergy()
+    );
+}
+
+template <class Scalar, class OldContainerType, class NewContainerType>
+BlackOilFluidSystemNonStatic<Scalar, NewContainerType>
+copy_to_gpu(const BlackOilFluidSystemNonStatic<Scalar, OldContainerType>& oldFluidSystem) {
+    auto newGasPvt = ViewPointer(copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.gasPvt()));
+    auto newOilPvt = ViewPointer(copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.oilPvt()));
+    auto newWaterPvt = ViewPointer(copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.waterPvt()));
+
+    auto newReferenceDensity = copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.referenceDensity());
+    auto newMolarMass = copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.molarMass());
+    auto newDiffusionCoefficients = copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.diffusionCoefficients());
+
+    return BlackOilFluidSystemNonStatic<Scalar, NewContainerType>(
+        oldFluidSystem.surfacePressure,
+        oldFluidSystem.surfaceTemperature,
+        oldFluidSystem.numActivePhases(),
+        oldFluidSystem.phaseIsActiveArray(),
+        oldFluidSystem.reservoirTemperature(),
+        newGasPvt,
+        newOilPvt,
+        newWaterPvt,
+        oldFluidSystem.enableDissolvedGas(),
+        oldFluidSystem.enableDissolvedGasInWater(),
+        oldFluidSystem.enableVaporizedOil(),
+        oldFluidSystem.enableVaporizedWater(),
+        oldFluidSystem.enableDiffusion(),
+        newReferenceDensity,
+        newMolarMass,
+        newDiffusionCoefficients,
+        oldFluidSystem.activeToCanonicalPhaseIdx(),
+        oldFluidSystem.canonicalToActivePhaseIdx(),
+        oldFluidSystem.isInitialized(),
+        oldFluidSystem.useSaturatedTables(),
+        oldFluidSystem.enthalpyEqualEnergy()
+    );
+}
+
+} // namespace Opm::gpuistl
+
 #endif

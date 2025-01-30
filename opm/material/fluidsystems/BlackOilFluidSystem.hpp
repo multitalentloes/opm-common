@@ -1796,6 +1796,19 @@ public:
     static constexpr bool value = std::is_same_v<decltype(test<BlackOilFluidSystem<float>> (0)), std::true_type>;
 };
 
+template<class FluidSystem>
+constexpr bool can_call_getNonStatic() {
+    if constexpr (std::is_same_v<FluidSystem, void*>) {
+        return false;
+    } else if constexpr (std::is_same_v<FluidSystem, std::nullptr_t>) {
+        return false;
+    } else if constexpr (!std::is_class_v<FluidSystem>) {
+        return false;
+    } else {
+        return hasGetNonStatic::value;
+    }
+}
+
 // Adjusted function
 // template<class FluidSystem>
 // constexpr bool is_a_blackoil_system() {
@@ -1821,7 +1834,7 @@ public:
 //         using PtrType = typename FluidSystem::PointerType;
 //         using BOFS = BlackOilFluidSystem<ScalarT, IndexTraitsT, typename FluidSystem::template ContainerType, typename FluidSystem::template PointerType>;
 //         using BOFS_NS = BlackOilFluidSystemNonStatic<ScalarT, IndexTraitsT, typename FluidSystem::template ContainerType, typename FluidSystem::template PointerType>; // non-static version
-//         return \
+//         return
 //             std::is_same_v<BOFS, FluidSystem>
 //             || std::is_same_v<const BOFS,FluidSystem>
 //             || std::is_same_v<const BOFS&,FluidSystem>
@@ -1852,7 +1865,7 @@ public:
 //         using ContainerT = typename FluidSystem::template ContainerType;
 //         using PtrType = typename FluidSystem::template PointerType;
 //         using BOFS_NS = BlackOilFluidSystemNonStatic<ScalarT, IndexTraitsT, ContainerT, PtrType>; // non-static version
-//         return \
+//         return
 //             std::is_same_v<BOFS_NS, FluidSystem>
 //             || std::is_same_v<const BOFS_NS,FluidSystem>
 //             || std::is_same_v<const BOFS_NS&,FluidSystem>;
