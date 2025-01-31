@@ -59,9 +59,10 @@ class EzrokhiTable;
  * \brief This class represents the Pressure-Volume-Temperature relations of the liquid phase
  * for a CO2-Brine system
  */
-template <class Scalar, class Params = Opm::CO2Tables<double, std::vector<double>>, class ContainerT = std::vector<Scalar>>
+template <class Scalar, template <class...> class ContainerT = std::vector>
 class BrineCo2Pvt
 {
+    using Params = Opm::CO2Tables<double, ContainerT<double>>;
     static constexpr bool extrapolate = true;
     //typedef H2O<Scalar> H2O_IAPWS;
     //typedef Brine<Scalar, H2O_IAPWS> Brine_IAPWS;
@@ -82,16 +83,16 @@ public:
 
     BrineCo2Pvt() = default;
 
-    explicit BrineCo2Pvt(const ContainerT& salinity,
+    explicit BrineCo2Pvt(const ContainerT<Scalar>& salinity,
                          int activityModel = 3,
                          int thermalMixingModelSalt = 1,
                          int thermalMixingModelLiquid = 2,
                          Scalar T_ref = 288.71, //(273.15 + 15.56)
                          Scalar P_ref = 101325);
 
-    BrineCo2Pvt(const ContainerT& brineReferenceDensity,
-                const ContainerT& co2ReferenceDensity,
-                const ContainerT& salinity,
+    BrineCo2Pvt(const ContainerT<Scalar>& brineReferenceDensity,
+                const ContainerT<Scalar>& co2ReferenceDensity,
+                const ContainerT<Scalar>& salinity,
                 int activityModel,
                 Co2StoreConfig::SaltMixingType thermalMixingModelSalt,
                 Co2StoreConfig::LiquidMixingType thermalMixingModelLiquid,
@@ -437,13 +438,13 @@ public:
     OPM_HOST_DEVICE Scalar salinity(unsigned regionIdx) const
     { return salinity_[regionIdx]; }
 
-    OPM_HOST_DEVICE const ContainerT& getBrineReferenceDensity() const
+    OPM_HOST_DEVICE const ContainerT<Scalar>& getBrineReferenceDensity() const
     { return brineReferenceDensity_; }
 
-    OPM_HOST_DEVICE const ContainerT& getCo2ReferenceDensity() const
+    OPM_HOST_DEVICE const ContainerT<Scalar>& getCo2ReferenceDensity() const
     { return co2ReferenceDensity_; }
 
-    OPM_HOST_DEVICE const ContainerT& getSalinity() const
+    OPM_HOST_DEVICE const ContainerT<Scalar>& getSalinity() const
     { return salinity_; }
 
     OPM_HOST_DEVICE const Params& getParams() const
@@ -541,7 +542,7 @@ public:
 private:
     template <class LhsEval>
     OPM_HOST_DEVICE LhsEval ezrokhiExponent_(const LhsEval& temperature,
-                             const ContainerT& ezrokhiCoeff) const
+                             const ContainerT<Scalar>& ezrokhiCoeff) const
     {
         const LhsEval& tempC = temperature - 273.15;
         return ezrokhiCoeff[0] + tempC * (ezrokhiCoeff[1] + ezrokhiCoeff[2] * tempC);
@@ -775,12 +776,12 @@ private:
         return salinity(regionIdx);
     }
 
-    ContainerT brineReferenceDensity_{};
-    ContainerT co2ReferenceDensity_{};
-    ContainerT salinity_{};
-    ContainerT ezrokhiDenNaClCoeff_{};
-    ContainerT ezrokhiDenCo2Coeff_{};
-    ContainerT ezrokhiViscNaClCoeff_{};
+    ContainerT<Scalar> brineReferenceDensity_{};
+    ContainerT<Scalar> co2ReferenceDensity_{};
+    ContainerT<Scalar> salinity_{};
+    ContainerT<Scalar> ezrokhiDenNaClCoeff_{};
+    ContainerT<Scalar> ezrokhiDenCo2Coeff_{};
+    ContainerT<Scalar> ezrokhiViscNaClCoeff_{};
     bool enableEzrokhiDensity_ = false;
     bool enableEzrokhiViscosity_ = false;
     bool enableDissolution_ = true;
@@ -796,42 +797,42 @@ private:
 namespace Opm::gpuistl
 {
 
-    template<class Scalar, class Params, class GPUContainer>
-    BrineCo2Pvt<Scalar, Params, GPUContainer>
+    template<class Scalar, template<class...> class GPUContainer>
+    BrineCo2Pvt<Scalar, GPUContainer>
     copy_to_gpu(const BrineCo2Pvt<Scalar>& cpuBrineCo2)
     {
-        return BrineCo2Pvt<Scalar, Params, GPUContainer>(
+        return BrineCo2Pvt<Scalar, GPUContainer>(
             GPUContainer(cpuBrineCo2.getBrineReferenceDensity()),
             GPUContainer(cpuBrineCo2.getCo2ReferenceDensity()),
             GPUContainer(cpuBrineCo2.getSalinity()),
             cpuBrineCo2.getActivityModel(),
             cpuBrineCo2.getThermalMixingModelSalt(),
             cpuBrineCo2.getThermalMixingModelLiquid(),
-            copy_to_gpu<Scalar, std::vector<Scalar>, GPUContainer>(cpuBrineCo2.getParams())
+            copy_to_gpu<Scalar, std::vector<Scalar>, const GPUContainer<Scalar>>(cpuBrineCo2.getParams())
         );
     }
 
-    template <class ViewType, class OutputParams, class InputParams, class ContainerType, class Scalar>
-    BrineCo2Pvt<Scalar, OutputParams, ViewType>
-    make_view(const BrineCo2Pvt<Scalar, InputParams, ContainerType>& brineCo2Pvt)
+    template <template<class...> class ViewType, template<class...> class ContainerType, class Scalar>
+    BrineCo2Pvt<Scalar, ViewType>
+    make_view(const BrineCo2Pvt<Scalar, ContainerType>& brineCo2Pvt)
     {
-        using containedType = typename ContainerType::value_type;
-        using viewedTypeNoConst = typename std::remove_const_t<typename ViewType::value_type>;
+        using containedType = typename ContainerType<Scalar>::value_type;
+        using viewedTypeNoConst = typename std::remove_const_t<typename ViewType<Scalar>::value_type>;
 
         static_assert(std::is_same_v<containedType, viewedTypeNoConst>);
 
-        ViewType newBrineReferenceDensity = make_view<viewedTypeNoConst>(brineCo2Pvt.getBrineReferenceDensity());
-        ViewType newGasReferenceDensity = make_view<viewedTypeNoConst>(brineCo2Pvt.getCo2ReferenceDensity());
-        ViewType newSalinity = make_view<viewedTypeNoConst>(brineCo2Pvt.getSalinity());
+        ViewType<Scalar> newBrineReferenceDensity = make_view<viewedTypeNoConst>(brineCo2Pvt.getBrineReferenceDensity());
+        ViewType<Scalar> newGasReferenceDensity = make_view<viewedTypeNoConst>(brineCo2Pvt.getCo2ReferenceDensity());
+        ViewType<Scalar> newSalinity = make_view<viewedTypeNoConst>(brineCo2Pvt.getSalinity());
 
-        return BrineCo2Pvt<Scalar, OutputParams, ViewType>(
+        return BrineCo2Pvt<Scalar, ViewType>(
             newBrineReferenceDensity,
             newGasReferenceDensity,
             newSalinity,
             brineCo2Pvt.getActivityModel(),
             brineCo2Pvt.getThermalMixingModelSalt(),
             brineCo2Pvt.getThermalMixingModelLiquid(),
-            make_view<ViewType>(brineCo2Pvt.getParams())
+            make_view<ViewType<Scalar>>(brineCo2Pvt.getParams())
         );
     }
 }

@@ -32,9 +32,9 @@
 
 namespace Opm {
 
-template<class Scalar, class Params, class ContainerT>
-BrineCo2Pvt<Scalar, Params, ContainerT>::
-BrineCo2Pvt(const ContainerT& salinity,
+template<class Scalar, template<class...> class ContainerT>
+BrineCo2Pvt<Scalar, ContainerT>::
+BrineCo2Pvt(const ContainerT<Scalar>& salinity,
             int activityModel,
             int thermalMixingModelSalt,
             int thermalMixingModelLiquid,
@@ -60,8 +60,8 @@ BrineCo2Pvt(const ContainerT& salinity,
 }
 
 #if HAVE_ECL_INPUT
-template<class Scalar, class Params, class ContainerT>
-void BrineCo2Pvt<Scalar, Params, ContainerT>::
+template<class Scalar, template<class...> class ContainerT>
+void BrineCo2Pvt<Scalar, ContainerT>::
 initFromState(const EclipseState& eclState, const Schedule&)
 {
     bool co2sol = eclState.runspec().co2Sol();
@@ -150,8 +150,8 @@ initFromState(const EclipseState& eclState, const Schedule&)
 }
 #endif
 
-template<class Scalar, class Params, class ContainerT>
-void BrineCo2Pvt<Scalar, Params, ContainerT>::
+template<class Scalar, template<class...> class ContainerT>
+void BrineCo2Pvt<Scalar, ContainerT>::
 setNumRegions(std::size_t numRegions)
 {
     brineReferenceDensity_.resize(numRegions);
@@ -159,8 +159,8 @@ setNumRegions(std::size_t numRegions)
     salinity_.resize(numRegions);
 }
 
-template<class Scalar, class Params, class ContainerT>
-void BrineCo2Pvt<Scalar, Params, ContainerT>::
+template<class Scalar, template<class...> class ContainerT>
+void BrineCo2Pvt<Scalar, ContainerT>::
 setReferenceDensities(unsigned regionIdx,
                       Scalar rhoRefBrine,
                       Scalar rhoRefCO2,
@@ -170,8 +170,8 @@ setReferenceDensities(unsigned regionIdx,
     co2ReferenceDensity_[regionIdx] = rhoRefCO2;
 }
 
-template<class Scalar, class Params, class ContainerT>
-void BrineCo2Pvt<Scalar, Params, ContainerT>::
+template<class Scalar, template<class...> class ContainerT>
+void BrineCo2Pvt<Scalar, ContainerT>::
 setActivityModelSalt(int activityModel)
 {
     switch (activityModel) {
@@ -182,8 +182,8 @@ setActivityModelSalt(int activityModel)
     }
 }
 
-template<class Scalar, class Params, class ContainerT>
-void BrineCo2Pvt<Scalar, Params, ContainerT>::
+template<class Scalar, template<class...> class ContainerT>
+void BrineCo2Pvt<Scalar, ContainerT>::
 setThermalMixingModel(int thermalMixingModelSalt, int thermalMixingModelLiquid)
 {
     switch (thermalMixingModelSalt) {
@@ -200,8 +200,8 @@ setThermalMixingModel(int thermalMixingModelSalt, int thermalMixingModelLiquid)
     }
 }
 
-template<class Scalar, class Params, class ContainerT>
-void BrineCo2Pvt<Scalar, Params, ContainerT>::
+template<class Scalar, template<class...> class ContainerT>
+void BrineCo2Pvt<Scalar, ContainerT>::
 setEzrokhiDenCoeff(const std::vector<EzrokhiTable>& denaqa)
 {
     if (denaqa.empty())
@@ -216,8 +216,8 @@ setEzrokhiDenCoeff(const std::vector<EzrokhiTable>& denaqa)
                            static_cast<Scalar>(denaqa[0].getC2("CO2"))};
 }
 
-template<class Scalar, class Params, class ContainerT>
-void BrineCo2Pvt<Scalar, Params, ContainerT>::
+template<class Scalar, template<class...> class ContainerT>
+void BrineCo2Pvt<Scalar, ContainerT>::
 setEzrokhiViscCoeff(const std::vector<EzrokhiTable>& viscaqa)
 {
     if (viscaqa.empty())

@@ -55,13 +55,13 @@ class Co2StoreConfig;
  * \brief This class represents the Pressure-Volume-Temperature relations of the gas phase
  *        for CO2.
  */
-template <class Scalar, class ParamsT = Opm::CO2Tables<double, std::vector<double>>, class ContainerT = std::vector<Scalar>>
+template <class Scalar, template<class...> class ContainerT = std::vector>
 class Co2GasPvt
 {
-    using CO2 = ::Opm::CO2<Scalar, ParamsT>;
+    using CO2 = ::Opm::CO2<Scalar, Opm::CO2Tables<double, ContainerT<double>>>;
     using H2O = SimpleHuDuanH2O<Scalar>;
     using Brine = ::Opm::BrineDynamic<Scalar, H2O>;
-    using Params = ParamsT;
+    using Params = Opm::CO2Tables<double, ContainerT<double>>;
     static constexpr bool extrapolate = true;
 
 public:
@@ -70,16 +70,16 @@ public:
 
     Co2GasPvt() = default;
 
-    Co2GasPvt(const ContainerT& salinity,
+    Co2GasPvt(const ContainerT<Scalar>& salinity,
               int activityModel = 3,
               int thermalMixingModel = 1,
               Scalar T_ref = 288.71, //(273.15 + 15.56)
               Scalar P_ref = 101325);
 
     Co2GasPvt(const Params& params,
-              const ContainerT& brineReferenceDensity,
-              const ContainerT& gasReferenceDensity,
-              const ContainerT& salinity,
+              const ContainerT<Scalar>& brineReferenceDensity,
+              const ContainerT<Scalar>& gasReferenceDensity,
+              const ContainerT<Scalar>& salinity,
               bool enableEzrokhiDensity,
               bool enableVaporization,
               int activityModel,
@@ -325,13 +325,13 @@ public:
     void setEzrokhiDenCoeff(const std::vector<EzrokhiTable>& denaqa);
 
     // new get functions that will be needed to move a cpu based Co2GasPvt object to the GPU
-    OPM_HOST_DEVICE const ContainerT& getBrineReferenceDensity() const
+    OPM_HOST_DEVICE const ContainerT<Scalar>& getBrineReferenceDensity() const
     { return brineReferenceDensity_; }
 
-    OPM_HOST_DEVICE const ContainerT& getGasReferenceDensity() const
+    OPM_HOST_DEVICE const ContainerT<Scalar>& getGasReferenceDensity() const
     { return gasReferenceDensity_; }
 
-    OPM_HOST_DEVICE const ContainerT& getSalinity() const
+    OPM_HOST_DEVICE const ContainerT<Scalar>& getSalinity() const
     { return salinity_; }
 
     OPM_HOST_DEVICE bool getEnableEzrokhiDensity() const
@@ -352,7 +352,7 @@ public:
 private:
     template <class LhsEval>
     LhsEval ezrokhiExponent_(const LhsEval& temperature,
-                             const ContainerT& ezrokhiCoeff) const
+                             const ContainerT<Scalar>& ezrokhiCoeff) const
     {
         const LhsEval& tempC = temperature - 273.15;
         return ezrokhiCoeff[0] + tempC * (ezrokhiCoeff[1] + ezrokhiCoeff[2] * tempC);
@@ -435,10 +435,10 @@ private:
                                             const LhsEval& saltConcentration) const
     { return saltConcentration/H2O::liquidDensity(T, P, true); }
 
-    ContainerT brineReferenceDensity_{};
-    ContainerT gasReferenceDensity_{};
-    ContainerT salinity_{};
-    ContainerT ezrokhiDenNaClCoeff_{};
+    ContainerT<Scalar> brineReferenceDensity_{};
+    ContainerT<Scalar> gasReferenceDensity_{};
+    ContainerT<Scalar> salinity_{};
+    ContainerT<Scalar> ezrokhiDenNaClCoeff_{};
     bool enableEzrokhiDensity_ = false;
     bool enableVaporization_ = true;
     int activityModel_{};
@@ -449,36 +449,34 @@ private:
 } // namespace Opm
 
 namespace Opm::gpuistl{
-    template<class Scalar, class Params, class GPUContainer>
-    Co2GasPvt<Scalar, Params, GPUContainer>
+    template<class Scalar, template<class...> class GPUContainer>
+    Co2GasPvt<Scalar, GPUContainer>
     copy_to_gpu(const Co2GasPvt<Scalar>& cpuCo2)
     {
-        return Co2GasPvt<Scalar, Params, GPUContainer>(
-            copy_to_gpu<Scalar, std::vector<Scalar>, GPUContainer>(cpuCo2.getParams()),
-            GPUContainer(cpuCo2.getBrineReferenceDensity()),
-            GPUContainer(cpuCo2.getGasReferenceDensity()),
-            GPUContainer(cpuCo2.getSalinity()),
+        using GPUContainer_ = const GPUContainer<Scalar>;
+        return Co2GasPvt<Scalar, GPUContainer>(
+            copy_to_gpu<Scalar, std::vector<Scalar>, GPUContainer_>(cpuCo2.getParams()),
+            GPUContainer_(cpuCo2.getBrineReferenceDensity()),
+            GPUContainer_(cpuCo2.getGasReferenceDensity()),
+            GPUContainer_(cpuCo2.getSalinity()),
             cpuCo2.getEnableEzrokhiDensity(),
             cpuCo2.getEnableVaporization(),
             cpuCo2.getActivityModel(),
             cpuCo2.getGasType());
     }
 
-    template <class ViewType, class OutputParams, class InputParams, class ContainerType, class Scalar>
-    Co2GasPvt<Scalar, OutputParams, ViewType>
-    make_view(const Co2GasPvt<Scalar, InputParams, ContainerType>& co2GasPvt)
+    template <template<class...> class ViewType, template<class...> class ContainerType, class Scalar>
+    Co2GasPvt<Scalar, ViewType>
+    make_view(const Co2GasPvt<Scalar, ContainerType>& co2GasPvt)
     {
-        using containedType = typename ContainerType::value_type;
-        using viewedTypeNoConst = typename std::remove_const_t<typename ViewType::value_type>;
+        using ViewType_ = ViewType<const Scalar>;
 
-        static_assert(std::is_same_v<containedType, viewedTypeNoConst>);
+        ViewType_ newBrineReferenceDensity = make_view<Scalar>(co2GasPvt.getBrineReferenceDensity());
+        ViewType_ newGasReferenceDensity = make_view<Scalar>(co2GasPvt.getGasReferenceDensity());
+        ViewType_ newSalinity = make_view<Scalar>(co2GasPvt.getSalinity());
 
-        ViewType newBrineReferenceDensity = make_view<viewedTypeNoConst>(co2GasPvt.getBrineReferenceDensity());
-        ViewType newGasReferenceDensity = make_view<viewedTypeNoConst>(co2GasPvt.getGasReferenceDensity());
-        ViewType newSalinity = make_view<viewedTypeNoConst>(co2GasPvt.getSalinity());
-
-        return Co2GasPvt<Scalar, OutputParams, ViewType>(
-            make_view<ViewType>(co2GasPvt.getParams()),
+        return Co2GasPvt<Scalar, ViewType>(
+            make_view<ViewType_>(co2GasPvt.getParams()),
             newBrineReferenceDensity,
             newGasReferenceDensity,
             newSalinity,

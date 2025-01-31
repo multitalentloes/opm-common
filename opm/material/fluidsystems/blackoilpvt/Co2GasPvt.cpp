@@ -33,9 +33,9 @@
 
 namespace Opm {
 
-template<class Scalar, class Params, class ContainerT>
-Co2GasPvt<Scalar, Params, ContainerT>::
-Co2GasPvt(const ContainerT& salinity,
+template<class Scalar, template<class...> class ContainerT>
+Co2GasPvt<Scalar, ContainerT>::
+Co2GasPvt(const ContainerT<Scalar>& salinity,
           int activityModel,
           int thermalMixingModel,
           Scalar T_ref,
@@ -64,8 +64,8 @@ Co2GasPvt(const ContainerT& salinity,
 }
 
 #if HAVE_ECL_INPUT
-template<class Scalar, class Params, class ContainerT>
-void Co2GasPvt<Scalar, Params, ContainerT>::
+template<class Scalar, template<class...> class ContainerT>
+void Co2GasPvt<Scalar, ContainerT>::
 initFromState(const EclipseState& eclState, const Schedule&)
 {
     setEnableVaporizationWater(eclState.getSimulationConfig().hasVAPOIL() || eclState.getSimulationConfig().hasVAPWAT());
@@ -110,8 +110,8 @@ initFromState(const EclipseState& eclState, const Schedule&)
 }
 #endif
 
-template<class Scalar, class Params, class ContainerT>
-OPM_HOST_DEVICE void Co2GasPvt<Scalar, Params, ContainerT>::
+template<class Scalar, template<class...> class ContainerT>
+OPM_HOST_DEVICE void Co2GasPvt<Scalar, ContainerT>::
 setNumRegions(std::size_t numRegions)
 {
     gasReferenceDensity_.resize(numRegions);
@@ -119,8 +119,8 @@ setNumRegions(std::size_t numRegions)
     salinity_.resize(numRegions);
 }
 
-template<class Scalar, class Params, class ContainerT>
-OPM_HOST_DEVICE void Co2GasPvt<Scalar, Params, ContainerT>::
+template<class Scalar, template<class...> class ContainerT>
+OPM_HOST_DEVICE void Co2GasPvt<Scalar, ContainerT>::
 setReferenceDensities(unsigned regionIdx,
                       Scalar rhoRefBrine,
                       Scalar rhoRefGas,
@@ -130,8 +130,8 @@ setReferenceDensities(unsigned regionIdx,
     brineReferenceDensity_[regionIdx] = rhoRefBrine;;
 }
 
-template<class Scalar, class Params, class ContainerT>
-OPM_HOST_DEVICE void Co2GasPvt<Scalar, Params, ContainerT>::
+template<class Scalar, template<class...> class ContainerT>
+OPM_HOST_DEVICE void Co2GasPvt<Scalar, ContainerT>::
 setActivityModelSalt(int activityModel)
 {
     switch (activityModel) {
@@ -147,8 +147,8 @@ setActivityModelSalt(int activityModel)
     }
 }
 
-template<class Scalar, class Params, class ContainerT>
-OPM_HOST_DEVICE void Co2GasPvt<Scalar, Params, ContainerT>::
+template<class Scalar, template<class...> class ContainerT>
+OPM_HOST_DEVICE void Co2GasPvt<Scalar, ContainerT>::
 setThermalMixingModel(int thermalMixingModel)
 {
     switch (thermalMixingModel) {
@@ -165,8 +165,8 @@ setThermalMixingModel(int thermalMixingModel)
     }
 }
 
-template<class Scalar, class Params, class ContainerT>
-void Co2GasPvt<Scalar, Params, ContainerT>::
+template<class Scalar, template<class...> class ContainerT>
+void Co2GasPvt<Scalar, ContainerT>::
 setEzrokhiDenCoeff(const std::vector<EzrokhiTable>& denaqa)
 {
     if (denaqa.empty()) {
