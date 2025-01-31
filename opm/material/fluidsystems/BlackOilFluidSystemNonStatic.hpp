@@ -1130,7 +1130,7 @@ public:
                     return gasPvt_->viscosity(regionIdx, T, p, Rv, Rvw);
                 }
             }
-            if (enableVaporizedWater()) {GPUContainer
+            if (enableVaporizedWater()) {
                 const auto& Rvw = BlackOilTwo::template getRvw_<ThisType, FluidState, LhsEval>(fluidState, regionIdx);
                 if (useSaturatedTables() && fluidState.saturation(waterPhaseIdx) > 0.0
                     && Rvw >= (1.0 - 1e-10)
@@ -1859,18 +1859,18 @@ using BOFSNS = BlackOilFluidSystemNonStatic<T, BlackOilDefaultIndexTraits>;
 
 namespace Opm::gpuistl {
 
-template <class ViewType, class Scalar, class ContainerType>
-BlackOilFluidSystemNonStatic<Scalar, ViewType>
-make_view(const BlackOilFluidSystemNonStatic<Scalar, ContainerType>& oldFluidSystem) {
-    auto newGasPvt = ViewPointer(make_view<ViewType>(oldFluidSystem.gasPvt()));
-    auto newOilPvt = ViewPointer(make_view<ViewType>(oldFluidSystem.oilPvt()));
-    auto newWaterPvt = ViewPointer(make_view<ViewType>(oldFluidSystem.waterPvt()));
+template <class Scalar, class IndexTraits, template <class...> class OldContainerType, template <class...> class NewContainerType, template<typename> class PtrType>
+BlackOilFluidSystemNonStatic<Scalar, IndexTraits, NewContainerType>
+copy_to_gpu(const BlackOilFluidSystemNonStatic<Scalar, IndexTraits, OldContainerType>& oldFluidSystem) {
+    auto newGasPvt = ViewPointer(copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.gasPvt()));
+    auto newOilPvt = ViewPointer(copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.oilPvt()));
+    auto newWaterPvt = ViewPointer(copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.waterPvt()));
 
-    auto newReferenceDensity = make_view<ViewType>(oldFluidSystem.referenceDensity());
-    auto newMolarMass = make_view<ViewType>(oldFluidSystem.molarMass());
-    auto newDiffusionCoefficients = make_view<ViewType>(oldFluidSystem.diffusionCoefficients());
+    auto newReferenceDensity = copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.referenceDensity());
+    auto newMolarMass = copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.molarMass());
+    auto newDiffusionCoefficients = copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.diffusionCoefficients());
 
-    return BlackOilFluidSystemNonStatic<Scalar, ViewType>(
+    return BlackOilFluidSystemNonStatic<Scalar, IndexTraits, NewContainerType>(
         oldFluidSystem.surfacePressure,
         oldFluidSystem.surfaceTemperature,
         oldFluidSystem.numActivePhases(),
@@ -1895,18 +1895,18 @@ make_view(const BlackOilFluidSystemNonStatic<Scalar, ContainerType>& oldFluidSys
     );
 }
 
-template <class Scalar, class OldContainerType, template <class...> class ContainerT, template<typename> class PtrType>
-BlackOilFluidSystemNonStatic<Scalar, NewContainerType>
-copy_to_gpu(const BlackOilFluidSystemNonStatic<Scalar, OldContainerType>& oldFluidSystem) {
-    auto newGasPvt = ViewPointer(copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.gasPvt()));
-    auto newOilPvt = ViewPointer(copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.oilPvt()));
-    auto newWaterPvt = ViewPointer(copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.waterPvt()));
+template <class ViewType, class Scalar, class ContainerType>
+BlackOilFluidSystemNonStatic<Scalar, ViewType>
+make_view(const BlackOilFluidSystemNonStatic<Scalar, ContainerType>& oldFluidSystem) {
+    auto newGasPvt = ViewPointer(make_view<ViewType>(oldFluidSystem.gasPvt()));
+    auto newOilPvt = ViewPointer(make_view<ViewType>(oldFluidSystem.oilPvt()));
+    auto newWaterPvt = ViewPointer(make_view<ViewType>(oldFluidSystem.waterPvt()));
 
-    auto newReferenceDensity = copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.referenceDensity());
-    auto newMolarMass = copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.molarMass());
-    auto newDiffusionCoefficients = copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.diffusionCoefficients());
+    auto newReferenceDensity = make_view<ViewType>(oldFluidSystem.referenceDensity());
+    auto newMolarMass = make_view<ViewType>(oldFluidSystem.molarMass());
+    auto newDiffusionCoefficients = make_view<ViewType>(oldFluidSystem.diffusionCoefficients());
 
-    return BlackOilFluidSystemNonStatic<Scalar, NewContainerType>(
+    return BlackOilFluidSystemNonStatic<Scalar, ViewType>(
         oldFluidSystem.surfacePressure,
         oldFluidSystem.surfaceTemperature,
         oldFluidSystem.numActivePhases(),
