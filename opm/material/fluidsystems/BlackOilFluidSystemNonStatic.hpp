@@ -1860,7 +1860,7 @@ using BOFSNS = BlackOilFluidSystemNonStatic<T, BlackOilDefaultIndexTraits>;
 namespace Opm::gpuistl {
 
 template <class Scalar, class IndexTraits, template <class...> class OldContainerType, template <class...> class NewContainerType, template<typename> class PtrType>
-BlackOilFluidSystemNonStatic<Scalar, IndexTraits, NewContainerType>
+BlackOilFluidSystemNonStatic<Scalar, IndexTraits, NewContainerType, PtrType>
 copy_to_gpu(const BlackOilFluidSystemNonStatic<Scalar, IndexTraits, OldContainerType>& oldFluidSystem) {
     auto newGasPvt = ViewPointer(copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.gasPvt()));
     auto newOilPvt = ViewPointer(copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.oilPvt()));
@@ -1870,7 +1870,7 @@ copy_to_gpu(const BlackOilFluidSystemNonStatic<Scalar, IndexTraits, OldContainer
     auto newMolarMass = copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.molarMass());
     auto newDiffusionCoefficients = copy_to_gpu<Scalar, NewContainerType>(oldFluidSystem.diffusionCoefficients());
 
-    return BlackOilFluidSystemNonStatic<Scalar, IndexTraits, NewContainerType>(
+    return BlackOilFluidSystemNonStatic<Scalar, IndexTraits, NewContainerType, PtrType>(
         oldFluidSystem.surfacePressure,
         oldFluidSystem.surfaceTemperature,
         oldFluidSystem.numActivePhases(),
@@ -1895,18 +1895,20 @@ copy_to_gpu(const BlackOilFluidSystemNonStatic<Scalar, IndexTraits, OldContainer
     );
 }
 
-template <class ViewType, class Scalar, class ContainerType>
-BlackOilFluidSystemNonStatic<Scalar, ViewType>
-make_view(const BlackOilFluidSystemNonStatic<Scalar, ContainerType>& oldFluidSystem) {
-    auto newGasPvt = ViewPointer(make_view<ViewType>(oldFluidSystem.gasPvt()));
-    auto newOilPvt = ViewPointer(make_view<ViewType>(oldFluidSystem.oilPvt()));
-    auto newWaterPvt = ViewPointer(make_view<ViewType>(oldFluidSystem.waterPvt()));
+// TODO: do I have to provide the old PtrType as well to extract the data properly?
+// template <class ViewType, class Scalar, class ContainerType>
+template <class Scalar, class IndexTraits, template <class...> class ViewType, template <class...> class ContainerType, template<typename> class PtrType>
+BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ViewType, PtrType>
+make_view(const BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerType>& oldFluidSystem) {
+    auto newGasPvt = ViewPointer(make_view<ViewType>(*oldFluidSystem.gasPvt()));
+    auto newOilPvt = ViewPointer(make_view<ViewType>(*oldFluidSystem.oilPvt()));
+    auto newWaterPvt = ViewPointer(make_view<ViewType>(*oldFluidSystem.waterPvt()));
 
     auto newReferenceDensity = make_view<ViewType>(oldFluidSystem.referenceDensity());
     auto newMolarMass = make_view<ViewType>(oldFluidSystem.molarMass());
     auto newDiffusionCoefficients = make_view<ViewType>(oldFluidSystem.diffusionCoefficients());
 
-    return BlackOilFluidSystemNonStatic<Scalar, ViewType>(
+    return BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ViewType, PtrType>(
         oldFluidSystem.surfacePressure,
         oldFluidSystem.surfaceTemperature,
         oldFluidSystem.numActivePhases(),
