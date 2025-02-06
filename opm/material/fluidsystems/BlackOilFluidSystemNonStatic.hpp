@@ -189,8 +189,6 @@ public:
     using GasPvt = GasPvtMultiplexer<Scalar>;
     using OilPvt = OilPvtMultiplexer<Scalar>;
     using WaterPvt = WaterPvtMultiplexer<Scalar>;
-
-private:
     BlackOilFluidSystemNonStatic(Scalar _surfacePressure_,
                                  Scalar _surfaceTemperature_,
                                  unsigned _numActivePhases_,
@@ -236,7 +234,6 @@ private:
     {
     }
 
-public:
     static const ThisType& getInstance()
     {
         static ThisType instance(StaticType::surfacePressure,
@@ -400,7 +397,7 @@ public:
      */
     OPM_HOST_DEVICE void initEnd();
 
-    OPM_HOST_DEVICE bool isInitialized()
+    OPM_HOST_DEVICE bool isInitialized() const
     {
         return isInitialized_;
     }
@@ -467,6 +464,9 @@ public:
         return phaseIsActive_[phaseIdx];
     }
 
+    OPM_HOST_DEVICE std::array<bool,numPhases> phaseIsActiveArray() const
+    { return phaseIsActive_; }
+
     //! \brief returns the index of "primary" component of a phase (solvent)
     OPM_HOST_DEVICE unsigned solventComponentIndex(unsigned phaseIdx);
 
@@ -480,6 +480,11 @@ public:
     OPM_HOST_DEVICE Scalar molarMass(unsigned compIdx, unsigned regionIdx = 0) const
     {
         return molarMass_[regionIdx][compIdx];
+    }
+
+    OPM_HOST_DEVICE const auto& getMolarMasses() const
+    {
+        return molarMass_;
     }
 
     //! \copydoc BaseFluidSystem::isIdealMixture
@@ -589,6 +594,11 @@ public:
     OPM_HOST_DEVICE Scalar referenceDensity(unsigned phaseIdx, unsigned regionIdx) const
     {
         return referenceDensity_[regionIdx][phaseIdx];
+    }
+
+    OPM_HOST_DEVICE const auto& getReferenceDensities() const
+    {
+        return referenceDensity_;
     }
 
     /****************************************
@@ -1764,14 +1774,29 @@ public:
         reservoirTemperature_ = value;
     }
 
-    short activeToCanonicalPhaseIdx(unsigned activePhaseIdx);
+    OPM_HOST_DEVICE short activeToCanonicalPhaseIdx(unsigned activePhaseIdx);
 
-    short canonicalToActivePhaseIdx(unsigned phaseIdx);
+    OPM_HOST_DEVICE const auto& getActiveToCanonicalPhaseIdx() const
+    {
+        return activeToCanonicalPhaseIdx_;
+    }
+
+    OPM_HOST_DEVICE short canonicalToActivePhaseIdx(unsigned phaseIdx);
+
+    OPM_HOST_DEVICE const auto& getCanonicalToActivePhaseIdx() const
+    {
+        return canonicalToActivePhaseIdx_;
+    }
 
     //! \copydoc BaseFluidSystem::diffusionCoefficient
     OPM_HOST_DEVICE Scalar diffusionCoefficient(unsigned compIdx, unsigned phaseIdx, unsigned regionIdx = 0) const
     {
         return diffusionCoefficients_[regionIdx][numPhases * compIdx + phaseIdx];
+    }
+
+    OPM_HOST_DEVICE const auto& getDiffusionCoefficients() const
+    {
+        return diffusionCoefficients_;
     }
 
     //! \copydoc BaseFluidSystem::setDiffusionCoefficient
@@ -1866,14 +1891,22 @@ BlackOilFluidSystemNonStatic<Scalar, IndexTraits, NewContainerType, NewPtrType>
 copy_to_gpu(const BlackOilFluidSystemNonStatic<Scalar, IndexTraits, OldContainerType, OldPtrType>& oldFluidSystem) {
 
     using GpuCo2Tables = Opm::CO2Tables<double, const NewContainerType<double>>;
+    using GpuBuffer3Array = NewContainerType<std::array<Scalar, 3>>;
+    using GpuBuffer9Array = NewContainerType<std::array<Scalar, 9>>;
+
     auto tmpCo2GasPvt = copy_to_gpu<Scalar, GpuCo2Tables, const NewContainerType<Scalar>>(oldFluidSystem.gasPvt());
     auto newGasPvt = NewPtrType<decltype(tmpCo2GasPvt)>(tmpCo2GasPvt);
-    auto newOilPvt = ViewPointer(copy_to_gpu<Scalar, NewContainerType<Scalar>>(oldFluidSystem.oilPvt()));
-    auto newWaterPvt = ViewPointer(copy_to_gpu<Scalar, NewContainerType<Scalar>>(oldFluidSystem.waterPvt()));
 
-    auto newReferenceDensity = copy_to_gpu<Scalar, NewContainerType<Scalar>>(oldFluidSystem.referenceDensity());
-    auto newMolarMass = copy_to_gpu<Scalar, NewContainerType<Scalar>>(oldFluidSystem.molarMass());
-    auto newDiffusionCoefficients = copy_to_gpu<Scalar, NewContainerType<Scalar>>(oldFluidSystem.diffusionCoefficients());
+    auto tmpOilPvt = OilPvtMultiplexer<Scalar>(oldFluidSystem.oilPvt()); // should be NULL
+    auto newOilPvt = NewPtrType<decltype(tmpOilPvt)>(tmpOilPvt);
+
+    auto tmpCo2BrinePvt = copy_to_gpu<Scalar, GpuCo2Tables, const NewContainerType<Scalar>>(oldFluidSystem.waterPvt());
+    auto newWaterPvt = NewPtrType<decltype(tmpCo2BrinePvt)>(tmpCo2BrinePvt);
+    // auto newWaterPvt = NewPtrType(copy_to_gpu<Scalar, NewContainerType<Scalar>>(oldFluidSystem.waterPvt()));
+
+    auto newReferenceDensity = GpuBuffer3Array(oldFluidSystem.getReferenceDensities());
+    auto newMolarMass = GpuBuffer3Array(oldFluidSystem.getMolarMasses());
+    auto newDiffusionCoefficients = GpuBuffer9Array(oldFluidSystem.getDiffusionCoefficients());
 
     return BlackOilFluidSystemNonStatic<Scalar, IndexTraits, NewContainerType, NewPtrType>(
         oldFluidSystem.surfacePressure,
@@ -1892,8 +1925,8 @@ copy_to_gpu(const BlackOilFluidSystemNonStatic<Scalar, IndexTraits, OldContainer
         newReferenceDensity,
         newMolarMass,
         newDiffusionCoefficients,
-        oldFluidSystem.activeToCanonicalPhaseIdx(),
-        oldFluidSystem.canonicalToActivePhaseIdx(),
+        oldFluidSystem.getActiveToCanonicalPhaseIdx(),
+        oldFluidSystem.getCanonicalToActivePhaseIdx(),
         oldFluidSystem.isInitialized(),
         oldFluidSystem.useSaturatedTables(),
         oldFluidSystem.enthalpyEqualEnergy()
@@ -1930,8 +1963,8 @@ make_view(const BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerType>
         newReferenceDensity,
         newMolarMass,
         newDiffusionCoefficients,
-        oldFluidSystem.activeToCanonicalPhaseIdx(),
-        oldFluidSystem.canonicalToActivePhaseIdx(),
+        oldFluidSystem.getActiveToCanonicalPhaseIdx(),
+        oldFluidSystem.getCanonicalToActivePhaseIdx(),
         oldFluidSystem.isInitialized(),
         oldFluidSystem.useSaturatedTables(),
         oldFluidSystem.enthalpyEqualEnergy()

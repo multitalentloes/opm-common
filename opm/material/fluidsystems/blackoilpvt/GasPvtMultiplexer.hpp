@@ -412,7 +412,7 @@ namespace gpuistl{
 
         auto& realPvt = cpuGasPvt.template getRealPvt<GasPvtApproach::Co2Gas>();
         auto gpuRealPvt = copy_to_gpu<Scalar, Params, GPUContainer>(realPvt);
-        return GasPvtMultiplexer<Scalar>(GasPvtApproach::Co2Gas, gpuRealPvt);
+        return GasPvtMultiplexer<Scalar>(GasPvtApproach::Co2Gas, &gpuRealPvt);
     }
 }
 
