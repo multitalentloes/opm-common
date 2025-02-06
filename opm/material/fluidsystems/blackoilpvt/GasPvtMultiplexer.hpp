@@ -46,7 +46,7 @@ class Schedule;
 
 #if OPM_IS_COMPILING_WITH_GPU_COMPILER
 // Testing whether hardcoding the PvtType supported on GPU helps
-#define OPM_GAS_PVT_MULTIPLEXER_CALL(codeToCall, ...)
+#define OPM_GAS_PVT_MULTIPLEXER_CALL(codeToCall, ...)                     \
     auto& pvtImpl = getRealPvt<GasPvtApproach::Co2Gas>();                 \
     codeToCall;                                                           \
     __VA_ARGS__;
@@ -401,6 +401,20 @@ private:
     GasPvtApproach gasPvtApproach_{GasPvtApproach::NoGas};
     void* realGasPvt_{nullptr};
 };
+
+namespace gpuistl{
+    template<class Scalar, class Params, class GPUContainer>
+    GasPvtMultiplexer<Scalar>
+    copy_to_gpu(const GasPvtMultiplexer<Scalar>& cpuGasPvt)
+    {
+
+        assert(GasPvtApproach::Co2Gas == cpuGasPvt.gasPvtApproach);
+
+        auto& realPvt = cpuGasPvt.template getRealPvt<GasPvtApproach::Co2Gas>();
+        auto gpuRealPvt = copy_to_gpu<Scalar, Params, GPUContainer>(realPvt);
+        return GasPvtMultiplexer<Scalar>(GasPvtApproach::Co2Gas, gpuRealPvt);
+    }
+}
 
 } // namespace Opm
 

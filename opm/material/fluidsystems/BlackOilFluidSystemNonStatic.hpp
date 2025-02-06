@@ -1866,8 +1866,8 @@ BlackOilFluidSystemNonStatic<Scalar, IndexTraits, NewContainerType, NewPtrType>
 copy_to_gpu(const BlackOilFluidSystemNonStatic<Scalar, IndexTraits, OldContainerType, OldPtrType>& oldFluidSystem) {
 
     using GpuCo2Tables = Opm::CO2Tables<double, const NewContainerType<double>>;
-    Co2GasPvt<Scalar, GpuCo2Tables, const NewContainerType<Scalar>> tmpCo2GasPvt = copy_to_gpu<Scalar, GpuCo2Tables, const NewContainerType<Scalar>>(oldFluidSystem.gasPvt());
-    auto newGasPvt = ViewPointer(copy_to_gpu<Scalar, GpuCo2Tables, NewContainerType<Scalar>>(oldFluidSystem.gasPvt()));
+    auto tmpCo2GasPvt = copy_to_gpu<Scalar, GpuCo2Tables, const NewContainerType<Scalar>>(oldFluidSystem.gasPvt());
+    auto newGasPvt = NewPtrType<decltype(tmpCo2GasPvt)>(tmpCo2GasPvt);
     auto newOilPvt = ViewPointer(copy_to_gpu<Scalar, NewContainerType<Scalar>>(oldFluidSystem.oilPvt()));
     auto newWaterPvt = ViewPointer(copy_to_gpu<Scalar, NewContainerType<Scalar>>(oldFluidSystem.waterPvt()));
 
