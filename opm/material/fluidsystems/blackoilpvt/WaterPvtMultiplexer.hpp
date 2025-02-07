@@ -346,6 +346,17 @@ namespace gpuistl{
         auto gpuRealPvt = copy_to_gpu<Scalar, Params, GPUContainer>(realPvt);
         return WaterPvtMultiplexer<Scalar>(WaterPvtApproach::BrineCo2, &gpuRealPvt);
     }
+
+    template <class Scalar, class Params, class ViewType>
+    WaterPvtMultiplexer<Scalar>
+    make_view(const WaterPvtMultiplexer<Scalar>& cpuWaterPvt){
+
+        assert(WaterPvtApproach::BrineCo2 == cpuWaterPvt.approach());
+
+        auto& realPvt = cpuWaterPvt.template getRealPvt<WaterPvtApproach::BrineCo2>();
+        auto gpuRealPvt = make_view<Scalar, Params, ViewType>(realPvt);
+        return WaterPvtMultiplexer<Scalar>(WaterPvtApproach::BrineCo2, &gpuRealPvt);
+    }
 }
 
 } // namespace Opm

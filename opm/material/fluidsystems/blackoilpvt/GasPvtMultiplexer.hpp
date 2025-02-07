@@ -414,6 +414,17 @@ namespace gpuistl{
         auto gpuRealPvt = copy_to_gpu<Scalar, Params, GPUContainer>(realPvt);
         return GasPvtMultiplexer<Scalar>(GasPvtApproach::Co2Gas, &gpuRealPvt);
     }
+
+    template <class Scalar, class Params, class ViewType>
+    GasPvtMultiplexer<Scalar>
+    make_view(const GasPvtMultiplexer<Scalar>& cpuGasPvt){
+
+        assert(GasPvtApproach::Co2Gas == cpuGasPvt.gasPvtApproach);
+
+        auto& realPvt = cpuGasPvt.template getRealPvt<GasPvtApproach::Co2Gas>();
+        auto gpuRealPvt = make_view<Scalar, Params, ViewType>(realPvt);
+        return GasPvtMultiplexer<Scalar>(GasPvtApproach::Co2Gas, &gpuRealPvt);
+    }
 }
 
 } // namespace Opm

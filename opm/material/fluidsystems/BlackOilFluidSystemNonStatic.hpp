@@ -487,6 +487,11 @@ public:
         return molarMass_;
     }
 
+    OPM_HOST_DEVICE auto& getMolarMasses()
+    {
+        return molarMass_;
+    }
+
     //! \copydoc BaseFluidSystem::isIdealMixture
     OPM_HOST_DEVICE bool isIdealMixture(unsigned /*phaseIdx*/) const
     {
@@ -597,6 +602,11 @@ public:
     }
 
     OPM_HOST_DEVICE const auto& getReferenceDensities() const
+    {
+        return referenceDensity_;
+    }
+
+    OPM_HOST_DEVICE auto& getReferenceDensities()
     {
         return referenceDensity_;
     }
@@ -1799,6 +1809,11 @@ public:
         return diffusionCoefficients_;
     }
 
+    OPM_HOST_DEVICE auto& getDiffusionCoefficients()
+    {
+        return diffusionCoefficients_;
+    }
+
     //! \copydoc BaseFluidSystem::setDiffusionCoefficient
     OPM_HOST_DEVICE void setDiffusionCoefficient(Scalar coefficient, unsigned compIdx, unsigned phaseIdx, unsigned regionIdx = 0)
     {
@@ -1933,18 +1948,35 @@ copy_to_gpu(const BlackOilFluidSystemNonStatic<Scalar, IndexTraits, OldContainer
     );
 }
 
-// TODO: do I have to provide the old PtrType as well to extract the data properly?
-// template <class ViewType, class Scalar, class ContainerType>
-template <class Scalar, class IndexTraits, template <class...> class ViewType, template <class...> class ContainerType, template<typename> class PtrType>
-BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ViewType, PtrType>
-make_view(const BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ContainerType>& oldFluidSystem) {
-    auto newGasPvt = ViewPointer(make_view<ViewType>(*oldFluidSystem.gasPvt()));
-    auto newOilPvt = ViewPointer(make_view<ViewType>(*oldFluidSystem.oilPvt()));
-    auto newWaterPvt = ViewPointer(make_view<ViewType>(*oldFluidSystem.waterPvt()));
 
-    auto newReferenceDensity = make_view<ViewType>(oldFluidSystem.referenceDensity());
-    auto newMolarMass = make_view<ViewType>(oldFluidSystem.molarMass());
-    auto newDiffusionCoefficients = make_view<ViewType>(oldFluidSystem.diffusionCoefficients());
+
+template <template <class...> class ViewType, template<typename> class PtrType, class Scalar, class IndexTraits, template <class...> class OldContainerType>
+BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ViewType, PtrType>
+make_view(BlackOilFluidSystemNonStatic<Scalar, IndexTraits, OldContainerType, PtrType>& oldFluidSystem) {
+
+    using GpuCo2TablesView = Opm::CO2Tables<double, ViewType<const double>>;
+    using Array3 = std::array<Scalar, 3>;
+    using Array9 = std::array<Scalar, 9>;
+
+    auto tmpGasPvt = make_view<Scalar, GpuCo2TablesView, ViewType<const Scalar>>(oldFluidSystem.gasPvt());
+    auto newGasPvt = PtrType<decltype(tmpGasPvt)>(tmpGasPvt);
+
+    auto tmpOilPvt = OilPvtMultiplexer<Scalar>(oldFluidSystem.oilPvt()); // should be NULL
+    auto newOilPvt = PtrType<decltype(tmpOilPvt)>(tmpOilPvt);
+    // auto newOilPvt = ViewPointer(make_view<ViewType<Scalar, GpuCo2TablesView>>(oldFluidSystem.oilPvt()));
+
+    auto tmpWaterPvt = make_view<Scalar, GpuCo2TablesView, ViewType<const Scalar>>(oldFluidSystem.waterPvt());
+    auto newWaterPvt = PtrType<decltype(tmpWaterPvt)>(tmpWaterPvt);
+
+    // auto newReferenceDensity = make_mutable_view<Array3>(oldFluidSystem.getReferenceDensities());
+    // auto newMolarMass = make_mutable_view<Array3>(oldFluidSystem.getMolarMasses());
+    // auto newDiffusionCoefficients = make_mutable_view<Array9>(oldFluidSystem.getDiffusionCoefficients());
+    auto& referenceDensity = const_cast<decltype(oldFluidSystem.getReferenceDensities())&>(oldFluidSystem.getReferenceDensities());
+    auto newReferenceDensity = make_view<Array3>(referenceDensity);
+    auto& molarMass = const_cast<decltype(oldFluidSystem.getMolarMasses())&>(oldFluidSystem.getMolarMasses());
+    auto newMolarMass = make_view<Array3>(molarMass);
+    auto& diffusionCoefficients = const_cast<decltype(oldFluidSystem.getDiffusionCoefficients())&>(oldFluidSystem.getDiffusionCoefficients());
+    auto newDiffusionCoefficients = make_view<Array9>(diffusionCoefficients);
 
     return BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ViewType, PtrType>(
         oldFluidSystem.surfacePressure,
