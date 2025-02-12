@@ -354,7 +354,7 @@ namespace gpuistl{
         assert(WaterPvtApproach::BrineCo2 == cpuWaterPvt.approach());
 
         auto& realPvt = cpuWaterPvt.template getRealPvt<WaterPvtApproach::BrineCo2>();
-        auto gpuRealPvt = make_view<Scalar, Params, ViewType>(realPvt);
+        auto gpuRealPvt = make_view<ViewType, Params>(realPvt);
         return WaterPvtMultiplexer<Scalar>(WaterPvtApproach::BrineCo2, &gpuRealPvt);
     }
 }

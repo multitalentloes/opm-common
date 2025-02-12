@@ -186,7 +186,13 @@ public:
     template <class T>
     using PointerType = PtrType<T>;
     using IndexTraits = IndexTraits_;
-    using GasPvt = GasPvtMultiplexer<Scalar>;
+
+    // If extra template parameters are available, pass them on to the multiplexer classes
+    using GasPvt = std::conditional_t<
+        std::is_same_v<ContainerT<double>, std::vector<double>>,
+        GasPvtMultiplexer<Scalar, true>,
+        GasPvtMultiplexer<Scalar, true, ContainerT<double>, const ContainerT<Scalar>>
+    >;
     using OilPvt = OilPvtMultiplexer<Scalar>;
     using WaterPvt = WaterPvtMultiplexer<Scalar>;
     BlackOilFluidSystemNonStatic(Scalar _surfacePressure_,
@@ -1905,12 +1911,17 @@ template <template <class...> class NewContainerType, template<typename> class N
 BlackOilFluidSystemNonStatic<Scalar, IndexTraits, NewContainerType, NewPtrType>
 copy_to_gpu(const BlackOilFluidSystemNonStatic<Scalar, IndexTraits, OldContainerType, OldPtrType>& oldFluidSystem) {
 
-    using GpuCo2Tables = Opm::CO2Tables<double, const NewContainerType<double>>;
+    using GpuCo2Tables = CO2Tables<double, const NewContainerType<double>>;
     using GpuBuffer3Array = NewContainerType<std::array<Scalar, 3>>;
     using GpuBuffer9Array = NewContainerType<std::array<Scalar, 9>>;
 
-    auto tmpCo2GasPvt = copy_to_gpu<Scalar, GpuCo2Tables, const NewContainerType<Scalar>>(oldFluidSystem.gasPvt());
+    auto tmpCo2GasPvt = copy_to_gpu<Scalar, NewContainerType<double>, const NewContainerType<Scalar>>(oldFluidSystem.gasPvt());
     auto newGasPvt = NewPtrType<decltype(tmpCo2GasPvt)>(tmpCo2GasPvt);
+
+    static_assert(std::is_same_v<decltype(newGasPvt), NewPtrType<GasPvtMultiplexer<Scalar, true, NewContainerType<double>, const NewContainerType<Scalar>>>>);
+    // 'std::is_same_v<
+    //     Opm::gpuistl::ViewPointer<Opm::GasPvtMultiplexer<double, true, Opm::gpuistl::GpuBuffer<double>, const Opm::gpuistl::GpuBuffer<double>>>
+    //     Opm::gpuistl::ViewPointer<Opm::GasPvtMultiplexer<double, true, Opm::gpuistl::GpuBuffer<double>, Opm::gpuistl::GpuBuffer<double>>>>'
 
     auto tmpOilPvt = OilPvtMultiplexer<Scalar>(oldFluidSystem.oilPvt()); // should be NULL
     auto newOilPvt = NewPtrType<decltype(tmpOilPvt)>(tmpOilPvt);
@@ -1948,60 +1959,66 @@ copy_to_gpu(const BlackOilFluidSystemNonStatic<Scalar, IndexTraits, OldContainer
     );
 }
 
+// temporary solution
+// will be fixed when redoing the whole copy_to_gpu and make_view
+// function signatures in a future PR
+// template<class T>
+// T make_mutable_view();
 
+// template <template <class...> class ViewType, template<typename> class PtrType, class Scalar, class IndexTraits, template <class...> class OldContainerType>
+// BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ViewType, PtrType>
+// make_view(BlackOilFluidSystemNonStatic<Scalar, IndexTraits, OldContainerType, PtrType>& oldFluidSystem) {
 
-template <template <class...> class ViewType, template<typename> class PtrType, class Scalar, class IndexTraits, template <class...> class OldContainerType>
-BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ViewType, PtrType>
-make_view(BlackOilFluidSystemNonStatic<Scalar, IndexTraits, OldContainerType, PtrType>& oldFluidSystem) {
+//     using GpuCo2TablesBuf = Opm::CO2Tables<double, const OldContainerType<double>>;
+//     using GpuCo2TablesView = Opm::CO2Tables<double, ViewType<const double>>;
+//     using Array3 = std::array<Scalar, 3>;
+//     using Array9 = std::array<Scalar, 9>;
 
-    using GpuCo2TablesView = Opm::CO2Tables<double, ViewType<const double>>;
-    using Array3 = std::array<Scalar, 3>;
-    using Array9 = std::array<Scalar, 9>;
+//     auto tmpGasPvt = make_view<Scalar, GpuCo2TablesView, GpuCo2TablesBuf, ViewType<const Scalar>, OldContainerType<Scalar>>(oldFluidSystem.gasPvt());
+//     auto newGasPvt = PtrType<decltype(tmpGasPvt)>(tmpGasPvt);
 
-    auto tmpGasPvt = make_view<Scalar, GpuCo2TablesView, ViewType<const Scalar>>(oldFluidSystem.gasPvt());
-    auto newGasPvt = PtrType<decltype(tmpGasPvt)>(tmpGasPvt);
+//     auto tmpOilPvt = OilPvtMultiplexer<Scalar>(oldFluidSystem.oilPvt()); // should be NULL
+//     auto newOilPvt = PtrType<decltype(tmpOilPvt)>(tmpOilPvt);
 
-    auto tmpOilPvt = OilPvtMultiplexer<Scalar>(oldFluidSystem.oilPvt()); // should be NULL
-    auto newOilPvt = PtrType<decltype(tmpOilPvt)>(tmpOilPvt);
-    // auto newOilPvt = ViewPointer(make_view<ViewType<Scalar, GpuCo2TablesView>>(oldFluidSystem.oilPvt()));
+//     auto tmpWaterPvt = make_view<Scalar, GpuCo2TablesView, ViewType<const Scalar>>(oldFluidSystem.waterPvt());
+//     auto newWaterPvt = PtrType<decltype(tmpWaterPvt)>(tmpWaterPvt);
 
-    auto tmpWaterPvt = make_view<Scalar, GpuCo2TablesView, ViewType<const Scalar>>(oldFluidSystem.waterPvt());
-    auto newWaterPvt = PtrType<decltype(tmpWaterPvt)>(tmpWaterPvt);
+//     auto referenceDensity = const_cast<decltype(oldFluidSystem.getReferenceDensities())&>(oldFluidSystem.getReferenceDensities());
+//     static_assert(std::is_same_v<decltype(referenceDensity), OldContainerType<Array3>>);
 
-    // auto newReferenceDensity = make_mutable_view<Array3>(oldFluidSystem.getReferenceDensities());
-    // auto newMolarMass = make_mutable_view<Array3>(oldFluidSystem.getMolarMasses());
-    // auto newDiffusionCoefficients = make_mutable_view<Array9>(oldFluidSystem.getDiffusionCoefficients());
-    auto& referenceDensity = const_cast<decltype(oldFluidSystem.getReferenceDensities())&>(oldFluidSystem.getReferenceDensities());
-    auto newReferenceDensity = make_view<Array3>(referenceDensity);
-    auto& molarMass = const_cast<decltype(oldFluidSystem.getMolarMasses())&>(oldFluidSystem.getMolarMasses());
-    auto newMolarMass = make_view<Array3>(molarMass);
-    auto& diffusionCoefficients = const_cast<decltype(oldFluidSystem.getDiffusionCoefficients())&>(oldFluidSystem.getDiffusionCoefficients());
-    auto newDiffusionCoefficients = make_view<Array9>(diffusionCoefficients);
+//     auto newReferenceDensity = make_mutable_view<Array3>(referenceDensity);
+//     static_assert(std::is_same_v<decltype(newReferenceDensity), ViewType<Array3>>);
 
-    return BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ViewType, PtrType>(
-        oldFluidSystem.surfacePressure,
-        oldFluidSystem.surfaceTemperature,
-        oldFluidSystem.numActivePhases(),
-        oldFluidSystem.phaseIsActiveArray(),
-        oldFluidSystem.reservoirTemperature(),
-        newGasPvt,
-        newOilPvt,
-        newWaterPvt,
-        oldFluidSystem.enableDissolvedGas(),
-        oldFluidSystem.enableDissolvedGasInWater(),
-        oldFluidSystem.enableVaporizedOil(),
-        oldFluidSystem.enableVaporizedWater(),
-        oldFluidSystem.enableDiffusion(),
-        newReferenceDensity,
-        newMolarMass,
-        newDiffusionCoefficients,
-        oldFluidSystem.getActiveToCanonicalPhaseIdx(),
-        oldFluidSystem.getCanonicalToActivePhaseIdx(),
-        oldFluidSystem.isInitialized(),
-        oldFluidSystem.useSaturatedTables(),
-        oldFluidSystem.enthalpyEqualEnergy()
-    );
-}
+//     auto& molarMass = const_cast<decltype(oldFluidSystem.getMolarMasses())&>(oldFluidSystem.getMolarMasses());
+//     auto newMolarMass = make_mutable_view<Array3>(molarMass);
+
+//     auto& diffusionCoefficients = const_cast<decltype(oldFluidSystem.getDiffusionCoefficients())&>(oldFluidSystem.getDiffusionCoefficients());
+//     auto newDiffusionCoefficients = make_mutable_view<Array9>(diffusionCoefficients);
+
+//     return BlackOilFluidSystemNonStatic<Scalar, IndexTraits, ViewType, PtrType>(
+//         oldFluidSystem.surfacePressure,
+//         oldFluidSystem.surfaceTemperature,
+//         oldFluidSystem.numActivePhases(),
+//         oldFluidSystem.phaseIsActiveArray(),
+//         oldFluidSystem.reservoirTemperature(),
+//         newGasPvt,
+//         newOilPvt,
+//         newWaterPvt,
+//         oldFluidSystem.enableDissolvedGas(),
+//         oldFluidSystem.enableDissolvedGasInWater(),
+//         oldFluidSystem.enableVaporizedOil(),
+//         oldFluidSystem.enableVaporizedWater(),
+//         oldFluidSystem.enableDiffusion(),
+//         newReferenceDensity,
+//         newMolarMass,
+//         newDiffusionCoefficients,
+//         oldFluidSystem.getActiveToCanonicalPhaseIdx(),
+//         oldFluidSystem.getCanonicalToActivePhaseIdx(),
+//         oldFluidSystem.isInitialized(),
+//         oldFluidSystem.useSaturatedTables(),
+//         oldFluidSystem.enthalpyEqualEnergy()
+//     );
+// }
 
 } // namespace Opm::gpuistl
 

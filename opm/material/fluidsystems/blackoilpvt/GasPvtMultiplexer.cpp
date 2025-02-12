@@ -28,8 +28,8 @@
 
 namespace Opm {
 
-template <class Scalar, bool enableThermal>
-GasPvtMultiplexer<Scalar,enableThermal>::
+template <class Scalar, bool enableThermal, class ParamsContainer, class ContainerT>
+GasPvtMultiplexer<Scalar,enableThermal, ParamsContainer, ContainerT>::
 ~GasPvtMultiplexer()
 {
     switch (gasPvtApproach_) {
@@ -66,47 +66,47 @@ GasPvtMultiplexer<Scalar,enableThermal>::
     }
 }
 
-template <class Scalar, bool enableThermal>
-void GasPvtMultiplexer<Scalar,enableThermal>::
+template <class Scalar, bool enableThermal, class ParamsContainer, class ContainerT>
+void GasPvtMultiplexer<Scalar,enableThermal, ParamsContainer, ContainerT>::
 initEnd()
 {
     OPM_GAS_PVT_MULTIPLEXER_CALL(pvtImpl.initEnd(), break);
 }
 
-template <class Scalar, bool enableThermal>
-unsigned GasPvtMultiplexer<Scalar,enableThermal>::
+template <class Scalar, bool enableThermal, class ParamsContainer, class ContainerT>
+unsigned GasPvtMultiplexer<Scalar,enableThermal, ParamsContainer, ContainerT>::
 numRegions() const
 {
     OPM_GAS_PVT_MULTIPLEXER_CALL(return pvtImpl.numRegions());
 }
 
 
-template <class Scalar, bool enableThermal>
-void GasPvtMultiplexer<Scalar,enableThermal>::
+template <class Scalar, bool enableThermal, class ParamsContainer, class ContainerT>
+void GasPvtMultiplexer<Scalar,enableThermal, ParamsContainer, ContainerT>::
 setVapPars(const Scalar par1, const Scalar par2)
 {
     OPM_GAS_PVT_MULTIPLEXER_CALL(pvtImpl.setVapPars(par1, par2), break);
 }
 
 
-template <class Scalar, bool enableThermal>
-Scalar GasPvtMultiplexer<Scalar,enableThermal>::
+template <class Scalar, bool enableThermal, class ParamsContainer, class ContainerT>
+Scalar GasPvtMultiplexer<Scalar,enableThermal, ParamsContainer, ContainerT>::
 gasReferenceDensity(unsigned regionIdx)
 {
     OPM_GAS_PVT_MULTIPLEXER_CALL(return pvtImpl.gasReferenceDensity(regionIdx));
 }
 
 
-template <class Scalar, bool enableThermal>
-Scalar GasPvtMultiplexer<Scalar,enableThermal>::
+template <class Scalar, bool enableThermal, class ParamsContainer, class ContainerT>
+Scalar GasPvtMultiplexer<Scalar,enableThermal, ParamsContainer, ContainerT>::
 hVap(unsigned regionIdx) const
 {
     OPM_GAS_PVT_MULTIPLEXER_CALL(return pvtImpl.hVap(regionIdx));
 }
 
 #if HAVE_ECL_INPUT
-template <class Scalar, bool enableThermal>
-void GasPvtMultiplexer<Scalar,enableThermal>::
+template <class Scalar, bool enableThermal, class ParamsContainer, class ContainerT>
+void GasPvtMultiplexer<Scalar,enableThermal, ParamsContainer, ContainerT>::
 initFromState(const EclipseState& eclState, const Schedule& schedule)
 {
     if (!eclState.runspec().phases().active(Phase::GAS))
@@ -133,8 +133,8 @@ initFromState(const EclipseState& eclState, const Schedule& schedule)
 }
 #endif
 
-template <class Scalar, bool enableThermal>
-void GasPvtMultiplexer<Scalar,enableThermal>::
+template <class Scalar, bool enableThermal, class ParamsContainer, class ContainerT>
+void GasPvtMultiplexer<Scalar,enableThermal, ParamsContainer, ContainerT>::
 setApproach(GasPvtApproach gasPvtAppr)
 {
     switch (gasPvtAppr) {
@@ -173,10 +173,10 @@ setApproach(GasPvtApproach gasPvtAppr)
     gasPvtApproach_ = gasPvtAppr;
 }
 
-template <class Scalar, bool enableThermal>
-GasPvtMultiplexer<Scalar,enableThermal>&
-GasPvtMultiplexer<Scalar,enableThermal>::
-operator=(const GasPvtMultiplexer<Scalar,enableThermal>& data)
+template <class Scalar, bool enableThermal, class ParamsContainer, class ContainerT>
+GasPvtMultiplexer<Scalar,enableThermal, ParamsContainer, ContainerT>&
+GasPvtMultiplexer<Scalar,enableThermal, ParamsContainer, ContainerT>::
+operator=(const GasPvtMultiplexer<Scalar,enableThermal, ParamsContainer, ContainerT>& data)
 {
     gasPvtApproach_ = data.gasPvtApproach_;
     switch (gasPvtApproach_) {
