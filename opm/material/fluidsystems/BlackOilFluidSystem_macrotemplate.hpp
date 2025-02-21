@@ -168,6 +168,16 @@ public:
         , enthalpy_eq_energy_(other.enthalpy_eq_energy_)
     {
     }
+
+    template <template <class> class NewContainerType,
+             template<typename> class NewPtrType,
+             class ScalarT,
+             class IndexTraitsT,
+             template <class> class OldContainerType,
+             template<typename> class OldPtrType>
+    friend FLUIDSYSTEM_CLASSNAME<ScalarT, IndexTraitsT, NewContainerType, NewPtrType>
+    gpuistl::copy_to_gpu(const FLUIDSYSTEM_CLASSNAME<ScalarT, IndexTraitsT, OldContainerType, OldPtrType>& oldFluidSystem);
+
     #endif
 
     #ifdef COMPILING_STATIC_FLUID_SYSTEM
@@ -1930,17 +1940,68 @@ DECLARE_INSTANCE(double)
 #ifndef COMPILING_STATIC_FLUID_SYSTEM
 namespace gpuistl
 {
-template<template<typename> typename StorageT,
-         template<typename> typename SmartPointerT,
-         template<typename> typename OldStorageT,
-         template<typename> typename OldSmartPointerT,
-         class Scalar,
-         class BlackOilDefaultIndexTraits>
-FLUIDSYSTEM_CLASSNAME<Scalar, BlackOilDefaultIndexTraits, StorageT, SmartPointerT>
-copy_to_gpu(const FLUIDSYSTEM_CLASSNAME<Scalar, BlackOilDefaultIndexTraits, OldStorageT, OldSmartPointerT>& fsys)
-{
-    return FLUIDSYSTEM_CLASSNAME<Scalar, BlackOilDefaultIndexTraits, StorageT, SmartPointerT>(fsys);
+// template<template<typename> typename StorageT,
+//          template<typename> typename SmartPointerT,
+//          template<typename> typename OldStorageT,
+//          template<typename> typename OldSmartPointerT,
+//          class Scalar,
+//          class BlackOilDefaultIndexTraits>
+// FLUIDSYSTEM_CLASSNAME<Scalar, BlackOilDefaultIndexTraits, StorageT, SmartPointerT>
+// copy_to_gpu(const FLUIDSYSTEM_CLASSNAME<Scalar, BlackOilDefaultIndexTraits, OldStorageT, OldSmartPointerT>& fsys)
+// {
+//     return FLUIDSYSTEM_CLASSNAME<Scalar, BlackOilDefaultIndexTraits, StorageT, SmartPointerT>(fsys);
+// }
+
+
+template <template <class> class NewContainerType, template<typename> class NewPtrType, class Scalar, class IndexTraits, template <class> class OldContainerType, template<typename> class OldPtrType>
+FLUIDSYSTEM_CLASSNAME<Scalar, IndexTraits, NewContainerType, NewPtrType>
+copy_to_gpu(const FLUIDSYSTEM_CLASSNAME<Scalar, IndexTraits, OldContainerType, OldPtrType>& oldFluidSystem) {
+
+    using GpuCo2Tables = CO2Tables<double, const NewContainerType<double>>;
+    using GpuBuffer3Array = NewContainerType<std::array<Scalar, 3>>;
+    using GpuBuffer9Array = NewContainerType<std::array<Scalar, 9>>;
+
+    auto tmpCo2GasPvt = copy_to_gpu<Scalar, NewContainerType<double>, NewContainerType<Scalar>>(*oldFluidSystem.gasPvt_);
+    auto newGasPvt = NewPtrType<decltype(tmpCo2GasPvt)>(tmpCo2GasPvt);
+
+    static_assert(std::is_same_v<decltype(newGasPvt), NewPtrType<GasPvtMultiplexer<Scalar, true, NewContainerType<double>, NewContainerType<Scalar>>>>);
+
+    auto tmpOilPvt = OilPvtMultiplexer<Scalar>(oldFluidSystem.oilPvt()); // should be NULL
+    auto newOilPvt = NewPtrType<decltype(tmpOilPvt)>(tmpOilPvt);
+
+    auto tmpCo2BrinePvt = copy_to_gpu<Scalar, GpuCo2Tables, const NewContainerType<Scalar>>(oldFluidSystem.waterPvt());
+    auto newWaterPvt = NewPtrType<decltype(tmpCo2BrinePvt)>(tmpCo2BrinePvt);
+    // auto newWaterPvt = NewPtrType(copy_to_gpu<Scalar, NewContainerType<Scalar>>(oldFluidSystem.waterPvt()));
+
+    auto newReferenceDensity = GpuBuffer3Array(oldFluidSystem.referenceDensities_);
+    auto newMolarMass = GpuBuffer3Array(oldFluidSystem.molarMass_);
+    auto newDiffusionCoefficients = GpuBuffer9Array(oldFluidSystem.diffusionCoefficients_);
+
+    return FLUIDSYSTEM_CLASSNAME<Scalar, IndexTraits, NewContainerType, NewPtrType>(
+        oldFluidSystem.surfacePressure,
+        oldFluidSystem.surfaceTemperature,
+        oldFluidSystem.numActivePhases,
+        oldFluidSystem.phaseIsActiveArray,
+        oldFluidSystem.reservoirTemperature,
+        newGasPvt,
+        newOilPvt,
+        newWaterPvt,
+        oldFluidSystem.enableDissolvedGas,
+        oldFluidSystem.enableDissolvedGasInWater,
+        oldFluidSystem.enableVaporizedOil,
+        oldFluidSystem.enableVaporizedWater,
+        oldFluidSystem.enableDiffusion,
+        newReferenceDensity,
+        newMolarMass,
+        newDiffusionCoefficients,
+        oldFluidSystem.getActiveToCanonicalPhaseIdx,
+        oldFluidSystem.getCanonicalToActivePhaseIdx,
+        oldFluidSystem.isInitialized,
+        oldFluidSystem.useSaturatedTables,
+        oldFluidSystem.enthalpyEqualEnergy
+    );
 }
+
 }
 #endif
 
