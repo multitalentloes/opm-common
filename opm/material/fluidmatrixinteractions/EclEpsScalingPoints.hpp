@@ -30,6 +30,8 @@
 #include <array>
 #include <vector>
 
+#include <opm/common/utility/gpuDecorators.hpp>
+
 namespace Opm {
 
 class EclEpsConfig;
@@ -90,7 +92,7 @@ struct EclEpsScalingPointsInfo
     Scalar maxKrog; // maximum relative permability of oil in the gas-oil system
     Scalar maxKrg; // maximum relative permability of gas
 
-    bool operator==(const EclEpsScalingPointsInfo<Scalar>& data) const
+    OPM_HOST_DEVICE bool operator==(const EclEpsScalingPointsInfo<Scalar>& data) const
     {
         return (Swl == data.Swl)
             && (Sgl == data.Sgl)
@@ -124,7 +126,7 @@ struct EclEpsScalingPointsInfo
      * I.e., the values which are used for the nested Fluid-Matrix interactions and which
      * are produced by them.
      */
-    void extractUnscaled(const satfunc::RawTableEndPoints&    rtep,
+    OPM_HOST_DEVICE void extractUnscaled(const satfunc::RawTableEndPoints&    rtep,
                          const satfunc::RawFunctionValues&    rfunc,
                          const std::vector<double>::size_type satRegionIdx);
 
@@ -133,12 +135,12 @@ struct EclEpsScalingPointsInfo
      *
      * I.e., the values which are "seen" by the physical model.
      */
-    void extractScaled(const EclipseState& eclState,
+    OPM_HOST_DEVICE void extractScaled(const EclipseState& eclState,
                        const EclEpsGridProperties& epsProperties,
                        unsigned activeIndex);
 
 private:
-    void calculateLeverettFactors(const EclipseState& eclState,
+    OPM_HOST_DEVICE void calculateLeverettFactors(const EclipseState& eclState,
                                   const EclEpsGridProperties& epsProperties,
                                   unsigned activeIndex);
 #endif  // HAVE_ECL_INPUT
@@ -157,120 +159,120 @@ public:
     /*!
      * \brief Assigns the scaling points which actually ought to be used.
      */
-    void init(const EclEpsScalingPointsInfo<Scalar>& epsInfo,
+    OPM_HOST_DEVICE void init(const EclEpsScalingPointsInfo<Scalar>& epsInfo,
               const EclEpsConfig& config,
               EclTwoPhaseSystemType epsSystemType);
 
     /*!
      * \brief Sets an saturation value for capillary pressure saturation scaling
      */
-    void setSaturationPcPoint(unsigned pointIdx, Scalar value)
+    OPM_HOST_DEVICE void setSaturationPcPoint(unsigned pointIdx, Scalar value)
     { saturationPcPoints_[pointIdx] = value; }
 
     /*!
      * \brief Returns the points used for capillary pressure saturation scaling
      */
-    const std::array<Scalar, 3>& saturationPcPoints() const
+    OPM_HOST_DEVICE const std::array<Scalar, 3>& saturationPcPoints() const
     { return saturationPcPoints_; }
 
     /*!
      * \brief Sets an saturation value for wetting-phase relperm saturation scaling
      */
-    void setSaturationKrwPoint(unsigned pointIdx, Scalar value)
+    OPM_HOST_DEVICE void setSaturationKrwPoint(unsigned pointIdx, Scalar value)
     { saturationKrwPoints_[pointIdx] = value; }
 
     /*!
      * \brief Returns the points used for wetting phase relperm saturation scaling
      */
-    const std::array<Scalar, 3>& saturationKrwPoints() const
+    OPM_HOST_DEVICE const std::array<Scalar, 3>& saturationKrwPoints() const
     { return saturationKrwPoints_; }
 
     /*!
      * \brief Sets an saturation value for non-wetting phase relperm saturation scaling
      */
-    void setSaturationKrnPoint(unsigned pointIdx, Scalar value)
+    OPM_HOST_DEVICE void setSaturationKrnPoint(unsigned pointIdx, Scalar value)
     { saturationKrnPoints_[pointIdx] = value; }
 
     /*!
      * \brief Returns the points used for non-wetting phase relperm saturation scaling
      */
-    const std::array<Scalar, 3>& saturationKrnPoints() const
+    OPM_HOST_DEVICE const std::array<Scalar, 3>& saturationKrnPoints() const
     { return saturationKrnPoints_; }
 
     /*!
      * \brief Sets the maximum capillary pressure
      */
-    void setMaxPcnw(Scalar value)
+    OPM_HOST_DEVICE void setMaxPcnw(Scalar value)
     { maxPcnwOrLeverettFactor_ = value; }
 
     /*!
      * \brief Returns the maximum capillary pressure
      */
-    Scalar maxPcnw() const
+    OPM_HOST_DEVICE Scalar maxPcnw() const
     { return maxPcnwOrLeverettFactor_; }
 
     /*!
      * \brief Sets the Leverett scaling factor for capillary pressure
      */
-    void setLeverettFactor(Scalar value)
+    OPM_HOST_DEVICE void setLeverettFactor(Scalar value)
     { maxPcnwOrLeverettFactor_ = value; }
 
     /*!
      * \brief Returns the Leverett scaling factor for capillary pressure
      */
-    Scalar leverettFactor() const
+    OPM_HOST_DEVICE Scalar leverettFactor() const
     { return maxPcnwOrLeverettFactor_; }
 
     /*!
      * \brief Set wetting-phase relative permeability at residual saturation
      * of non-wetting phase.
      */
-    void setKrwr(Scalar value)
+    OPM_HOST_DEVICE void setKrwr(Scalar value)
     { this->Krwr_ = value; }
 
     /*!
      * \brief Returns wetting-phase relative permeability at residual
      * saturation of non-wetting phase.
      */
-    Scalar krwr() const
+    OPM_HOST_DEVICE Scalar krwr() const
     { return this->Krwr_; }
 
     /*!
      * \brief Sets the maximum wetting phase relative permeability
      */
-    void setMaxKrw(Scalar value)
+    OPM_HOST_DEVICE void setMaxKrw(Scalar value)
     { maxKrw_ = value; }
 
     /*!
      * \brief Returns the maximum wetting phase relative permeability
      */
-    Scalar maxKrw() const
+    OPM_HOST_DEVICE Scalar maxKrw() const
     { return maxKrw_; }
 
     /*!
      * \brief Set non-wetting phase relative permeability at residual
      * saturation of wetting phase.
      */
-    void setKrnr(Scalar value)
+    OPM_HOST_DEVICE void setKrnr(Scalar value)
     { this->Krnr_ = value; }
 
     /*!
      * \brief Returns non-wetting phase relative permeability at residual
      * saturation of wetting phase.
      */
-    Scalar krnr() const
+    OPM_HOST_DEVICE Scalar krnr() const
     { return this->Krnr_; }
 
     /*!
      * \brief Sets the maximum wetting phase relative permeability
      */
-    void setMaxKrn(Scalar value)
+    OPM_HOST_DEVICE void setMaxKrn(Scalar value)
     { maxKrn_ = value; }
 
     /*!
      * \brief Returns the maximum wetting phase relative permeability
      */
-    Scalar maxKrn() const
+    OPM_HOST_DEVICE Scalar maxKrn() const
     { return maxKrn_; }
 
     void print() const;

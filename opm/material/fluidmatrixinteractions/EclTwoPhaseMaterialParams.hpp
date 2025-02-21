@@ -31,6 +31,11 @@
 
 #include <opm/material/common/EnsureFinalized.hpp>
 
+// tmp due to copy to gpu
+#include <opm/material/fluidmatrixinteractions/PiecewiseLinearTwoPhaseMaterialParams.hpp>
+
+#include <opm/common/utility/gpuDecorators.hpp>
+
 namespace Opm {
 
 enum class EclTwoPhaseApproach {
@@ -46,7 +51,11 @@ enum class EclTwoPhaseApproach {
  * Essentially, this class just stores the two parameter objects for
  * the twophase capillary pressure laws.
  */
-template<class Traits, class GasOilParamsT, class OilWaterParamsT, class GasWaterParamsT>
+template<class Traits,
+    class GasOilParamsT,
+    class OilWaterParamsT,
+    class GasWaterParamsT,
+    template<class> class PtrType = std::shared_ptr>
 class EclTwoPhaseMaterialParams : public EnsureFinalized
 {
     using Scalar = typename Traits::Scalar;
@@ -57,76 +66,77 @@ public:
     using GasOilParams = GasOilParamsT;
     using OilWaterParams = OilWaterParamsT;
     using GasWaterParams = GasWaterParamsT;
+    using TraitsType = Traits;
 
     /*!
      * \brief The default constructor.
      */
-    EclTwoPhaseMaterialParams()
+    OPM_HOST_DEVICE EclTwoPhaseMaterialParams()
     {
     }
 
-    void setApproach(EclTwoPhaseApproach newApproach)
+    OPM_HOST_DEVICE void setApproach(EclTwoPhaseApproach newApproach)
     { approach_ = newApproach; }
 
-    EclTwoPhaseApproach approach() const
+    OPM_HOST_DEVICE EclTwoPhaseApproach approach() const
     { return approach_; }
 
     /*!
      * \brief The parameter object for the gas-oil twophase law.
      */
-    const GasOilParams& gasOilParams() const
+    OPM_HOST_DEVICE const GasOilParams& gasOilParams() const
     { EnsureFinalized::check(); return *gasOilParams_; }
 
     /*!
      * \brief The parameter object for the gas-oil twophase law.
      */
-    GasOilParams& gasOilParams()
+    OPM_HOST_DEVICE GasOilParams& gasOilParams()
     { EnsureFinalized::check(); return *gasOilParams_; }
 
     /*!
      * \brief Set the parameter object for the gas-oil twophase law.
      */
-    void setGasOilParams(std::shared_ptr<GasOilParams> val)
+    OPM_HOST_DEVICE void setGasOilParams(PtrType<GasOilParams> val)
     { gasOilParams_ = val; }
 
     /*!
      * \brief The parameter object for the oil-water twophase law.
      */
-    const OilWaterParams& oilWaterParams() const
+    OPM_HOST_DEVICE const OilWaterParams& oilWaterParams() const
     { EnsureFinalized::check(); return *oilWaterParams_; }
 
     /*!
      * \brief The parameter object for the oil-water twophase law.
      */
-    OilWaterParams& oilWaterParams()
+    OPM_HOST_DEVICE OilWaterParams& oilWaterParams()
     { EnsureFinalized::check(); return *oilWaterParams_; }
 
     /*!
      * \brief Set the parameter object for the oil-water twophase law.
      */
-    void setOilWaterParams(std::shared_ptr<OilWaterParams> val)
+    OPM_HOST_DEVICE void setOilWaterParams(PtrType<OilWaterParams> val)
     { oilWaterParams_ = val; }
 
   /*!
      * \brief The parameter object for the gas-water twophase law.
      */
-    const GasWaterParams& gasWaterParams() const
+    OPM_HOST_DEVICE const GasWaterParams& gasWaterParams() const
     { EnsureFinalized::check(); return *gasWaterParams_; }
 
     /*!
      * \brief The parameter object for the gas-water twophase law.
      */
-    GasWaterParams& gasWaterParams()
+    OPM_HOST_DEVICE GasWaterParams& gasWaterParams()
     { EnsureFinalized::check(); return *gasWaterParams_; }
 
     /*!
      * \brief Set the parameter object for the gas-water twophase law.
      */
-    void setGasWaterParams(std::shared_ptr<GasWaterParams> val)
+    OPM_HOST_DEVICE void setGasWaterParams(PtrType<GasWaterParams> val)
     { gasWaterParams_ = val; }
 
     template<class Serializer>
-    void serializeOp(Serializer& serializer)
+    OPM_HOST_DEVICE void serializeOp(Serializer& serializer)
     {
         // This is for restart serialization.
         // Only dynamic state in the parameters need to be stored.
@@ -135,16 +145,155 @@ public:
         serializer(*gasWaterParams_);
     }
 
-    void setSwl(Scalar) {}
+    OPM_HOST_DEVICE void setSwl(Scalar) {}
+
+    OPM_HOST_DEVICE PtrType<GasOilParams>& gasOilParamsPtr() { return gasOilParams_; }
+    OPM_HOST_DEVICE PtrType<OilWaterParams>& oilWaterParamsPtr() { return oilWaterParams_; }
+    OPM_HOST_DEVICE PtrType<GasWaterParams>& gasWaterParamsPtr() { return gasWaterParams_; }
+
+    OPM_HOST_DEVICE const PtrType<GasOilParams>& gasOilParamsPtr() const { return gasOilParams_; }
+    OPM_HOST_DEVICE const PtrType<OilWaterParams>& oilWaterParamsPtr() const { return oilWaterParams_; }
+    OPM_HOST_DEVICE const PtrType<GasWaterParams>& gasWaterParamsPtr() const { return gasWaterParams_; }
 
 private:
     EclTwoPhaseApproach approach_{EclTwoPhaseApproach::GasOil};
 
-    std::shared_ptr<GasOilParams> gasOilParams_;
-    std::shared_ptr<OilWaterParams> oilWaterParams_;
-    std::shared_ptr<GasWaterParams> gasWaterParams_;
+    PtrType<GasOilParams> gasOilParams_;
+    PtrType<OilWaterParams> oilWaterParams_;
+    PtrType<GasWaterParams> gasWaterParams_;
 };
 
 } // namespace Opm
+
+// TODO: improve the cmake to simplify away this extra logic on the include path
+#if HAVE_CUDA
+    #if USE_HIP
+        #include <opm/simulators/linalg/gpuistl_hip/GpuBuffer.hpp>
+        #include <opm/simulators/linalg/gpuistl_hip/GpuView.hpp>
+        #include <opm/simulators/linalg/gpuistl_hip/gpu_smart_pointer.hpp>
+    #else
+        #include <opm/simulators/linalg/gpuistl/GpuBuffer.hpp>
+        #include <opm/simulators/linalg/gpuistl/GpuView.hpp>
+        #include <opm/simulators/linalg/gpuistl/gpu_smart_pointer.hpp>
+    #endif
+
+namespace Opm::gpuistl
+{
+
+    template<
+        class Traits,
+        class GasOilParamsT,
+        class OilWaterParamsT,
+        class GasWaterParamsT
+    >
+    struct GPUType<EclTwoPhaseMaterialParams<Traits, GasOilParamsT, OilWaterParamsT, GasWaterParamsT>> {
+        using type = EclTwoPhaseMaterialParams<
+                        Traits,
+                        typename GPUType<GasOilParamsT>::type,
+                        typename GPUType<OilWaterParamsT>::type,
+                        typename GPUType<GasWaterParamsT>::type
+                    >;
+    };
+
+    template<
+        class Traits,
+        class GasOilParamsT,
+        class OilWaterParamsT,
+        class GasWaterParamsT
+    >
+    struct ViewType<EclTwoPhaseMaterialParams<Traits, GasOilParamsT, OilWaterParamsT, GasWaterParamsT>> {
+        using type = EclTwoPhaseMaterialParams<
+                        Traits,
+                        typename ViewType<GasOilParamsT>::type,
+                        typename ViewType<OilWaterParamsT>::type,
+                        typename ViewType<GasWaterParamsT>::type,
+                        ValueAsPointer>;
+    };
+
+    template<class ScalarGpuBuffer,
+             class NewGasOilParamsT,
+             class NewOilWaterParamsT,
+             class NewGasWaterParamsT,
+             class Traits,
+             class OldGasOilParamsT,
+             class OldOilWaterParamsT,
+             class OldGasWaterParamsT>
+    EclTwoPhaseMaterialParams<Traits, NewGasOilParamsT, NewOilWaterParamsT, NewGasWaterParamsT>
+    copy_to_gpu(const EclTwoPhaseMaterialParams<Traits, OldGasOilParamsT, OldOilWaterParamsT, OldGasWaterParamsT>& params)
+    {
+        // Maybe I will run into some proble on a twophase case where some of these do not exist?
+        // copy interpolation tables to the GPU - right now assumed to be the piecewiselinear....params
+        // auto gasOilParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(params.gasOilParams());
+        // auto oilWaterParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(params.oilWaterParams());
+        // TODO: avoid the new, this is just to be sure that memory is not deallocated before access in kernel
+        // TODO: the new probably does nothing as the cpuversion of the params class makes another shared pointer
+        // TODO: which ensures that this memory is not deallocated, even if this local pointer goes out of scope
+        auto gasWaterParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(params.gasWaterParams());
+        exit(9999); // THIS EXIT DOES NOT OCCUR BECAUSE THE LINE ABOVE CAUSES A RUNTIME ERROR
+        // Wrap the copied parameters in a shared_ptr
+        // auto gasOilParamsPtr = std::make_shared<NewGasOilParamsT>(gasOilParams);
+        // auto oilWaterParamsPtr = std::make_shared<NewOilWaterParamsT>(oilWaterParams);
+        auto gasWaterParamsPtr = std::make_shared<NewGasWaterParamsT>(gasWaterParams);
+        // gasWaterParamsPtr->finalize();
+
+        // Create the new EclTwoPhaseMaterialParams object
+        auto gpuBufBasedEclTwoPhasedMaterialParams =
+            EclTwoPhaseMaterialParams<Traits, NewGasOilParamsT, NewOilWaterParamsT, NewGasWaterParamsT>();
+
+        gpuBufBasedEclTwoPhasedMaterialParams.setApproach(params.approach());
+        // gpuBufBasedEclTwoPhasedMaterialParams.setGasOilParams(gasOilParamsPtr);
+        // gpuBufBasedEclTwoPhasedMaterialParams.setOilWaterParams(oilWaterParamsPtr);
+        gpuBufBasedEclTwoPhasedMaterialParams.setGasWaterParams(gasWaterParamsPtr);
+
+        gpuBufBasedEclTwoPhasedMaterialParams.finalize();
+
+        return gpuBufBasedEclTwoPhasedMaterialParams;
+    }
+
+    template<class ScalarView,
+             class NewGasOilParamsT,
+            class NewOilWaterParamsT,
+            class NewGasWaterParamsT,
+            template<class> class PtrType,
+            class Traits,
+            class OldGasOilParamsT,
+            class OldOilWaterParamsT,
+            class OldGasWaterParamsT>
+    EclTwoPhaseMaterialParams<Traits, NewGasOilParamsT, NewOilWaterParamsT, NewGasWaterParamsT, PtrType>
+    make_view(const EclTwoPhaseMaterialParams<Traits, OldGasOilParamsT, OldOilWaterParamsT, OldGasWaterParamsT>& params)
+    {
+        // Maybe I will run into some proble on a twophase case where some of these do not exist?
+        // copy interpolation tables to the GPU - right now assumed to be the piecewiselinear....params
+        // auto gasOilParams = gpuistl::make_view<ScalarView>(*params.gasOilParamsPtr());
+        // auto oilWaterParams = gpuistl::make_view<ScalarView>(*params.oilWaterParamsPtr());
+        auto gasWaterParams = gpuistl::make_view<ScalarView>(*params.gasWaterParamsPtr());
+
+        using expectedGasWaterParamsType = PiecewiseLinearTwoPhaseMaterialParams<typename OldGasWaterParamsT::Traits, ScalarView>;
+        using trueGasWaterParamsType = typename std::remove_reference_t<decltype(gasWaterParams)>;
+        static_assert(std::is_same_v<trueGasWaterParamsType, expectedGasWaterParamsType>);
+
+        // TODO: avoid the extra creation of a shared pointer
+        // auto gasOilParamsPtr = PtrType<NewGasOilParamsT>(std::make_shared<NewGasOilParamsT>(gasOilParams));
+        // auto oilWaterParamsPtr = PtrType<NewOilWaterParamsT>(std::make_shared<NewGasOilParamsT>(oilWaterParams));
+        auto gasWaterParamsPtr = PtrType<NewGasWaterParamsT>(gasWaterParams);
+        // gasWaterParamsPtr->finalize();
+
+        // Create the new EclTwoPhaseMaterialParams object
+        auto gpuViewBasedEclTwoPhasedMaterialParams =
+            EclTwoPhaseMaterialParams<Traits, NewGasOilParamsT, NewOilWaterParamsT, NewGasWaterParamsT, PtrType>();
+
+        gpuViewBasedEclTwoPhasedMaterialParams.setApproach(params.approach());
+        // gpuViewBasedEclTwoPhasedMaterialParams.setGasOilParams(gasOilParamsPtr);
+        // gpuViewBasedEclTwoPhasedMaterialParams.setOilWaterParams(oilWaterParamsPtr);
+        gpuViewBasedEclTwoPhasedMaterialParams.setGasWaterParams(gasWaterParamsPtr);
+
+        gpuViewBasedEclTwoPhasedMaterialParams.finalize();
+
+        return gpuViewBasedEclTwoPhasedMaterialParams;
+    }
+
+} // namespace gpuistl
+
+#endif // HAVE_CUDA
 
 #endif

@@ -353,7 +353,11 @@ if(ENABLE_ECL_INPUT)
     opm/material/fluidmatrixinteractions/EclHysteresisConfig.cpp
     opm/material/fluidmatrixinteractions/EclMaterialLawManager.cpp
     opm/material/fluidmatrixinteractions/EclMaterialLawManagerReadEffectiveParams.cpp
+    opm/material/fluidmatrixinteractions/EclMaterialLawManagerSimple.cpp
+    opm/material/fluidmatrixinteractions/EclMaterialLawManagerSimpleReadEffectiveParams.cpp
+    opm/material/fluidmatrixinteractions/EclMaterialLawManagerSimpleHystParams.cpp
     opm/material/fluidmatrixinteractions/EclMaterialLawManagerInitParams.cpp
+    opm/material/fluidmatrixinteractions/EclMaterialLawManagerSimpleInitParams.cpp
     opm/material/fluidmatrixinteractions/EclMaterialLawManagerHystParams.cpp
     opm/material/thermal/EclThermalLawManager.cpp
   )
@@ -873,6 +877,7 @@ list( APPEND PUBLIC_HEADER_FILES
       opm/common/utility/DemangledType.hpp
       opm/common/utility/FileSystem.hpp
       opm/common/utility/gpuDecorators.hpp
+      opm/common/utility/GpuFriendlyVector.hpp
       opm/common/utility/MemPacker.hpp
       opm/common/utility/ThreadSafeMapBuilder.hpp
       opm/common/utility/numeric/cmp.hpp
@@ -1049,6 +1054,7 @@ list( APPEND PUBLIC_HEADER_FILES
       opm/material/fluidmatrixinteractions/EclEpsTwoPhaseLaw.hpp
       opm/material/fluidmatrixinteractions/TwoPhaseLETCurves.hpp
       opm/material/fluidmatrixinteractions/EclMaterialLawManager.hpp
+      opm/material/fluidmatrixinteractions/EclMaterialLawManagerSimple.hpp
       opm/material/fluidmatrixinteractions/DirectionalMaterialLawParams.hpp
       opm/material/fluidmatrixinteractions/DirectionalMaterialLawParams.hpp
       opm/material/fluidmatrixinteractions/RegularizedVanGenuchten.hpp

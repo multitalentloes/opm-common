@@ -48,7 +48,7 @@
 #if HAVE_ECL_INPUT
 namespace {
     template <typename Scalar>
-    void updateIfNonNull(Scalar& targetValue, const double* value_ptr)
+    OPM_HOST_DEVICE void updateIfNonNull(Scalar& targetValue, const double* value_ptr)
     {
         if (value_ptr != nullptr) {
             targetValue = static_cast<Scalar>(*value_ptr);
@@ -58,7 +58,7 @@ namespace {
 #endif // HAVE_ECL_INPUT
 
 template<class Scalar>
-void Opm::EclEpsScalingPointsInfo<Scalar>::print() const
+OPM_HOST_DEVICE void Opm::EclEpsScalingPointsInfo<Scalar>::print() const
 {
     std::cout << "    Swl: " << Swl << '\n'
               << "    Sgl: " << Sgl << '\n'
@@ -84,7 +84,7 @@ void Opm::EclEpsScalingPointsInfo<Scalar>::print() const
 
 #if HAVE_ECL_INPUT
 template<class Scalar>
-void Opm::EclEpsScalingPointsInfo<Scalar>::
+OPM_HOST_DEVICE void Opm::EclEpsScalingPointsInfo<Scalar>::
 extractUnscaled(const satfunc::RawTableEndPoints&    rtep,
                 const satfunc::RawFunctionValues&    rfunc,
                 const std::vector<double>::size_type satRegionIdx)
@@ -119,7 +119,7 @@ extractUnscaled(const satfunc::RawTableEndPoints&    rtep,
 }
 
 template<class Scalar>
-void Opm::EclEpsScalingPointsInfo<Scalar>::
+OPM_HOST_DEVICE void Opm::EclEpsScalingPointsInfo<Scalar>::
 extractScaled(const EclipseState&         eclState,
               const EclEpsGridProperties& epsProperties,
               unsigned                    activeIndex)
@@ -157,7 +157,7 @@ extractScaled(const EclipseState&         eclState,
 }
 
 template <typename Scalar>
-void Opm::EclEpsScalingPointsInfo<Scalar>::
+OPM_HOST_DEVICE void Opm::EclEpsScalingPointsInfo<Scalar>::
 calculateLeverettFactors(const EclipseState&         eclState,
                          const EclEpsGridProperties& epsProperties,
                          const unsigned              activeIndex)
@@ -236,7 +236,7 @@ calculateLeverettFactors(const EclipseState&         eclState,
 // ---------------------------------------------------------------------------
 
 template<class Scalar>
-void Opm::EclEpsScalingPoints<Scalar>::
+OPM_HOST_DEVICE void Opm::EclEpsScalingPoints<Scalar>::
 init(const EclEpsScalingPointsInfo<Scalar>& epsInfo,
      const EclEpsConfig&                    config,
      const EclTwoPhaseSystemType            epsSystemType)

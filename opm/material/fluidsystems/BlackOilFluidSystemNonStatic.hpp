@@ -10,7 +10,7 @@
   OPM is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU General Public License for more details.>
 
   You should have received a copy of the GNU General Public License
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
@@ -58,6 +58,9 @@
 // Member variables need no decorators for the nonstatic version
 #define STATIC_OR_NOTHING
 
+// Functions defined outside of the class need OPM_HOST_DEVICE, but never static
+#define NOTHING_OR_DEVICE OPM_HOST_DEVICE
+
 
 // We need to forward-declare the static version of the fluid system, since we will
 // add it as a friend to the nonstatic version.
@@ -74,6 +77,7 @@ class FLUIDSYSTEM_CLASSNAME_STATIC;
 #include <opm/material/fluidsystems/BlackOilFluidSystem_macrotemplate.hpp>
 
 // Undefine the macros we defined above
+#undef NOTHING_OR_DEVICE
 #undef STATIC_OR_DEVICE
 #undef STATIC_OR_NOTHING
 #undef FLUIDSYSTEM_CLASSNAME_NONSTATIC

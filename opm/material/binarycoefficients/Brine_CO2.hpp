@@ -28,6 +28,7 @@
 #ifndef OPM_BINARY_COEFF_BRINE_CO2_HPP
 #define OPM_BINARY_COEFF_BRINE_CO2_HPP
 
+#include <opm/common/ErrorMacros.hpp>
 #include <opm/material/IdealGas.hpp>
 #include <opm/material/common/Valgrind.hpp>
 #include <opm/common/TimingMacros.hpp>
@@ -172,7 +173,7 @@ public:
      * \brief Henry coefficent \f$\mathrm{[N/m^2]}\f$ for CO2 in brine.
      */
     template <class Evaluation>
-    static Evaluation henry(const Evaluation& temperature, bool extrapolate = false)
+    OPM_HOST_DEVICE static Evaluation henry(const Evaluation& temperature, bool extrapolate = false)
     { return fugacityCoefficientCO2(temperature, /*pressure=*/1e5, extrapolate)*1e5; }
 
     /*!
@@ -184,7 +185,7 @@ public:
      * \param pg the gas phase pressure [Pa]
      */
     template <class Evaluation, class CO2Params>
-    static Evaluation fugacityCoefficientCO2(const CO2Params& params,
+    OPM_HOST_DEVICE static Evaluation fugacityCoefficientCO2(const CO2Params& params,
                                              const Evaluation& temperature, 
                                              const Evaluation& pg,
                                              const Evaluation& yH2O, 
@@ -193,8 +194,8 @@ public:
                                              bool spycherPruess2005 = false)
     {
         OPM_TIMEFUNCTION_LOCAL();
-        Valgrind::CheckDefined(temperature);
-        Valgrind::CheckDefined(pg);
+        // Valgrind::CheckDefined(temperature);
+        // Valgrind::CheckDefined(pg);
 
         const Evaluation V = 1 / (CO2::gasDensity(params, temperature, pg, extrapolate) / CO2::molarMass()) * 1.e6; // molar volume in cm^3/mol
         const Evaluation pg_bar = pg / 1.e5; // gas phase pressure in bar
@@ -241,7 +242,7 @@ public:
      * \param pg the gas phase pressure [Pa]
      */
     template <class Evaluation, class CO2Params>
-    static Evaluation fugacityCoefficientH2O(const CO2Params& params,
+    OPM_HOST_DEVICE static Evaluation fugacityCoefficientH2O(const CO2Params& params,
                                              const Evaluation& temperature, 
                                              const Evaluation& pg,
                                              const Evaluation& yH2O, 
@@ -250,8 +251,8 @@ public:
                                              bool spycherPruess2005 = false)
     {
         OPM_TIMEFUNCTION_LOCAL();
-        Valgrind::CheckDefined(temperature);
-        Valgrind::CheckDefined(pg);
+        // Valgrind::CheckDefined(temperature);
+        // Valgrind::CheckDefined(pg);
 
         const Evaluation& V = 1 / (CO2::gasDensity(params, temperature, pg, extrapolate) / CO2::molarMass()) * 1.e6; // molar volume in cm^3/mol
         const Evaluation& pg_bar = pg / 1.e5; // gas phase pressure in bar
@@ -756,7 +757,7 @@ private:
      * \param pg the gas phase pressure [Pa]
      */
     template <class Evaluation, class CO2Parameters>
-    static Evaluation computeB_(const CO2Parameters& params,
+    OPM_HOST_DEVICE static Evaluation computeB_(const CO2Parameters& params,
                                 const Evaluation& temperature, 
                                 const Evaluation& pg, 
                                 const Evaluation& yH2O,
@@ -823,7 +824,7 @@ private:
             convTerm = 1.0;
         }
         else {
-            throw std::runtime_error("Activity model for salt-out effect has not been implemented!");
+            OPM_THROW(std::runtime_error, "Activity model for salt-out effect has not been implemented!");
         }
 
         // Eq. (18)
@@ -914,7 +915,7 @@ private:
      * \param temperature the temperature [K]
      */
     template <class Evaluation>
-    static Evaluation equilibriumConstantCO2_(const Evaluation& temperature, 
+    OPM_HOST_DEVICE static Evaluation equilibriumConstantCO2_(const Evaluation& temperature, 
                                               const Evaluation& pg, 
                                               const bool& highTemp,
                                               bool spycherPruess2005 = false)

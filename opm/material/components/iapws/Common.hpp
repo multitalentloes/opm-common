@@ -62,7 +62,7 @@ public:
     static const Scalar Rs;
 
     //! Critical temperature of water \f$\mathrm{[K]}\f$
-    static const Scalar criticalTemperature;
+    static constexpr Scalar criticalTemperature = 647.096;
 
     //! Critical pressure of water \f$\mathrm{[Pa]}\f$
     static const Scalar criticalPressure;
@@ -237,8 +237,8 @@ template <class Scalar>
 const Scalar Common<Scalar>::molarMass = 18.01518e-3;
 template <class Scalar>
 const Scalar Common<Scalar>::Rs = Constants<Scalar>::R/molarMass;
-template <class Scalar>
-const Scalar Common<Scalar>::criticalTemperature = 647.096;
+// template <class Scalar>
+// const Scalar Common<Scalar>::criticalTemperature = 647.096;
 template <class Scalar>
 const Scalar Common<Scalar>::criticalPressure = 22.064e6;
 template <class Scalar>
