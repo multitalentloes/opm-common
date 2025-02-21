@@ -1927,4 +1927,21 @@ DECLARE_INSTANCE(double)
 #undef DECLARE_INSTANCE
 #endif
 
+#ifndef COMPILING_STATIC_FLUID_SYSTEM
+namespace gpuistl
+{
+template<template<typename> typename StorageT,
+         template<typename> typename SmartPointerT,
+         template<typename> typename OldStorageT,
+         template<typename> typename OldSmartPointerT,
+         class Scalar,
+         class BlackOilDefaultIndexTraits>
+FLUIDSYSTEM_CLASSNAME<Scalar, BlackOilDefaultIndexTraits, StorageT, SmartPointerT>
+copy_to_gpu(const FLUIDSYSTEM_CLASSNAME<Scalar, BlackOilDefaultIndexTraits, OldStorageT, OldSmartPointerT>& fsys)
+{
+    return FLUIDSYSTEM_CLASSNAME<Scalar, BlackOilDefaultIndexTraits, StorageT, SmartPointerT>(fsys);
+}
+}
+#endif
+
 } // namespace Opm

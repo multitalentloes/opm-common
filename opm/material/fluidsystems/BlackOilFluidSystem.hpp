@@ -50,7 +50,7 @@
 #define STATIC_OR_NOTHING static
 
 // Functions defined outside of the class need OPM_HOST_DEVICE, but never static
-#define NOTHING_OR_DEVICE 
+#define NOTHING_OR_DEVICE
 
 // Define the class names for the static and nonstatic versions of the fluid system
 #define FLUIDSYSTEM_CLASSNAME_NONSTATIC BlackOilFluidSystemNonStatic
