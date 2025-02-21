@@ -121,7 +121,7 @@ class GasPvtMultiplexer
 public:
     using ParamsT = CO2Tables<double, const ParamsContainer>;
 
-    OPM_HOST_DEVICE GasPvtMultiplexer()
+    GasPvtMultiplexer()
         : gasPvtApproach_(GasPvtApproach::NoGas)
         , realGasPvt_(nullptr)
     {
@@ -409,12 +409,12 @@ namespace gpuistl{
     GasPvtMultiplexer<Scalar, true, GPUContainerDouble, GPUContainerScalar>
     copy_to_gpu(GasPvtMultiplexer<Scalar>& cpuGasPvt)
     {
-        using Params = CO2Tables<Scalar, const GPUContainerDouble>;
+        using Params = CO2Tables<Scalar, GPUContainerDouble>;
 
         assert(GasPvtApproach::Co2Gas == cpuGasPvt.gasPvtApproach);
 
         auto& realPvt = cpuGasPvt.template getRealPvt<GasPvtApproach::Co2Gas>();
-        auto gpuRealPvt = copy_to_gpu<Scalar, Params, GPUContainerScalar>(realPvt);
+        auto gpuRealPvt = copy_to_gpu<GPUContainerScalar, Params, Scalar>(realPvt);
         return GasPvtMultiplexer<Scalar, true, GPUContainerDouble, GPUContainerScalar>(GasPvtApproach::Co2Gas, &gpuRealPvt);
     }
 }
