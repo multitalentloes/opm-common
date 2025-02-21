@@ -1966,7 +1966,7 @@ copy_to_gpu(const FLUIDSYSTEM_CLASSNAME<Scalar, IndexTraits, OldContainerType, O
 
     static_assert(std::is_same_v<decltype(newGasPvt), NewPtrType<GasPvtMultiplexer<Scalar, true, NewContainerType<double>, NewContainerType<Scalar>>>>);
 
-    auto tmpOilPvt = OilPvtMultiplexer<Scalar>(oldFluidSystem.oilPvt()); // should be NULL
+    auto tmpOilPvt = OilPvtMultiplexer<Scalar>(*oldFluidSystem.oilPvt_); // should be NULL
     auto newOilPvt = NewPtrType<decltype(tmpOilPvt)>(tmpOilPvt);
 
     auto tmpCo2BrinePvt = copy_to_gpu<Scalar, GpuCo2Tables, const NewContainerType<Scalar>>(oldFluidSystem.waterPvt());
