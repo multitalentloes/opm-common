@@ -892,7 +892,7 @@ public:
             const LhsEval Rsw(0.0);
             return waterPvt_->inverseFormationVolumeFactor(regionIdx, T, p, Rsw, saltConcentration);
         }
-        default: throw std::logic_error("Unhandled phase index "+std::to_string(phaseIdx));
+        default: OPM_THROW(std::logic_error, "Unhandled phase index "+std::to_string(phaseIdx));
         }
     }
 
@@ -1138,7 +1138,7 @@ public:
         }
         }
 
-        throw std::logic_error("Unhandled phase index "+std::to_string(phaseIdx));
+        OPM_THROW(std::logic_error, "Unhandled phase index "+std::to_string(phaseIdx));
     }
 
     template <class FluidState, class LhsEval = typename FluidState::Scalar>
@@ -1351,7 +1351,7 @@ public:
         case oilPhaseIdx: return 0.0;
         case gasPhaseIdx: return gasPvt_->saturatedWaterVaporizationFactor(regionIdx, T, p, saltConcentration);
         case waterPhaseIdx: return 0.0;
-        default: throw std::logic_error("Unhandled phase index "+std::to_string(phaseIdx));
+        default: {OPM_THROW(std::logic_error, "Unhandled phase index "+std::to_string(phaseIdx));}
         }
     }
 
@@ -1380,7 +1380,7 @@ public:
         case gasPhaseIdx: return gasPvt_->saturatedOilVaporizationFactor(regionIdx, T, p, So, maxOilSaturation);
         case waterPhaseIdx: return waterPvt_->saturatedGasDissolutionFactor(regionIdx, T, p,
         BlackOil::template getSaltConcentration_<ThisType, FluidState, LhsEval>(fluidState, regionIdx));
-        default: throw std::logic_error("Unhandled phase index "+std::to_string(phaseIdx));
+        default: {OPM_THROW(std::logic_error, "Unhandled phase index "+std::to_string(phaseIdx));};
         }
     }
 
@@ -1409,7 +1409,7 @@ public:
         case gasPhaseIdx: return gasPvt_->saturatedOilVaporizationFactor(regionIdx, T, p);
         case waterPhaseIdx: return waterPvt_->saturatedGasDissolutionFactor(regionIdx, T, p,
         BlackOil::template getSaltConcentration_<ThisType, FluidState, LhsEval>(fluidState, regionIdx));
-        default: throw std::logic_error("Unhandled phase index "+std::to_string(phaseIdx));
+        default: {OPM_THROW(std::logic_error, "Unhandled phase index "+std::to_string(phaseIdx));}
         }
     }
 

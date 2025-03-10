@@ -173,8 +173,11 @@ public:
     template <class LhsEval>
     OPM_HOST_DEVICE static LhsEval decay(Scalar value)
     {
-        static_assert(std::is_floating_point<LhsEval>::value,
-                      "The left-hand side must be a primitive floating point type!");
+        // TODO: does this change of assertions cause any problems?
+        static_assert(std::is_constructible<LhsEval>::value,
+                      "The left-hand side must be a primitive floating point type!)");
+        // static_assert(std::is_floating_point<LhsEval>::value,
+        //               "The left-hand side must be a primitive floating point type!");
 
         return value;
     }

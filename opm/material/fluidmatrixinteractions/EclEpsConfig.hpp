@@ -29,6 +29,8 @@
 
 #include <string>
 
+#include <opm/common/utility/gpuDecorators.hpp>
+
 namespace Opm {
 
 #if HAVE_ECL_INPUT
@@ -58,91 +60,91 @@ public:
     /*!
      * \brief Specify whether saturation scaling is enabled.
      */
-    void setEnableSatScaling(bool yesno)
+    OPM_HOST_DEVICE void setEnableSatScaling(bool yesno)
     { enableSatScaling_ = yesno; }
 
     /*!
      * \brief Returns whether saturation scaling is enabled.
      */
-    bool enableSatScaling() const
+    OPM_HOST_DEVICE bool enableSatScaling() const
     { return enableSatScaling_; }
 
     /*!
      * \brief Specify whether three point saturation scaling is enabled for the relative
      *        permeabilities.
      */
-    void setEnableThreePointKrSatScaling(bool yesno)
+    OPM_HOST_DEVICE void setEnableThreePointKrSatScaling(bool yesno)
     { enableThreePointKrSatScaling_ = yesno; }
 
     /*!
      * \brief Returns whether three point saturation scaling is enabled for the relative
      *        permeabilities.
      */
-    bool enableThreePointKrSatScaling() const
+    OPM_HOST_DEVICE bool enableThreePointKrSatScaling() const
     { return enableThreePointKrSatScaling_; }
 
     /*!
      * \brief Specify whether relative permeability scaling is enabled for the wetting phase.
      */
-    void setEnableKrwScaling(bool yesno)
+    OPM_HOST_DEVICE void setEnableKrwScaling(bool yesno)
     { enableKrwScaling_ = yesno; }
 
     /*!
      * \brief Returns whether relative permeability scaling is enabled for the wetting phase.
      */
-    bool enableKrwScaling() const
+    OPM_HOST_DEVICE bool enableKrwScaling() const
     { return enableKrwScaling_; }
 
     /*!
      * \brief Specify whether three-point relative permeability value
      * scaling is enabled for the wetting phase (KRWR + KRW).
      */
-    void setEnableThreePointKrwScaling(const bool enable)
+    OPM_HOST_DEVICE void setEnableThreePointKrwScaling(const bool enable)
     { this->enableThreePointKrwScaling_ = enable; }
 
     /*!
      * \brief Whether or not three-point relative permeability value scaling
      * is enabled for the wetting phase (KRWR + KRW).
      */
-    bool enableThreePointKrwScaling() const
+    OPM_HOST_DEVICE bool enableThreePointKrwScaling() const
     { return this->enableThreePointKrwScaling_; }
 
     /*!
      * \brief Specify whether three-point relative permeability value
      * scaling is enabled for the wetting phase (e.g., KRORW + KRO).
      */
-    void setEnableThreePointKrnScaling(const bool enable)
+    OPM_HOST_DEVICE void setEnableThreePointKrnScaling(const bool enable)
     { this->enableThreePointKrnScaling_ = enable; }
 
     /*!
      * \brief Whether or not three-point relative permeability value scaling
      * is enabled for the non-wetting phase (e.g., KRORW + KRO).
      */
-    bool enableThreePointKrnScaling() const
+    OPM_HOST_DEVICE bool enableThreePointKrnScaling() const
     { return this->enableThreePointKrnScaling_; }
 
     /*!
      * \brief Specify whether relative permeability scaling is enabled for the non-wetting phase.
      */
-    void setEnableKrnScaling(bool yesno)
+    OPM_HOST_DEVICE void setEnableKrnScaling(bool yesno)
     { enableKrnScaling_ = yesno; }
 
     /*!
      * \brief Returns whether relative permeability scaling is enabled for the non-wetting phase.
      */
-    bool enableKrnScaling() const
+    OPM_HOST_DEVICE bool enableKrnScaling() const
     { return enableKrnScaling_; }
 
     /*!
      * \brief Specify whether capillary pressure scaling is enabled.
      */
-    void setEnablePcScaling(bool yesno)
+    OPM_HOST_DEVICE void setEnablePcScaling(bool yesno)
     { enablePcScaling_ = yesno; }
 
     /*!
      * \brief Returns whether capillary pressure scaling is enabled.
      */
-    bool enablePcScaling() const
+    OPM_HOST_DEVICE bool enablePcScaling() const
     { return enablePcScaling_; }
 
     /*!
@@ -152,7 +154,7 @@ public:
      * of the normal capillary pressure scaling and the value of enablePcScaling() will
      * not matter anymore.
      */
-    void setEnableLeverettScaling(bool yesno)
+    OPM_HOST_DEVICE void setEnableLeverettScaling(bool yesno)
     { enableLeverettScaling_ = yesno; }
 
     /*!
@@ -162,7 +164,7 @@ public:
      * the normal capillary pressure scaling and the value of enablePcScaling() does not
      * matter anymore.
      */
-    bool enableLeverettScaling() const
+    OPM_HOST_DEVICE bool enableLeverettScaling() const
     { return enableLeverettScaling_; }
 
 #if HAVE_ECL_INPUT

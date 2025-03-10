@@ -32,7 +32,7 @@
 #include <opm/material/fluidsystems/blackoilpvt/ConstantCompressibilityWaterPvt.hpp>
 #include <opm/material/fluidsystems/blackoilpvt/ConstantCompressibilityBrinePvt.hpp>
 #include <opm/material/fluidsystems/blackoilpvt/WaterPvtThermal.hpp>
-
+#include <functional>
 #include <opm/common/utility/gpuDecorators.hpp>
 
 #if OPM_IS_COMPILING_WITH_GPU_COMPILER

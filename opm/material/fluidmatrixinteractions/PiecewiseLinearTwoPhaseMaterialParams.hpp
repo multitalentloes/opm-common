@@ -34,6 +34,7 @@
 #include <type_traits>
 
 #include <opm/common/ErrorMacros.hpp>
+#include <opm/common/utility/gpuDecorators.hpp>
 #include <opm/material/common/EnsureFinalized.hpp>
 #include <vector>
 
@@ -67,11 +68,11 @@ public:
 
     using Traits = TraitsT;
 
-    PiecewiseLinearTwoPhaseMaterialParams()
+    OPM_HOST_DEVICE PiecewiseLinearTwoPhaseMaterialParams()
     {
     }
 
-    PiecewiseLinearTwoPhaseMaterialParams(ValueVector SwPcwnSamples,
+    OPM_HOST_DEVICE PiecewiseLinearTwoPhaseMaterialParams(ValueVector SwPcwnSamples,
                                           ValueVector pcwnSamples,
                                           ValueVector SwKrwSamples,
                                           ValueVector krwSamples,
@@ -97,7 +98,7 @@ public:
      * \brief Calculate all dependent quantities once the independent
      *        quantities of the parameter object have been set.
      */
-    void finalize()
+    OPM_HOST_DEVICE void finalize()
     {
         EnsureFinalized::finalize();
 
@@ -116,7 +117,7 @@ public:
     /*!
      * \brief Check if the parameter object has been finalized.
      */
-    void checkFinalized() const
+    OPM_HOST_DEVICE void checkFinalized() const
     {
         EnsureFinalized::check();
     }
@@ -300,7 +301,30 @@ private:
 };
 } // namespace Opm
 
+
+// TODO: improve the cmake to simplify away this extra logic on the include path
+#if HAVE_CUDA
+    #if USE_HIP
+        #include <opm/simulators/linalg/gpuistl_hip/GpuBuffer.hpp>
+        #include <opm/simulators/linalg/gpuistl_hip/GpuView.hpp>
+    #else
+        #include <opm/simulators/linalg/gpuistl/GpuBuffer.hpp>
+        #include <opm/simulators/linalg/gpuistl/GpuView.hpp>
+    #endif
+
 namespace Opm::gpuistl{
+
+template <class TraitsT, class VectorT>
+struct GPUType<PiecewiseLinearTwoPhaseMaterialParams<TraitsT, VectorT>>
+{
+    using type = PiecewiseLinearTwoPhaseMaterialParams<TraitsT, GpuBuffer<typename TraitsT::Scalar>>;
+};
+
+template <class TraitsT, class VectorT>
+struct ViewType<PiecewiseLinearTwoPhaseMaterialParams<TraitsT, VectorT>>
+{
+    using type = PiecewiseLinearTwoPhaseMaterialParams<TraitsT, GpuView<typename TraitsT::Scalar>>;
+};
 
 /// @brief Move a PiecewiseLinearTwoPhaseMaterialParams-object to the GPU
 /// @tparam TraitsT the same traits as in PiecewiseLinearTwoPhaseMaterialParams
@@ -359,5 +383,7 @@ PiecewiseLinearTwoPhaseMaterialParams<TraitsT, ViewType> make_view(PiecewiseLine
 }
 
 }
+
+#endif // HAVE_CUDA
 
 #endif

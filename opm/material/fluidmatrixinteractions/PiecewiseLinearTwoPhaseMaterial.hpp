@@ -368,6 +368,29 @@ private:
     }
 };
 
+namespace gpuistl
+{
+
+#if HAVE_CUDA
+    #if USE_HIP
+        #include <opm/simulators/linalg/gpuistl_hip/GpuView.hpp>
+    #else
+        #include <opm/simulators/linalg/gpuistl/GpuView.hpp>
+    #endif
+
+    template< class Traits,
+              class ParamsT>
+    struct ViewType<PiecewiseLinearTwoPhaseMaterial<Traits, ParamsT>> {
+        using type = PiecewiseLinearTwoPhaseMaterial<
+            Traits,
+            typename ViewType<ParamsT>::type
+        >;
+    };
+
+#endif // HAVE_CUDA
+
+} // namespace gpuistl
+
 } // namespace Opm
 
 #endif

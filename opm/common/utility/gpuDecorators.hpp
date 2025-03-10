@@ -76,4 +76,13 @@
     #define OPM_IS_USING_GPU 0
   #endif // END ELSE
 
+  // These two structs should be placed somewhere else, this is temporary
+  // These two structs will be overridden with more specific types that we need for the DualBuffers
+  namespace Opm::gpuistl
+  {
+    template< class T>
+    struct GPUType { using type = T; };
+    template<class T>
+    struct ViewType { using type = T; };
+  }
 #endif // END HEADER GUARD

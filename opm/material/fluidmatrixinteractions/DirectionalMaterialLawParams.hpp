@@ -28,11 +28,13 @@
 #include <stdexcept>
 #include <vector>
 
+#include <opm/common/utility/gpuDecorators.hpp>
+
 namespace Opm {
 
-template <class MaterialLawParams>
+template <class MaterialLawParams, class VectorT = std::vector<MaterialLawParams>>
 struct DirectionalMaterialLawParams {
-    using vector_type = std::vector<MaterialLawParams>;
+    using vector_type = VectorT;
     DirectionalMaterialLawParams()
         : materialLawParamsX_{}
         , materialLawParamsY_{}
