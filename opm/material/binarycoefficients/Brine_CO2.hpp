@@ -28,6 +28,7 @@
 #ifndef OPM_BINARY_COEFF_BRINE_CO2_HPP
 #define OPM_BINARY_COEFF_BRINE_CO2_HPP
 
+#include <opm/common/ErrorMacros.hpp>
 #include <opm/material/IdealGas.hpp>
 #include <opm/material/common/Valgrind.hpp>
 #include <opm/common/TimingMacros.hpp>
@@ -823,7 +824,7 @@ private:
             convTerm = 1.0;
         }
         else {
-            throw std::runtime_error("Activity model for salt-out effect has not been implemented!");
+            OPM_THROW(std::runtime_error, "Activity model for salt-out effect has not been implemented!");
         }
 
         // Eq. (18)

@@ -100,7 +100,7 @@ public:
      * of Ordinary Water Substance", http://www.iapws.org/relguide/visc.pdf
      */
     template <class Evaluation>
-    OPM_HOST_DEVICE static Evaluation viscosity(const Evaluation& temperature, const Evaluation& rho)
+    static Evaluation viscosity(const Evaluation& temperature, const Evaluation& rho)
     {
         Evaluation rhoBar = rho/322.0;
         Evaluation TBar = temperature/criticalTemperature;

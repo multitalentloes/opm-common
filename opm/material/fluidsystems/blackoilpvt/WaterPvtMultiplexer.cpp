@@ -26,7 +26,7 @@
 
 #include <opm/input/eclipse/EclipseState/EclipseState.hpp>
 #include <opm/input/eclipse/EclipseState/Runspec.hpp>
-
+#include <functional>
 namespace Opm {
 
 #if HAVE_ECL_INPUT

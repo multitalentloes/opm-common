@@ -35,14 +35,16 @@
 
 namespace Opm {
 
-template<class TraitsT>
-EclMaterialLawManagerSimple<TraitsT>::EclMaterialLawManagerSimple() = default;
+template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
+EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::EclMaterialLawManagerSimple() = default;
 
-template<class TraitsT>
-EclMaterialLawManagerSimple<TraitsT>::~EclMaterialLawManagerSimple() = default;
 
-template<class TraitsT>
-void EclMaterialLawManagerSimple<TraitsT>::
+template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
+EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::~EclMaterialLawManagerSimple() = default;
+
+
+template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
+void EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::
 initFromState(const EclipseState& eclState)
 {
     // get the number of saturation regions and the number of cells in the deck
@@ -129,10 +131,11 @@ initFromState(const EclipseState& eclState)
     // }
 }
 
-template<class TraitsT>
-void EclMaterialLawManagerSimple<TraitsT>::
+
+template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
+void EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::
 initParamsForElements(const EclipseState& eclState, size_t numCompressedElems,
-                      const std::function<std::vector<int>(const FieldPropsManager&, const std::string&, bool)>& fieldPropIntOnLeafAssigner,
+                      const std::function<Storage<int>(const FieldPropsManager&, const std::string&, bool)>& fieldPropIntOnLeafAssigner,
                       const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner)
 {
     InitParams initParams {*this, eclState, numCompressedElems};
@@ -141,8 +144,9 @@ initParamsForElements(const EclipseState& eclState, size_t numCompressedElems,
 
 // TODO: Better (proper?) handling of mixed wettability systems - see ecl kw OPTIONS switch 74
 // Note: Without OPTIONS[74] the negative part of the Pcow curve is not scaled
-template<class TraitsT>
-std::pair<typename TraitsT::Scalar, bool> EclMaterialLawManagerSimple<TraitsT>::
+
+template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
+std::pair<typename TraitsT::Scalar, bool> EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::
 applySwatinit(unsigned elemIdx,
               Scalar pcow,
               Scalar Sw)
@@ -215,9 +219,10 @@ applySwatinit(unsigned elemIdx,
     return {Sw, newSwatInit};
 }
 
-template<class TraitsT>
+
+template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
 void
-EclMaterialLawManagerSimple<TraitsT>::applyRestartSwatInit(const unsigned elemIdx,
+EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::applyRestartSwatInit(const unsigned elemIdx,
                                                      const Scalar   maxPcow)
 {
     // Maximum capillary pressure adjusted from SWATINIT data.
@@ -233,9 +238,10 @@ EclMaterialLawManagerSimple<TraitsT>::applyRestartSwatInit(const unsigned elemId
     //           EclTwoPhaseSystemType::OilWater);
 }
 
-template<class TraitsT>
-const typename EclMaterialLawManagerSimple<TraitsT>::MaterialLawParams&
-EclMaterialLawManagerSimple<TraitsT>::
+
+template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
+const typename EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::MaterialLawParams&
+EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::
 connectionMaterialLawParams(unsigned satRegionIdx, unsigned elemIdx) const
 {
     MaterialLawParams& mlp = const_cast<MaterialLawParams&>(materialLawParams_[elemIdx]);
@@ -256,12 +262,13 @@ connectionMaterialLawParams(unsigned satRegionIdx, unsigned elemIdx) const
     return mlp;
 }
 
-template<class TraitsT>
-int EclMaterialLawManagerSimple<TraitsT>::
+
+template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
+int EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::
 getKrnumSatIdx(unsigned elemIdx, FaceDir::DirEnum facedir) const
 {
     using Dir = FaceDir::DirEnum;
-    const std::vector<int>* array = nullptr;
+    const Storage<int>* array = nullptr;
     switch(facedir) {
     case Dir::XPlus:
       array = &krnumXArray_;
@@ -283,8 +290,9 @@ getKrnumSatIdx(unsigned elemIdx, FaceDir::DirEnum facedir) const
     }
 }
 
-template<class TraitsT>
-void EclMaterialLawManagerSimple<TraitsT>::
+
+template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
+void EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::
 oilWaterHysteresisParams(Scalar& soMax,
                          Scalar& swMax,
                          Scalar& swMin,
@@ -297,8 +305,9 @@ oilWaterHysteresisParams(Scalar& soMax,
     MaterialLaw::oilWaterHysteresisParams(soMax, swMax, swMin, params);
 }
 
-template<class TraitsT>
-void EclMaterialLawManagerSimple<TraitsT>::
+
+template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
+void EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::
 setOilWaterHysteresisParams(const Scalar& soMax,
                             const Scalar& swMax,
                             const Scalar& swMin,
@@ -311,8 +320,9 @@ setOilWaterHysteresisParams(const Scalar& soMax,
     MaterialLaw::setOilWaterHysteresisParams(soMax, swMax, swMin, params);
 }
 
-template<class TraitsT>
-void EclMaterialLawManagerSimple<TraitsT>::
+
+template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
+void EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::
 gasOilHysteresisParams(Scalar& sgmax,
                        Scalar& shmax,
                        Scalar& somin,
@@ -325,8 +335,9 @@ gasOilHysteresisParams(Scalar& sgmax,
     MaterialLaw::gasOilHysteresisParams(sgmax, shmax, somin, params);
 }
 
-template<class TraitsT>
-void EclMaterialLawManagerSimple<TraitsT>::
+
+template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
+void EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::
 setGasOilHysteresisParams(const Scalar& sgmax,
                           const Scalar& shmax,
                           const Scalar& somin,
@@ -339,9 +350,10 @@ setGasOilHysteresisParams(const Scalar& sgmax,
     MaterialLaw::setGasOilHysteresisParams(sgmax, shmax, somin, params);
 }
 
-// template<class TraitsT>
+// 
+// template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
 // EclEpsScalingPoints<typename TraitsT::Scalar>&
-// EclMaterialLawManagerSimple<TraitsT>::
+// EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::
 // oilWaterScaledEpsPointsDrainage(unsigned elemIdx)
 // {
 //     auto& materialParams = materialLawParams_[elemIdx];
@@ -349,8 +361,10 @@ setGasOilHysteresisParams(const Scalar& sgmax,
 //     return realParams.oilWaterParams().drainageParams().scaledPoints();
 // }
 
-template<class TraitsT>
-const typename EclMaterialLawManagerSimple<TraitsT>::MaterialLawParams& EclMaterialLawManagerSimple<TraitsT>::
+
+template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
+const typename EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::MaterialLawParams&
+EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::
 materialLawParamsFunc_(unsigned elemIdx, FaceDir::DirEnum facedir) const
 {
     using Dir = FaceDir::DirEnum;
@@ -374,8 +388,9 @@ materialLawParamsFunc_(unsigned elemIdx, FaceDir::DirEnum facedir) const
     }
 }
 
-// template<class TraitsT>
-// void EclMaterialLawManagerSimple<TraitsT>::
+// 
+// template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
+// void EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::
 // readGlobalEpsOptions_(const EclipseState& eclState)
 // {
 //     oilWaterEclEpsConfig_ = std::make_shared<EclEpsConfig>();
@@ -384,16 +399,18 @@ materialLawParamsFunc_(unsigned elemIdx, FaceDir::DirEnum facedir) const
 //     enableEndPointScaling_ = eclState.getTableManager().hasTables("ENKRVD");
 // }
 
-// template<class TraitsT>
-// void EclMaterialLawManagerSimple<TraitsT>::
+// 
+// template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
+// void EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::
 // readGlobalHysteresisOptions_(const EclipseState& state)
 // {
 //     hysteresisConfig_ = std::make_shared<EclHysteresisConfig>();
 //     hysteresisConfig_->initFromState(state.runspec());
 // }
 
-template<class TraitsT>
-void EclMaterialLawManagerSimple<TraitsT>::
+
+template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
+void EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::
 readGlobalThreePhaseOptions_(const Runspec& runspec)
 {
     bool gasEnabled = runspec.phases().active(Phase::GAS);
