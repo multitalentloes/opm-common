@@ -172,7 +172,7 @@ public:
      * \brief Henry coefficent \f$\mathrm{[N/m^2]}\f$ for CO2 in brine.
      */
     template <class Evaluation>
-    static Evaluation henry(const Evaluation& temperature, bool extrapolate = false)
+    OPM_HOST_DEVICE static Evaluation henry(const Evaluation& temperature, bool extrapolate = false)
     { return fugacityCoefficientCO2(temperature, /*pressure=*/1e5, extrapolate)*1e5; }
 
     /*!
@@ -184,7 +184,7 @@ public:
      * \param pg the gas phase pressure [Pa]
      */
     template <class Evaluation, class CO2Params>
-    static Evaluation fugacityCoefficientCO2(const CO2Params& params,
+    OPM_HOST_DEVICE static Evaluation fugacityCoefficientCO2(const CO2Params& params,
                                              const Evaluation& temperature, 
                                              const Evaluation& pg,
                                              const Evaluation& yH2O, 
@@ -241,7 +241,7 @@ public:
      * \param pg the gas phase pressure [Pa]
      */
     template <class Evaluation, class CO2Params>
-    static Evaluation fugacityCoefficientH2O(const CO2Params& params,
+    OPM_HOST_DEVICE static Evaluation fugacityCoefficientH2O(const CO2Params& params,
                                              const Evaluation& temperature, 
                                              const Evaluation& pg,
                                              const Evaluation& yH2O, 
@@ -756,7 +756,7 @@ private:
      * \param pg the gas phase pressure [Pa]
      */
     template <class Evaluation, class CO2Parameters>
-    static Evaluation computeB_(const CO2Parameters& params,
+    OPM_HOST_DEVICE static Evaluation computeB_(const CO2Parameters& params,
                                 const Evaluation& temperature, 
                                 const Evaluation& pg, 
                                 const Evaluation& yH2O,
@@ -823,7 +823,11 @@ private:
             convTerm = 1.0;
         }
         else {
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
             throw std::runtime_error("Activity model for salt-out effect has not been implemented!");
+#else
+            assert(false && "Activity model for salt-out effect has not been implemented!");
+#endif
         }
 
         // Eq. (18)
@@ -914,7 +918,7 @@ private:
      * \param temperature the temperature [K]
      */
     template <class Evaluation>
-    static Evaluation equilibriumConstantCO2_(const Evaluation& temperature, 
+    OPM_HOST_DEVICE static Evaluation equilibriumConstantCO2_(const Evaluation& temperature, 
                                               const Evaluation& pg, 
                                               const bool& highTemp,
                                               bool spycherPruess2005 = false)

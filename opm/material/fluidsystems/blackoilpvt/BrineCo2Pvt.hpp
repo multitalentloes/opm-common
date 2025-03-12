@@ -74,13 +74,6 @@ template <class Scalar, class Params = Opm::CO2Tables<double, std::vector<double
 class BrineCo2Pvt
 {
     static constexpr bool extrapolate = true;
-    //typedef H2O<Scalar> H2O_IAPWS;
-    //typedef Brine<Scalar, H2O_IAPWS> Brine_IAPWS;
-    //typedef TabulatedComponent<Scalar, H2O_IAPWS> H2O_Tabulated;
-    //typedef TabulatedComponent<Scalar, Brine_IAPWS> Brine_Tabulated;
-
-    //typedef H2O_Tabulated H2O;
-    //typedef Brine_Tabulated Brine;
 
 
 public:
@@ -255,6 +248,18 @@ public:
             return mu_pure * pow(10.0, nacl_exponent * salinity);
         }
         else {
+            printf("BrineCo2 saturatedViscosity\n");
+            if constexpr (std::is_same_v<Evaluation, double>) {
+                printf("temperature(double): %f\n", temperature);
+            }else{
+                printf("temperature(eval): %f\n", temperature.value());
+            }
+            if constexpr (std::is_same_v<Evaluation, double>) {
+                printf("pressure(double): %f\n", pressure);
+            }else{
+                printf("pressure(eval): %f\n", pressure.value());
+            }
+            printf("gasViscosity: %f\n", Brine::liquidViscosity(temperature, pressure, salinity));
             return Brine::liquidViscosity(temperature, pressure, salinity);
         }
     }

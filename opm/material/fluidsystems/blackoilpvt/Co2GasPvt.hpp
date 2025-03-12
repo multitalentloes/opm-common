@@ -42,6 +42,8 @@
 #include <opm/input/eclipse/EclipseState/EclipseState.hpp>
 #include <opm/input/eclipse/EclipseState/Tables/TableManager.hpp>
 
+#include <iostream>
+
 #include <cstddef>
 #include <vector>
 

@@ -34,13 +34,21 @@
 #include <opm/material/fluidsystems/blackoilpvt/LiveOilPvt.hpp>
 #include <opm/material/fluidsystems/blackoilpvt/OilPvtThermal.hpp>
 
+#include <opm/common/utility/gpuDecorators.hpp>
+
 namespace Opm {
 
 #if HAVE_ECL_INPUT
 class EclipseState;
 class Schedule;
 #endif
+#if OPM_IS_COMPILING_WITH_GPU_COMPILER
+// Testing whether hardcoding the PvtType supported on GPU helps
+#define OPM_OIL_PVT_MULTIPLEXER_CALL(codeToCall, ...)                     \
+    assert(false && "this code should not be called!"); \
+    return 0.0;
 
+#else
 #define OPM_OIL_PVT_MULTIPLEXER_CALL(codeToCall, ...)                             \
     switch (approach_) {                                                          \
     case OilPvtApproach::ConstantCompressibilityOil: {                            \
@@ -77,6 +85,7 @@ class Schedule;
     case OilPvtApproach::NoOil:                                                   \
         throw std::logic_error("Not implemented: Oil PVT of this deck!");         \
     }
+#endif
 
 enum class OilPvtApproach {
     NoOil,
@@ -148,13 +157,13 @@ public:
     /*!
      * \brief Return the reference density which are considered by this PVT-object.
      */
-    Scalar oilReferenceDensity(unsigned regionIdx) const;
+    OPM_HOST_DEVICE Scalar oilReferenceDensity(unsigned regionIdx) const;
 
     /*!
      * \brief Returns the specific enthalpy [J/kg] oil given a set of parameters.
      */
     template <class Evaluation>
-    Evaluation internalEnergy(unsigned regionIdx,
+    OPM_HOST_DEVICE Evaluation internalEnergy(unsigned regionIdx,
                         const Evaluation& temperature,
                         const Evaluation& pressure,
                         const Evaluation& Rs) const
@@ -166,7 +175,7 @@ public:
      * \brief Returns the dynamic viscosity [Pa s] of the fluid phase given a set of parameters.
      */
     template <class Evaluation>
-    Evaluation viscosity(unsigned regionIdx,
+    OPM_HOST_DEVICE Evaluation viscosity(unsigned regionIdx,
                          const Evaluation& temperature,
                          const Evaluation& pressure,
                          const Evaluation& Rs) const
@@ -176,7 +185,7 @@ public:
      * \brief Returns the dynamic viscosity [Pa s] of the fluid phase given a set of parameters.
      */
     template <class Evaluation>
-    Evaluation saturatedViscosity(unsigned regionIdx,
+    OPM_HOST_DEVICE Evaluation saturatedViscosity(unsigned regionIdx,
                                   const Evaluation& temperature,
                                   const Evaluation& pressure) const
     { OPM_OIL_PVT_MULTIPLEXER_CALL(return pvtImpl.saturatedViscosity(regionIdx, temperature, pressure)); }
@@ -185,7 +194,7 @@ public:
      * \brief Returns the formation volume factor [-] of the fluid phase.
      */
     template <class Evaluation>
-    Evaluation inverseFormationVolumeFactor(unsigned regionIdx,
+    OPM_HOST_DEVICE Evaluation inverseFormationVolumeFactor(unsigned regionIdx,
                                             const Evaluation& temperature,
                                             const Evaluation& pressure,
                                             const Evaluation& Rs) const
@@ -195,7 +204,7 @@ public:
      * \brief Returns the formation volume factor [-] of the fluid phase.
      */
     template <class Evaluation>
-    Evaluation saturatedInverseFormationVolumeFactor(unsigned regionIdx,
+    OPM_HOST_DEVICE Evaluation saturatedInverseFormationVolumeFactor(unsigned regionIdx,
                                                      const Evaluation& temperature,
                                                      const Evaluation& pressure) const
     { OPM_OIL_PVT_MULTIPLEXER_CALL(return pvtImpl.saturatedInverseFormationVolumeFactor(regionIdx, temperature, pressure)); }
@@ -204,7 +213,7 @@ public:
      * \brief Returns the gas dissolution factor \f$R_s\f$ [m^3/m^3] of saturated oil.
      */
     template <class Evaluation>
-    Evaluation saturatedGasDissolutionFactor(unsigned regionIdx,
+    OPM_HOST_DEVICE Evaluation saturatedGasDissolutionFactor(unsigned regionIdx,
                                              const Evaluation& temperature,
                                              const Evaluation& pressure) const
     { OPM_OIL_PVT_MULTIPLEXER_CALL(return pvtImpl.saturatedGasDissolutionFactor(regionIdx, temperature, pressure)); }
@@ -213,7 +222,7 @@ public:
      * \brief Returns the gas dissolution factor \f$R_s\f$ [m^3/m^3] of saturated oil.
      */
     template <class Evaluation>
-    Evaluation saturatedGasDissolutionFactor(unsigned regionIdx,
+    OPM_HOST_DEVICE Evaluation saturatedGasDissolutionFactor(unsigned regionIdx,
                                              const Evaluation& temperature,
                                              const Evaluation& pressure,
                                              const Evaluation& oilSaturation,
@@ -228,7 +237,7 @@ public:
      * the black-oil PVT interface will just throw an exception...
      */
     template <class Evaluation>
-    Evaluation saturationPressure(unsigned regionIdx,
+    OPM_HOST_DEVICE Evaluation saturationPressure(unsigned regionIdx,
                                   const Evaluation& temperature,
                                   const Evaluation& Rs) const
     { OPM_OIL_PVT_MULTIPLEXER_CALL(return pvtImpl.saturationPressure(regionIdx, temperature, Rs)); }
@@ -237,7 +246,7 @@ public:
      * \copydoc BaseFluidSystem::diffusionCoefficient
      */
     template <class Evaluation>
-    Evaluation diffusionCoefficient(const Evaluation& temperature,
+    OPM_HOST_DEVICE Evaluation diffusionCoefficient(const Evaluation& temperature,
                                     const Evaluation& pressure,
                                     unsigned compIdx) const
     {
@@ -251,75 +260,75 @@ public:
      *
      * (This is only determined at runtime.)
      */
-    OilPvtApproach approach() const
+    OPM_HOST_DEVICE OilPvtApproach approach() const
     { return approach_; }
 
     // get the concrete parameter object for the oil phase
     template <OilPvtApproach approachV>
-    typename std::enable_if<approachV == OilPvtApproach::LiveOil, LiveOilPvt<Scalar> >::type& getRealPvt()
+    OPM_HOST_DEVICE typename std::enable_if<approachV == OilPvtApproach::LiveOil, LiveOilPvt<Scalar> >::type& getRealPvt()
     {
         assert(approach() == approachV);
         return *static_cast<LiveOilPvt<Scalar>* >(realOilPvt_);
     }
 
     template <OilPvtApproach approachV>
-    typename std::enable_if<approachV == OilPvtApproach::LiveOil, const LiveOilPvt<Scalar> >::type& getRealPvt() const
+    OPM_HOST_DEVICE typename std::enable_if<approachV == OilPvtApproach::LiveOil, const LiveOilPvt<Scalar> >::type& getRealPvt() const
     {
         assert(approach() == approachV);
         return *static_cast<LiveOilPvt<Scalar>* >(realOilPvt_);
     }
 
     template <OilPvtApproach approachV>
-    typename std::enable_if<approachV == OilPvtApproach::DeadOil, DeadOilPvt<Scalar> >::type& getRealPvt()
+    OPM_HOST_DEVICE typename std::enable_if<approachV == OilPvtApproach::DeadOil, DeadOilPvt<Scalar> >::type& getRealPvt()
     {
         assert(approach() == approachV);
         return *static_cast<DeadOilPvt<Scalar>* >(realOilPvt_);
     }
 
     template <OilPvtApproach approachV>
-    typename std::enable_if<approachV == OilPvtApproach::DeadOil, const DeadOilPvt<Scalar> >::type& getRealPvt() const
+    OPM_HOST_DEVICE typename std::enable_if<approachV == OilPvtApproach::DeadOil, const DeadOilPvt<Scalar> >::type& getRealPvt() const
     {
         assert(approach() == approachV);
         return *static_cast<DeadOilPvt<Scalar>* >(realOilPvt_);
     }
 
     template <OilPvtApproach approachV>
-    typename std::enable_if<approachV == OilPvtApproach::ConstantCompressibilityOil, ConstantCompressibilityOilPvt<Scalar> >::type& getRealPvt()
+    OPM_HOST_DEVICE typename std::enable_if<approachV == OilPvtApproach::ConstantCompressibilityOil, ConstantCompressibilityOilPvt<Scalar> >::type& getRealPvt()
     {
         assert(approach() == approachV);
         return *static_cast<ConstantCompressibilityOilPvt<Scalar>* >(realOilPvt_);
     }
 
     template <OilPvtApproach approachV>
-    typename std::enable_if<approachV == OilPvtApproach::ConstantCompressibilityOil, const ConstantCompressibilityOilPvt<Scalar> >::type& getRealPvt() const
+    OPM_HOST_DEVICE typename std::enable_if<approachV == OilPvtApproach::ConstantCompressibilityOil, const ConstantCompressibilityOilPvt<Scalar> >::type& getRealPvt() const
     {
         assert(approach() == approachV);
         return *static_cast<ConstantCompressibilityOilPvt<Scalar>* >(realOilPvt_);
     }
 
     template <OilPvtApproach approachV>
-    typename std::enable_if<approachV == OilPvtApproach::ThermalOil, OilPvtThermal<Scalar> >::type& getRealPvt()
+    OPM_HOST_DEVICE typename std::enable_if<approachV == OilPvtApproach::ThermalOil, OilPvtThermal<Scalar> >::type& getRealPvt()
     {
         assert(approach() == approachV);
         return *static_cast<OilPvtThermal<Scalar>* >(realOilPvt_);
     }
 
     template <OilPvtApproach approachV>
-    typename std::enable_if<approachV == OilPvtApproach::ThermalOil, const OilPvtThermal<Scalar> >::type& getRealPvt() const
+    OPM_HOST_DEVICE typename std::enable_if<approachV == OilPvtApproach::ThermalOil, const OilPvtThermal<Scalar> >::type& getRealPvt() const
     {
         assert(approach() == approachV);
         return *static_cast<const OilPvtThermal<Scalar>* >(realOilPvt_);
     }
 
     template <OilPvtApproach approachV>
-    typename std::enable_if<approachV == OilPvtApproach::BrineCo2, BrineCo2Pvt<Scalar> >::type& getRealPvt()
+    OPM_HOST_DEVICE typename std::enable_if<approachV == OilPvtApproach::BrineCo2, BrineCo2Pvt<Scalar> >::type& getRealPvt()
     {
         assert(approach() == approachV);
         return *static_cast<BrineCo2Pvt<Scalar>* >(realOilPvt_);
     }
 
     template <OilPvtApproach approachV>
-    typename std::enable_if<approachV == OilPvtApproach::BrineCo2, const BrineCo2Pvt<Scalar> >::type& getRealPvt() const
+    OPM_HOST_DEVICE typename std::enable_if<approachV == OilPvtApproach::BrineCo2, const BrineCo2Pvt<Scalar> >::type& getRealPvt() const
     {
         assert(approach() == approachV);
         return *static_cast<const BrineCo2Pvt<Scalar>* >(realOilPvt_);
@@ -328,14 +337,14 @@ public:
     const void* realOilPvt() const { return realOilPvt_; }
 
     template <OilPvtApproach approachV>
-    typename std::enable_if<approachV == OilPvtApproach::BrineH2, BrineH2Pvt<Scalar> >::type& getRealPvt()
+    OPM_HOST_DEVICE typename std::enable_if<approachV == OilPvtApproach::BrineH2, BrineH2Pvt<Scalar> >::type& getRealPvt()
     {
         assert(approach() == approachV);
         return *static_cast<BrineH2Pvt<Scalar>* >(realOilPvt_);
     }
 
     template <OilPvtApproach approachV>
-    typename std::enable_if<approachV == OilPvtApproach::BrineH2, const BrineH2Pvt<Scalar> >::type& getRealPvt() const
+    OPM_HOST_DEVICE typename std::enable_if<approachV == OilPvtApproach::BrineH2, const BrineH2Pvt<Scalar> >::type& getRealPvt() const
     {
         assert(approach() == approachV);
         return *static_cast<const BrineH2Pvt<Scalar>* >(realOilPvt_);

@@ -391,6 +391,7 @@ public:
         return totalSaturation_;
     }
 
+    mutable Scalar reservoirTemperatureTmp;
     /*!
      * \brief Return the temperature [K]
      */
@@ -399,8 +400,11 @@ public:
         if constexpr (enableTemperature || enableEnergy) {
             return *temperature_;
         } else {
-            static Scalar tmp(fluidSystem_->reservoirTemperature(pvtRegionIdx_));
-            return tmp;
+            // const Scalar tmp(fluidSystem_->reservoirTemperature(pvtRegionIdx_));
+            // return tmp;
+            // return fluidSystem_->reservoirTemperature(pvtRegionIdx_);
+            reservoirTemperatureTmp = fluidSystem_->reservoirTemperature(pvtRegionIdx_);
+            return reservoirTemperatureTmp;
         }
     }
 
@@ -425,7 +429,7 @@ public:
         if constexpr (enableDissolution) {
             return *Rs_;
         } else {
-            static Scalar null = 0.0;
+            const Scalar null = 0.0;
             return null;
         }
     }
@@ -440,7 +444,7 @@ public:
     OPM_HOST_DEVICE const Scalar& Rv() const
     {
         if constexpr (!enableDissolution) {
-            static Scalar null = 0.0;
+            const Scalar null = 0.0;
             return null;
         } else {
             return *Rv_;
@@ -459,7 +463,7 @@ public:
         if constexpr (enableVapwat) {
             return *Rvw_;
         } else {
-            static Scalar null = 0.0;
+            const Scalar null = 0.0;
             return null;
         }
     }
@@ -476,7 +480,7 @@ public:
         if constexpr (enableDissolutionInWater) {
             return *Rsw_;
         } else {
-            static Scalar null = 0.0;
+            const Scalar null = 0.0;
             return null;
         }
     }
@@ -489,7 +493,7 @@ public:
         if constexpr (enableBrine) {
             return *saltConcentration_;
         } else {
-            static Scalar null = 0.0;
+            const Scalar null = 0.0;
             return null;
         }
     }
@@ -502,7 +506,7 @@ public:
         if constexpr (enableSaltPrecipitation) {
             return *saltSaturation_;
         } else {
-            static Scalar null = 0.0;
+            const Scalar null = 0.0;
             return null;
         }
     }

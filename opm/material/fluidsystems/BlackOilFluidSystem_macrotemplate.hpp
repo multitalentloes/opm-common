@@ -691,8 +691,9 @@ public:
                 referenceDensity(waterPhaseIdx, regionIdx)
                 * waterPvt_->inverseFormationVolumeFactor(regionIdx, T, p, Rsw, saltConcentration);
         }
-
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
         throw std::logic_error("Unhandled phase index " + std::to_string(phaseIdx));
+#endif
     }
 
     /*!
@@ -794,7 +795,9 @@ public:
         }
         }
 
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
         throw std::logic_error("Unhandled phase index "+std::to_string(phaseIdx));
+#endif
     }
 
     /*!
@@ -892,7 +895,9 @@ public:
             const LhsEval Rsw(0.0);
             return waterPvt_->inverseFormationVolumeFactor(regionIdx, T, p, Rsw, saltConcentration);
         }
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
         default: throw std::logic_error("Unhandled phase index "+std::to_string(phaseIdx));
+#endif
         }
     }
 
@@ -922,7 +927,9 @@ public:
         case oilPhaseIdx: return oilPvt_->saturatedInverseFormationVolumeFactor(regionIdx, T, p);
         case gasPhaseIdx: return gasPvt_->saturatedInverseFormationVolumeFactor(regionIdx, T, p);
         case waterPhaseIdx: return waterPvt_->saturatedInverseFormationVolumeFactor(regionIdx, T, p, saltConcentration);
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
         default: throw std::logic_error("Unhandled phase index "+std::to_string(phaseIdx));
+#endif
         }
     }
 
@@ -988,7 +995,11 @@ public:
                 return phi_gG*1e6;
 
             default:
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
                 throw std::logic_error("Invalid component index "+std::to_string(compIdx));
+#else
+                return 0.0;
+#endif
             }
 
         case oilPhaseIdx: // fugacity coefficients for all components in the oil phase
@@ -1023,7 +1034,11 @@ public:
                 return phi_oO*1e6;
 
             default:
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
                 throw std::logic_error("Invalid component index "+std::to_string(compIdx));
+#else
+                return 0.0;
+#endif
             }
 
         case waterPhaseIdx: // fugacity coefficients for all components in the water phase
@@ -1038,11 +1053,19 @@ public:
             case oilCompIdx: return 1.1e6*phi_wW;
             case gasCompIdx: return 1e6*phi_wW;
             default:
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
                 throw std::logic_error("Invalid component index "+std::to_string(compIdx));
+#else
+                return 0.0;
+#endif
             }
 
         default:
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
             throw std::logic_error("Invalid phase index "+std::to_string(phaseIdx));
+#else
+            return 0.0;
+#endif
         }
 
         throw std::logic_error("Unhandled phase or component index");
@@ -1063,6 +1086,7 @@ public:
 
         switch (phaseIdx) {
         case oilPhaseIdx: {
+            printf("oil viscosity\n");
             if (enableDissolvedGas()) {
                 const auto& Rs = BlackOil::template getRs_<ThisType, FluidState, LhsEval>(fluidState, regionIdx);
                 if (useSaturatedTables() && fluidState.saturation(gasPhaseIdx) > 0.0
@@ -1079,10 +1103,11 @@ public:
         }
 
         case gasPhaseIdx: {
-             if (enableVaporizedOil() && enableVaporizedWater()) {
-                 const auto& Rvw = BlackOil::template getRvw_<ThisType, FluidState, LhsEval>(fluidState, regionIdx);
-                 const auto& Rv = BlackOil::template getRv_<ThisType, FluidState, LhsEval>(fluidState, regionIdx);
-                 if (useSaturatedTables() && fluidState.saturation(waterPhaseIdx) > 0.0
+            printf("gas viscosity\n");
+            if (enableVaporizedOil() && enableVaporizedWater()) {
+                const auto& Rvw = BlackOil::template getRvw_<ThisType, FluidState, LhsEval>(fluidState, regionIdx);
+                const auto& Rv = BlackOil::template getRv_<ThisType, FluidState, LhsEval>(fluidState, regionIdx);
+                if (useSaturatedTables() && fluidState.saturation(waterPhaseIdx) > 0.0
                     && Rvw >= (1.0 - 1e-10)*gasPvt_->saturatedWaterVaporizationFactor(regionIdx, scalarValue(T), scalarValue(p))
                     && fluidState.saturation(oilPhaseIdx) > 0.0
                     && Rv >= (1.0 - 1e-10)*gasPvt_->saturatedOilVaporizationFactor(regionIdx, scalarValue(T), scalarValue(p)))
@@ -1122,6 +1147,13 @@ public:
 
         case waterPhaseIdx:
         {
+            printf("water viscosity\n");
+            if constexpr (std::is_same_v<LhsEval, double>) {
+                printf("temp (double) %lf\n", T);
+            }
+            else {
+                printf("temp (eval) %f\n", T.value());
+            }
             const LhsEval& saltConcentration = BlackOil::template getSaltConcentration_<ThisType, FluidState, LhsEval>(fluidState, regionIdx);
             if (enableDissolvedGasInWater()) {
                 const auto& Rsw = BlackOil::template getRsw_<ThisType, FluidState, LhsEval>(fluidState, regionIdx);
@@ -1137,8 +1169,11 @@ public:
             return waterPvt_->viscosity(regionIdx, T, p, Rsw, saltConcentration);
         }
         }
-
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
         throw std::logic_error("Unhandled phase index "+std::to_string(phaseIdx));
+#else
+        return 0.0;
+#endif
     }
 
     template <class FluidState, class LhsEval = typename FluidState::Scalar>
@@ -1177,9 +1212,13 @@ public:
             break;
 
         default:
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
             throw std::logic_error {
                 "Phase index " + std::to_string(phaseIdx) + " does not support internal energy"
             };
+#else
+            return 0.0;
+#endif
         }
 
         return internalMixingTotalEnergy<FluidState,LhsEval>(fluidState, phaseIdx, regionIdx)
@@ -1308,7 +1347,9 @@ public:
                 waterEnergy*referenceDensity(waterPhaseIdx, regionIdx)
                 * waterPvt_->inverseFormationVolumeFactor(regionIdx, T, p, Rsw, saltConcentration);
         }
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
         throw std::logic_error("Unhandled phase index " + std::to_string(phaseIdx));
+#endif
     }
 
 
@@ -1351,7 +1392,9 @@ public:
         case oilPhaseIdx: return 0.0;
         case gasPhaseIdx: return gasPvt_->saturatedWaterVaporizationFactor(regionIdx, T, p, saltConcentration);
         case waterPhaseIdx: return 0.0;
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
         default: throw std::logic_error("Unhandled phase index "+std::to_string(phaseIdx));
+#endif
         }
     }
 
@@ -1380,7 +1423,9 @@ public:
         case gasPhaseIdx: return gasPvt_->saturatedOilVaporizationFactor(regionIdx, T, p, So, maxOilSaturation);
         case waterPhaseIdx: return waterPvt_->saturatedGasDissolutionFactor(regionIdx, T, p,
         BlackOil::template getSaltConcentration_<ThisType, FluidState, LhsEval>(fluidState, regionIdx));
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
         default: throw std::logic_error("Unhandled phase index "+std::to_string(phaseIdx));
+#endif
         }
     }
 
@@ -1409,7 +1454,9 @@ public:
         case gasPhaseIdx: return gasPvt_->saturatedOilVaporizationFactor(regionIdx, T, p);
         case waterPhaseIdx: return waterPvt_->saturatedGasDissolutionFactor(regionIdx, T, p,
         BlackOil::template getSaltConcentration_<ThisType, FluidState, LhsEval>(fluidState, regionIdx));
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
         default: throw std::logic_error("Unhandled phase index "+std::to_string(phaseIdx));
+#endif
         }
     }
 
@@ -1460,7 +1507,9 @@ public:
         case waterPhaseIdx: return waterPvt_->saturationPressure(regionIdx, T,
         BlackOil::template getRsw_<ThisType, FluidState, LhsEval>(fluidState, regionIdx),
         BlackOil::template getSaltConcentration_<ThisType, FluidState, LhsEval>(fluidState, regionIdx));
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
         default: throw std::logic_error("Unhandled phase index "+std::to_string(phaseIdx));
+#endif
         }
     }
 
@@ -1731,7 +1780,9 @@ public:
         case oilPhaseIdx: return oilPvt().diffusionCoefficient(T, p, compIdx);
         case gasPhaseIdx: return gasPvt().diffusionCoefficient(T, p, compIdx);
         case waterPhaseIdx: return waterPvt().diffusionCoefficient(T, p, compIdx);
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
         default: throw std::logic_error("Unhandled phase index "+std::to_string(phaseIdx));
+#endif
         }
     }
     STATIC_OR_DEVICE void setEnergyEqualEnthalpy(bool enthalpy_eq_energy){
@@ -1895,9 +1946,12 @@ phaseName(unsigned phaseIdx) NOTHING_OR_CONST
         return "oil";
     case gasPhaseIdx:
         return "gas";
-
     default:
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
         throw std::logic_error(std::string("Phase index ") + std::to_string(phaseIdx) + " is unknown");
+#else
+        return "unknown";
+#endif
     }
 }
 
@@ -1912,9 +1966,12 @@ solventComponentIndex(unsigned phaseIdx) NOTHING_OR_CONST
         return oilCompIdx;
     case gasPhaseIdx:
         return gasCompIdx;
-
     default:
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
         throw std::logic_error(std::string("Phase index ") + std::to_string(phaseIdx) + " is unknown");
+#else
+        return 0;
+#endif
     }
 }
 
@@ -1934,9 +1991,12 @@ soluteComponentIndex(unsigned phaseIdx) NOTHING_OR_CONST
             return waterCompIdx;
         }
         return oilCompIdx;
-
     default:
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
         throw std::logic_error(std::string("Phase index ") + std::to_string(phaseIdx) + " is unknown");
+#else
+        return 0;
+#endif
     }
 }
 
@@ -1951,9 +2011,12 @@ componentName(unsigned compIdx) NOTHING_OR_CONST
         return "Oil";
     case gasCompIdx:
         return "Gas";
-
     default:
+#if !OPM_IS_INSIDE_DEVICE_FUNCTION
         throw std::logic_error(std::string("Component index ") + std::to_string(compIdx) + " is unknown");
+#else
+        return "unknown";
+#endif
     }
 }
 
