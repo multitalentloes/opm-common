@@ -248,18 +248,6 @@ public:
             return mu_pure * pow(10.0, nacl_exponent * salinity);
         }
         else {
-            printf("BrineCo2 saturatedViscosity\n");
-            if constexpr (std::is_same_v<Evaluation, double>) {
-                printf("temperature(double): %f\n", temperature);
-            }else{
-                printf("temperature(eval): %f\n", temperature.value());
-            }
-            if constexpr (std::is_same_v<Evaluation, double>) {
-                printf("pressure(double): %f\n", pressure);
-            }else{
-                printf("pressure(eval): %f\n", pressure.value());
-            }
-            printf("gasViscosity: %f\n", Brine::liquidViscosity(temperature, pressure, salinity));
             return Brine::liquidViscosity(temperature, pressure, salinity);
         }
     }

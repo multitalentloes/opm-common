@@ -1147,13 +1147,6 @@ public:
 
         case waterPhaseIdx:
         {
-            printf("water viscosity\n");
-            if constexpr (std::is_same_v<LhsEval, double>) {
-                printf("temp (double) %lf\n", T);
-            }
-            else {
-                printf("temp (eval) %f\n", T.value());
-            }
             const LhsEval& saltConcentration = BlackOil::template getSaltConcentration_<ThisType, FluidState, LhsEval>(fluidState, regionIdx);
             if (enableDissolvedGasInWater()) {
                 const auto& Rsw = BlackOil::template getRsw_<ThisType, FluidState, LhsEval>(fluidState, regionIdx);

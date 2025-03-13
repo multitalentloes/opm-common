@@ -65,25 +65,25 @@ public:
     static constexpr Scalar criticalTemperature = 647.096;
 
     //! Critical pressure of water \f$\mathrm{[Pa]}\f$
-    static const Scalar criticalPressure;
+    static constexpr Scalar criticalPressure = 22.064e6;
 
     //! Density of water at the critical point \f$\mathrm{[kg/m^3]}\f$
-    static const Scalar criticalDensity;
+    static constexpr Scalar criticalDensity = 322.0;
 
     //! Critical volume of water \f$\mathrm{[m^3/kmol]}\f$
-    static const Scalar criticalVolume;
+    static constexpr Scalar criticalVolume = 5.595e-2;
 
     //! Critical molar volume of water \f$\mathrm{[m^3/mol]}\f$
-    static const Scalar criticalMolarVolume;
+    static constexpr Scalar criticalMolarVolume = molarMass/criticalDensity;
 
     //! The acentric factor of water \f$\mathrm{[-]}\f$
-    static const Scalar acentricFactor;
+    static constexpr Scalar acentricFactor = 0.344;
 
     //! Triple temperature of water \f$\mathrm{[K]}\f$
-    static const Scalar tripleTemperature;
+    static constexpr Scalar tripleTemperature = 273.16;
 
     //! Triple pressure of water \f$\mathrm{[Pa]}\f$
-    static const Scalar triplePressure;
+    static constexpr Scalar triplePressure = 611.657;
 
     /*!
      * \brief The dynamic viscosity \f$\mathrm{[(N/m^2)*s]}\f$of pure water.
@@ -232,27 +232,6 @@ public:
         return /*thcond_kstar * */ lam;
     }
 };
-
-// template <class Scalar>
-// const Scalar Common<Scalar>::molarMass = 18.01518e-3;
-// template <class Scalar>
-// const Scalar Common<Scalar>::Rs = Constants<Scalar>::R/molarMass;
-// template <class Scalar>
-// const Scalar Common<Scalar>::criticalTemperature = 647.096;
-template <class Scalar>
-const Scalar Common<Scalar>::criticalPressure = 22.064e6;
-template <class Scalar>
-const Scalar Common<Scalar>::criticalDensity = 322.0;
-template <class Scalar>
-const Scalar Common<Scalar>::criticalMolarVolume = molarMass/criticalDensity;
-template <class Scalar>
-const Scalar Common<Scalar>::criticalVolume = 5.595e-2;
-template <class Scalar>
-const Scalar Common<Scalar>::acentricFactor = 0.344;
-template <class Scalar>
-const Scalar Common<Scalar>::tripleTemperature = 273.16;
-template <class Scalar>
-const Scalar Common<Scalar>::triplePressure = 611.657;
 
 } // namespace IAPWS
 } // namespace Opm
