@@ -1086,7 +1086,6 @@ public:
 
         switch (phaseIdx) {
         case oilPhaseIdx: {
-            printf("oil viscosity\n");
             if (enableDissolvedGas()) {
                 const auto& Rs = BlackOil::template getRs_<ThisType, FluidState, LhsEval>(fluidState, regionIdx);
                 if (useSaturatedTables() && fluidState.saturation(gasPhaseIdx) > 0.0
@@ -1103,7 +1102,6 @@ public:
         }
 
         case gasPhaseIdx: {
-            printf("gas viscosity\n");
             if (enableVaporizedOil() && enableVaporizedWater()) {
                 const auto& Rvw = BlackOil::template getRvw_<ThisType, FluidState, LhsEval>(fluidState, regionIdx);
                 const auto& Rv = BlackOil::template getRv_<ThisType, FluidState, LhsEval>(fluidState, regionIdx);

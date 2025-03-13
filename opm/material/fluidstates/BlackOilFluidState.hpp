@@ -391,20 +391,15 @@ public:
         return totalSaturation_;
     }
 
-    mutable Scalar reservoirTemperatureTmp;
     /*!
      * \brief Return the temperature [K]
      */
-    OPM_HOST_DEVICE const Scalar& temperature(unsigned) const
+    OPM_HOST_DEVICE Scalar temperature(unsigned) const
     {
         if constexpr (enableTemperature || enableEnergy) {
             return *temperature_;
         } else {
-            // const Scalar tmp(fluidSystem_->reservoirTemperature(pvtRegionIdx_));
-            // return tmp;
-            // return fluidSystem_->reservoirTemperature(pvtRegionIdx_);
-            reservoirTemperatureTmp = fluidSystem_->reservoirTemperature(pvtRegionIdx_);
-            return reservoirTemperatureTmp;
+            return Scalar (fluidSystem_->reservoirTemperature(pvtRegionIdx_));
         }
     }
 
@@ -424,13 +419,12 @@ public:
      * of gas at surface conditions per cubic meter of liquid oil at surface
      * conditions. This method is specific to the black-oil model.
      */
-    OPM_HOST_DEVICE const Scalar& Rs() const
+    OPM_HOST_DEVICE Scalar Rs() const
     {
         if constexpr (enableDissolution) {
             return *Rs_;
         } else {
-            const Scalar null = 0.0;
-            return null;
+            return Scalar(0.0);
         }
     }
 
@@ -441,11 +435,10 @@ public:
      * of liquid oil at surface conditions per cubic meter of gas at surface
      * conditions. This method is specific to the black-oil model.
      */
-    OPM_HOST_DEVICE const Scalar& Rv() const
+    OPM_HOST_DEVICE Scalar Rv() const
     {
         if constexpr (!enableDissolution) {
-            const Scalar null = 0.0;
-            return null;
+            return Scalar(0.0);
         } else {
             return *Rv_;
         }
@@ -458,13 +451,12 @@ public:
      * of liquid water at surface conditions per cubic meter of gas at surface
      * conditions. This method is specific to the black-oil model.
      */
-    OPM_HOST_DEVICE const Scalar& Rvw() const
+    OPM_HOST_DEVICE Scalar Rvw() const
     {
         if constexpr (enableVapwat) {
             return *Rvw_;
         } else {
-            const Scalar null = 0.0;
-            return null;
+            return Scalar(0.0);
         }
     }
 
@@ -475,39 +467,36 @@ public:
      * of gas at surface conditions per cubic meter of water at surface
      * conditions. This method is specific to the black-oil model.
      */
-    OPM_HOST_DEVICE const Scalar& Rsw() const
+    OPM_HOST_DEVICE Scalar Rsw() const
     {
         if constexpr (enableDissolutionInWater) {
             return *Rsw_;
         } else {
-            const Scalar null = 0.0;
-            return null;
+            return Scalar(0.0);
         }
     }
 
     /*!
      * \brief Return the concentration of salt in water
      */
-    OPM_HOST_DEVICE const Scalar& saltConcentration() const
+    OPM_HOST_DEVICE Scalar saltConcentration() const
     {
         if constexpr (enableBrine) {
             return *saltConcentration_;
         } else {
-            const Scalar null = 0.0;
-            return null;
+            return Scalar(0.0);
         }
     }
 
     /*!
      * \brief Return the saturation of solid salt
      */
-    OPM_HOST_DEVICE const Scalar& saltSaturation() const
+    OPM_HOST_DEVICE Scalar saltSaturation() const
     {
         if constexpr (enableSaltPrecipitation) {
             return *saltSaturation_;
         } else {
-            const Scalar null = 0.0;
-            return null;
+            return Scalar(0.0);
         }
     }
 
