@@ -19,8 +19,10 @@
 
 #ifndef OPM_COPYABLE_PTR_HPP
 #define OPM_COPYABLE_PTR_HPP
+#include <opm/common/utility/gpuDecorators.hpp>
 namespace Opm {
 namespace Utility {
+#if OPM_IS_INSIDE_HOST_FUNCTION
 // Wraps std::unique_ptr and makes it copyable.
 //
 // WARNING: This template should not be used with polymorphic classes.
@@ -29,8 +31,8 @@ namespace Utility {
 template <class T>
 class CopyablePtr {
 public:
-    CopyablePtr() : ptr_(nullptr) {}
-    CopyablePtr(const CopyablePtr& other) {
+    OPM_HOST_DEVICE CopyablePtr() : ptr_(nullptr) {}
+    OPM_HOST_DEVICE  CopyablePtr(const CopyablePtr& other) {
         if (other) { // other does not contain a nullptr
             ptr_ = std::make_unique<T>(*other.get());
         }
@@ -39,7 +41,7 @@ public:
         }
     }
     // assignment operator
-    CopyablePtr<T>& operator=(const CopyablePtr<T>& other) {
+    OPM_HOST_DEVICE  CopyablePtr<T>& operator=(const CopyablePtr<T>& other) {
         if (other) {
             ptr_ = std::make_unique<T>(*other.get());
         }
@@ -49,23 +51,59 @@ public:
         return *this;
     }
     // assign directly from a unique_ptr
-    CopyablePtr<T>& operator=(std::unique_ptr<T>&& uptr) {
+    OPM_HOST_DEVICE  CopyablePtr<T>& operator=(std::unique_ptr<T>&& uptr) {
         ptr_ = std::move(uptr);
         return *this;
     }
     // member access operator
-    T* operator->() const {return ptr_.get(); }
+    OPM_HOST_DEVICE  T* operator->() const {return ptr_.get(); }
     // boolean context operator
-    explicit operator bool() const noexcept {
+    OPM_HOST_DEVICE  explicit operator bool() const noexcept {
         return ptr_ ? true : false;
     }
     // get a pointer to the stored value
-    T* get() const {return ptr_.get();}
-    T* release() const {return ptr_.release();}
+    OPM_HOST_DEVICE  T* get() const {return ptr_.get();}
+    OPM_HOST_DEVICE  T* release() const {return ptr_.release();}
 private:
     std::unique_ptr<T> ptr_;
 };
-
+#else // TODO: Remove ugly hack below
+template <class T>
+class CopyablePtr {
+public:
+    OPM_HOST_DEVICE CopyablePtr() : ptr_(nullptr) {}
+    OPM_HOST_DEVICE CopyablePtr(const CopyablePtr& other) {
+        if (other) { // other does not contain a nullptr
+            ptr_ = other.get();
+        }
+        else {
+            ptr_ = nullptr;
+        }
+    }
+    // assignment operator
+    OPM_HOST_DEVICE CopyablePtr<T>& operator=(const CopyablePtr<T>& other) {
+        if (other) {
+            ptr_ = *other.get();
+        }
+        else {
+            ptr_ = nullptr;
+        }
+        return *this;
+    }
+    
+    // member access operator
+    OPM_HOST_DEVICE  T* operator->() const {return ptr_; }
+    // boolean context operator
+    OPM_HOST_DEVICE  explicit operator bool() const noexcept {
+        return ptr_ ? true : false;
+    }
+    // get a pointer to the stored value
+    OPM_HOST_DEVICE  T* get() const {return ptr_;}
+    OPM_HOST_DEVICE  T* release() const {return ptr_;}
+private:
+    T* ptr_ = nullptr;
+};
+#endif
 } // namespace Utility
 } // namespace Opm
 #endif

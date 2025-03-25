@@ -34,6 +34,7 @@
 #include <type_traits>
 
 #include <opm/common/ErrorMacros.hpp>
+#include <opm/common/utility/gpuDecorators.hpp>
 #include <opm/material/common/EnsureFinalized.hpp>
 #include <vector>
 
@@ -67,11 +68,11 @@ public:
 
     using Traits = TraitsT;
 
-    PiecewiseLinearTwoPhaseMaterialParams()
+    OPM_HOST_DEVICE PiecewiseLinearTwoPhaseMaterialParams()
     {
     }
 
-    PiecewiseLinearTwoPhaseMaterialParams(ValueVector SwPcwnSamples,
+    OPM_HOST_DEVICE PiecewiseLinearTwoPhaseMaterialParams(ValueVector SwPcwnSamples,
                                           ValueVector pcwnSamples,
                                           ValueVector SwKrwSamples,
                                           ValueVector krwSamples,
@@ -97,7 +98,7 @@ public:
      * \brief Calculate all dependent quantities once the independent
      *        quantities of the parameter object have been set.
      */
-    void finalize()
+    OPM_HOST_DEVICE void finalize()
     {
         EnsureFinalized::finalize();
 
@@ -116,7 +117,7 @@ public:
     /*!
      * \brief Check if the parameter object has been finalized.
      */
-    void checkFinalized() const
+    OPM_HOST_DEVICE void checkFinalized() const
     {
         EnsureFinalized::check();
     }

@@ -87,20 +87,20 @@ OPM_HOST_DEVICE auto getSaltConcentration_(typename std::enable_if<HasMember_sal
 { return fluidState.saltConcentration(); }
 
 template <class FluidState>
-auto getSaltConcentration_(typename std::enable_if<!HasMember_saltConcentration<FluidState>::value,
+OPM_HOST_DEVICE auto getSaltConcentration_(typename std::enable_if<!HasMember_saltConcentration<FluidState>::value,
                                                     const FluidState&>::type)
 { return 0.0; }
 
 OPM_GENERATE_HAS_MEMBER(saltSaturation, ) // Creates 'HasMember_saltSaturation<T>'.
 
 template <class FluidState>
-auto getSaltSaturation_(typename std::enable_if<HasMember_saltSaturation<FluidState>::value,
+OPM_HOST_DEVICE auto getSaltSaturation_(typename std::enable_if<HasMember_saltSaturation<FluidState>::value,
                                                     const FluidState&>::type fluidState)
 { return fluidState.saltSaturation(); }
 
 
 template <class FluidState>
-auto getSaltSaturation_(typename std::enable_if<!HasMember_saltSaturation<FluidState>::value,
+OPM_HOST_DEVICE auto getSaltSaturation_(typename std::enable_if<!HasMember_saltSaturation<FluidState>::value,
                                                     const FluidState&>::type)
 { return 0.0; }
 
@@ -135,6 +135,28 @@ public:
     using Scalar = ScalarT;
     enum { numPhases = FluidSystem::numPhases };
     enum { numComponents = FluidSystem::numComponents };
+
+    /**
+     * \brief Construct a fluid state object.
+     * 
+     * \param fluidSystem The fluid system which is used to compute various quantities
+     */
+    OPM_HOST_DEVICE BlackOilFluidState(FluidSystem& fluidSystem) : fluidSystem_(&fluidSystem) {
+    }
+
+    /**
+     * \brief Construct a fluid state object.
+     */
+    OPM_HOST_DEVICE BlackOilFluidState() : fluidSystem_(nullptr) {
+        // Note that we are technically storing a const ref to a variable
+        // that goes out of scope. This is fine as we have the assert below:
+        static_assert(std::is_empty_v<FluidSystem>,
+                      "When using the default constructor, the FluidSystem must be an empty class. "
+                      "That is, it must not have any data members, "
+                      "virtual functions or inherit from any class having data members or virtual "
+                      "functions. Only static member variables are allowed. "
+                      "If you want to use a dynamic FluidSystem, you must pass it to the constructor.");
+    }
 
     /*!
      * \brief Make sure that all attributes are defined.
@@ -378,7 +400,7 @@ public:
         if constexpr (enableTemperature || enableEnergy) {
             return *temperature_;
         } else {
-            return fluidSystem_->reservoirTemperature(pvtRegionIdx_);
+	    return fluidSystem_->reservoirTemperature(pvtRegionIdx_);
         }
     }
 
