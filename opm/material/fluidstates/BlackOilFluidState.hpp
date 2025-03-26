@@ -605,7 +605,7 @@ public:
             break;
         }
 
-        throw std::logic_error("Invalid phase or component index!");
+        OPM_THROW(std::logic_error, "Invalid phase or component index!");
     }
 
     /*!
@@ -646,7 +646,7 @@ public:
             break;
         }
 
-        throw std::logic_error("Invalid phase or component index!");
+        OPM_THROW(std::logic_error, "Invalid phase or component index!");
     }
 
     /*!

@@ -83,7 +83,7 @@ public:
     // assignment operator
     OPM_HOST_DEVICE CopyablePtr<T>& operator=(const CopyablePtr<T>& other) {
         if (other) {
-            ptr_ = *other.get();
+            ptr_ = other.get();
         }
         else {
             ptr_ = nullptr;
