@@ -71,37 +71,58 @@ private:
 template <class T>
 class CopyablePtr {
 public:
-    OPM_HOST_DEVICE CopyablePtr() : ptr_(nullptr) {}
+    OPM_HOST_DEVICE CopyablePtr() {}
     OPM_HOST_DEVICE CopyablePtr(const CopyablePtr& other) {
         if (other) { // other does not contain a nullptr
-            ptr_ = other.get();
+            ptr_ = other.ptr_.value();
         }
         else {
-            ptr_ = nullptr;
+            ptr_ = std::nullopt;
         }
     }
     // assignment operator
     OPM_HOST_DEVICE CopyablePtr<T>& operator=(const CopyablePtr<T>& other) {
         if (other) {
-            ptr_ = other.get();
+            ptr_ = other.ptr_.value();
         }
         else {
-            ptr_ = nullptr;
+            ptr_ = std::nullopt;
+        }
+        return *this;
+    }
+
+    // assignment operator
+    OPM_HOST_DEVICE CopyablePtr<T>& operator=(const std::unique_ptr<T>& other) {
+        if (other) {
+            ptr_ = *other;
+        }
+        else {
+            ptr_ = std::nullopt;
         }
         return *this;
     }
     
     // member access operator
-    OPM_HOST_DEVICE  T* operator->() const {return ptr_; }
+    OPM_HOST_DEVICE T* operator->() const {
+        return get(); 
+    }
     // boolean context operator
     OPM_HOST_DEVICE  explicit operator bool() const noexcept {
-        return ptr_ ? true : false;
+        return ptr_.has_value() ? true : false;
     }
     // get a pointer to the stored value
-    OPM_HOST_DEVICE  T* get() const {return ptr_;}
-    OPM_HOST_DEVICE  T* release() const {return ptr_;}
+    OPM_HOST_DEVICE T* get() const {
+        if (ptr_.has_value()) {
+            return const_cast<T*>(&ptr_.value());
+        } else {
+            return nullptr;
+        }
+    }
+    OPM_HOST_DEVICE T* release() const {
+        return get();
+    }
 private:
-    T* ptr_ = nullptr;
+    std::optional<T> ptr_;
 };
 #endif
 } // namespace Utility

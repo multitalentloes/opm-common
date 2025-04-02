@@ -869,6 +869,7 @@ list( APPEND PUBLIC_HEADER_FILES
       opm/common/utility/DemangledType.hpp
       opm/common/utility/FileSystem.hpp
       opm/common/utility/gpuDecorators.hpp
+      opm/common/utility/GpuFriendlyVector.hpp
       opm/common/utility/MemPacker.hpp
       opm/common/utility/ThreadSafeMapBuilder.hpp
       opm/common/utility/numeric/cmp.hpp
