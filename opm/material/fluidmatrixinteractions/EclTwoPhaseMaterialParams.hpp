@@ -31,6 +31,8 @@
 
 #include <opm/material/common/EnsureFinalized.hpp>
 
+#include <opm/common/utility/gpuDecorators.hpp>
+
 namespace Opm {
 
 enum class EclTwoPhaseApproach {
@@ -46,7 +48,11 @@ enum class EclTwoPhaseApproach {
  * Essentially, this class just stores the two parameter objects for
  * the twophase capillary pressure laws.
  */
-template<class Traits, class GasOilParamsT, class OilWaterParamsT, class GasWaterParamsT>
+template<class Traits,
+    class GasOilParamsT,
+    class OilWaterParamsT,
+    class GasWaterParamsT,
+    template<typename> class SmartPointer = std::shared_ptr>
 class EclTwoPhaseMaterialParams : public EnsureFinalized
 {
     using Scalar = typename Traits::Scalar;
@@ -61,72 +67,72 @@ public:
     /*!
      * \brief The default constructor.
      */
-    EclTwoPhaseMaterialParams()
+    OPM_HOST_DEVICE EclTwoPhaseMaterialParams()
     {
     }
 
-    void setApproach(EclTwoPhaseApproach newApproach)
+    OPM_HOST_DEVICE void setApproach(EclTwoPhaseApproach newApproach)
     { approach_ = newApproach; }
 
-    EclTwoPhaseApproach approach() const
+    OPM_HOST_DEVICE EclTwoPhaseApproach approach() const
     { return approach_; }
 
     /*!
      * \brief The parameter object for the gas-oil twophase law.
      */
-    const GasOilParams& gasOilParams() const
+    OPM_HOST_DEVICE const GasOilParams& gasOilParams() const
     { EnsureFinalized::check(); return *gasOilParams_; }
 
     /*!
      * \brief The parameter object for the gas-oil twophase law.
      */
-    GasOilParams& gasOilParams()
+    OPM_HOST_DEVICE GasOilParams& gasOilParams()
     { EnsureFinalized::check(); return *gasOilParams_; }
 
     /*!
      * \brief Set the parameter object for the gas-oil twophase law.
      */
-    void setGasOilParams(std::shared_ptr<GasOilParams> val)
+    OPM_HOST_DEVICE void setGasOilParams(SmartPointer<GasOilParams> val)
     { gasOilParams_ = val; }
 
     /*!
      * \brief The parameter object for the oil-water twophase law.
      */
-    const OilWaterParams& oilWaterParams() const
+    OPM_HOST_DEVICE const OilWaterParams& oilWaterParams() const
     { EnsureFinalized::check(); return *oilWaterParams_; }
 
     /*!
      * \brief The parameter object for the oil-water twophase law.
      */
-    OilWaterParams& oilWaterParams()
+    OPM_HOST_DEVICE OilWaterParams& oilWaterParams()
     { EnsureFinalized::check(); return *oilWaterParams_; }
 
     /*!
      * \brief Set the parameter object for the oil-water twophase law.
      */
-    void setOilWaterParams(std::shared_ptr<OilWaterParams> val)
+    OPM_HOST_DEVICE void setOilWaterParams(SmartPointer<OilWaterParams> val)
     { oilWaterParams_ = val; }
 
   /*!
      * \brief The parameter object for the gas-water twophase law.
      */
-    const GasWaterParams& gasWaterParams() const
+    OPM_HOST_DEVICE const GasWaterParams& gasWaterParams() const
     { EnsureFinalized::check(); return *gasWaterParams_; }
 
     /*!
      * \brief The parameter object for the gas-water twophase law.
      */
-    GasWaterParams& gasWaterParams()
+    OPM_HOST_DEVICE GasWaterParams& gasWaterParams()
     { EnsureFinalized::check(); return *gasWaterParams_; }
 
     /*!
      * \brief Set the parameter object for the gas-water twophase law.
      */
-    void setGasWaterParams(std::shared_ptr<GasWaterParams> val)
+    OPM_HOST_DEVICE void setGasWaterParams(SmartPointer<GasWaterParams> val)
     { gasWaterParams_ = val; }
 
     template<class Serializer>
-    void serializeOp(Serializer& serializer)
+    OPM_HOST_DEVICE void serializeOp(Serializer& serializer)
     {
         // This is for restart serialization.
         // Only dynamic state in the parameters need to be stored.
@@ -135,15 +141,57 @@ public:
         serializer(*gasWaterParams_);
     }
 
-    void setSwl(Scalar) {}
+    OPM_HOST_DEVICE void setSwl(Scalar) {}
+
+    OPM_HOST_DEVICE SmartPointer<GasOilParams>& gasOilParamsPtr() { return gasOilParams_; }
+    OPM_HOST_DEVICE SmartPointer<OilWaterParams>& oilWaterParamsPtr() { return oilWaterParams_; }
+    OPM_HOST_DEVICE SmartPointer<GasWaterParams>& gasWaterParamsPtr() { return gasWaterParams_; }
+
+    OPM_HOST_DEVICE const SmartPointer<GasOilParams>& gasOilParamsPtr() const { return gasOilParams_; }
+    OPM_HOST_DEVICE const SmartPointer<OilWaterParams>& oilWaterParamsPtr() const { return oilWaterParams_; }
+    OPM_HOST_DEVICE const SmartPointer<GasWaterParams>& gasWaterParamsPtr() const { return gasWaterParams_; }
 
 private:
     EclTwoPhaseApproach approach_{EclTwoPhaseApproach::GasOil};
 
-    std::shared_ptr<GasOilParams> gasOilParams_;
-    std::shared_ptr<OilWaterParams> oilWaterParams_;
-    std::shared_ptr<GasWaterParams> gasWaterParams_;
+    SmartPointer<GasOilParams> gasOilParams_;
+    SmartPointer<OilWaterParams> oilWaterParams_;
+    SmartPointer<GasWaterParams> gasWaterParams_;
 };
+
+namespace gpuistl {
+    template<class Traits, class GPUContainerDouble, class GPUContainerScalar, class Scalar>
+    EclTwoPhaseMaterialParams<Traits, GPUContainerDouble, GPUContainerScalar>
+    copy_to_gpu(EclTwoPhaseMaterialParams<Traits, std::vector<double>, std::vector<Scalar>>& materialParams)
+    {
+        using GasOilParamsGPU = typename EclTwoPhaseMaterialParams<Traits, GPUContainerDouble, GPUContainerScalar>::GasOilParams;
+        using OilWaterParamsGPU = typename EclTwoPhaseMaterialParams<Traits, GPUContainerDouble, GPUContainerScalar>::OilWaterParams;
+        using GasWaterParamsGPU = typename EclTwoPhaseMaterialParams<Traits, GPUContainerDouble, GPUContainerScalar>::GasWaterParams;
+
+        return EclTwoPhaseMaterialParams<Traits, GPUContainerDouble, GPUContainerScalar>(
+            materialParams.approach(),
+            copy_to_gpu<GPUContainerScalar, GasOilParamsGPU>(*materialParams.gasOilParams()),
+            copy_to_gpu<GPUContainerScalar, OilWaterParamsGPU>(*materialParams.oilWaterParams()),
+            copy_to_gpu<GPUContainerScalar, GasWaterParamsGPU>(*materialParams.gasWaterParams())
+        );
+    }
+
+    template<template<class> class ViewPtr, class ViewDouble, class ViewScalar, class GPUContainerDouble, class GPUContainerScalar, class Traits>
+    EclTwoPhaseMaterialParams<Traits, ViewDouble, ViewScalar, ViewPtr>
+    make_view(EclTwoPhaseMaterialParams<Traits, GPUContainerDouble, GPUContainerScalar, std::unique_ptr>& materialParams)
+    {
+        using GasOilParamsView = typename EclTwoPhaseMaterialParams<Traits, ViewDouble, ViewScalar, ViewPtr>::GasOilParams;
+        using OilWaterParamsView = typename EclTwoPhaseMaterialParams<Traits, ViewDouble, ViewScalar, ViewPtr>::OilWaterParams;
+        using GasWaterParamsView = typename EclTwoPhaseMaterialParams<Traits, ViewDouble, ViewScalar, ViewPtr>::GasWaterParams;
+
+        return EclTwoPhaseMaterialParams<Traits, ViewDouble, ViewScalar, ViewPtr>(
+            materialParams.approach(),
+            make_view<ViewScalar, GasOilParamsView>(*materialParams.gasOilParams()),
+            make_view<ViewScalar, OilWaterParamsView>(*materialParams.oilWaterParams()),
+            make_view<ViewScalar, GasWaterParamsView>(*materialParams.gasWaterParams())
+        );
+    }
+}
 
 } // namespace Opm
 

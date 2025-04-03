@@ -35,6 +35,8 @@
 #include <opm/material/common/MathToolbox.hpp>
 #include <opm/common/TimingMacros.hpp>
 
+#include <opm/common/utility/gpuDecorators.hpp>
+
 namespace Opm {
 
 /*!
@@ -118,14 +120,14 @@ public:
         || GasWaterMaterialLaw::isHysteresisDependent;
 
     template <class ContainerT, class FluidState>
-    static Scalar relpermOilInOilGasSystem(const Params& /*params*/,
+    OPM_HOST_DEVICE static Scalar relpermOilInOilGasSystem(const Params& /*params*/,
                                            const FluidState& /*fluidState*/) {
         throw std::logic_error {
             "relpermOilInOilGasSystem() is specific to three phases"
                 };
     }
     template <class ContainerT, class FluidState>
-    static Scalar relpermOilInOilWaterSystem(const Params& /*params*/,
+    OPM_HOST_DEVICE static Scalar relpermOilInOilWaterSystem(const Params& /*params*/,
                                                  const FluidState& /*fluidState*/) {
         throw std::logic_error {
                 "relpermOilInOilWaterSystem() is specific to three phases"
@@ -148,7 +150,7 @@ public:
      */
 
     template <class ContainerT, class FluidState>
-    static void capillaryPressures(ContainerT& values,
+    OPM_HOST_DEVICE static void capillaryPressures(ContainerT& values,
                                    const Params& params,
                                    const FluidState& fluidState)
     {
@@ -215,7 +217,7 @@ public:
      * @see EclHysteresisTwoPhaseLawParams::swMin(...)
      * \param params Parameters
      */
-    static void setOilWaterHysteresisParams(const Scalar& soMax,
+    OPM_HOST_DEVICE static void setOilWaterHysteresisParams(const Scalar& soMax,
                                             const Scalar& swMax,
                                             const Scalar& swMin,
                                             Params& params)
@@ -233,7 +235,7 @@ public:
      * @see EclHysteresisTwoPhaseLawParams::somin(...)
      * \param params Parameters
      */
-    static void gasOilHysteresisParams(Scalar& sgmax,
+    OPM_HOST_DEVICE static void gasOilHysteresisParams(Scalar& sgmax,
                                        Scalar& shmax,
                                        Scalar& somin,
                                        const Params& params)
@@ -254,7 +256,7 @@ public:
      * @see EclHysteresisTwoPhaseLawParams::shmax(...)
      * \param params Parameters
      */
-    static void setGasOilHysteresisParams(const Scalar& sgmax,
+    OPM_HOST_DEVICE static void setGasOilHysteresisParams(const Scalar& sgmax,
                                           const Scalar& shmax,
                                           const Scalar& somin,
                                           Params& params)
@@ -264,7 +266,7 @@ public:
         }
     }
 
-    static Scalar trappedGasSaturation(const Params& params, bool maximumTrapping){
+    OPM_HOST_DEVICE static Scalar trappedGasSaturation(const Params& params, bool maximumTrapping){
         if(params.approach() == EclTwoPhaseApproach::GasOil)
             return params.gasOilParams().SnTrapped(maximumTrapping);
         if(params.approach() == EclTwoPhaseApproach::GasWater)
@@ -272,7 +274,7 @@ public:
         return 0.0; // oil-water case
     }
 
-    static Scalar strandedGasSaturation(const Params& params, Scalar Sg, Scalar Kg){
+    OPM_HOST_DEVICE static Scalar strandedGasSaturation(const Params& params, Scalar Sg, Scalar Kg){
         if(params.approach() == EclTwoPhaseApproach::GasOil)
             return params.gasOilParams().SnStranded(Sg, Kg);
         if(params.approach() == EclTwoPhaseApproach::GasWater)
@@ -280,7 +282,7 @@ public:
         return 0.0; // oil-water case
     }
 
-    static Scalar trappedOilSaturation(const Params& params, bool maximumTrapping){
+    OPM_HOST_DEVICE static Scalar trappedOilSaturation(const Params& params, bool maximumTrapping){
         if(params.approach() == EclTwoPhaseApproach::GasOil)
             return params.gasOilParams().SwTrapped();
         if(params.approach() == EclTwoPhaseApproach::OilWater)
@@ -288,7 +290,7 @@ public:
         return 0.0; // gas-water case
     }
 
-    static Scalar trappedWaterSaturation(const Params& params){
+    OPM_HOST_DEVICE static Scalar trappedWaterSaturation(const Params& params){
         if(params.approach() == EclTwoPhaseApproach::GasWater)
             return params.gasWaterParams().SwTrapped();
         if(params.approach() == EclTwoPhaseApproach::OilWater)
@@ -307,7 +309,7 @@ public:
      * \f]
      */
     template <class FluidState, class Evaluation = typename FluidState::Scalar>
-    static Evaluation pcgn(const Params& /* params */,
+    OPM_HOST_DEVICE static Evaluation pcgn(const Params& /* params */,
                            const FluidState& /* fs */)
     {
         throw std::logic_error("Not implemented: pcgn()");
@@ -323,7 +325,7 @@ public:
      * \f]
      */
     template <class FluidState, class Evaluation = typename FluidState::Scalar>
-    static Evaluation pcnw(const Params& /* params */,
+    OPM_HOST_DEVICE static Evaluation pcnw(const Params& /* params */,
                            const FluidState& /* fs */)
     {
         throw std::logic_error("Not implemented: pcnw()");
@@ -333,7 +335,7 @@ public:
      * \brief The inverse of the capillary pressure
      */
     template <class ContainerT, class FluidState>
-    static void saturations(ContainerT& /* values */,
+    OPM_HOST_DEVICE static void saturations(ContainerT& /* values */,
                             const Params& /* params */,
                             const FluidState& /* fs */)
     {
@@ -344,7 +346,7 @@ public:
      * \brief The saturation of the gas phase.
      */
     template <class FluidState, class Evaluation = typename FluidState::Scalar>
-    static Evaluation Sg(const Params& /* params */,
+    OPM_HOST_DEVICE static Evaluation Sg(const Params& /* params */,
                          const FluidState& /* fluidState */)
     {
         throw std::logic_error("Not implemented: Sg()");
@@ -354,7 +356,7 @@ public:
      * \brief The saturation of the non-wetting (i.e., oil) phase.
      */
     template <class FluidState, class Evaluation = typename FluidState::Scalar>
-    static Evaluation Sn(const Params& /* params */,
+    OPM_HOST_DEVICE static Evaluation Sn(const Params& /* params */,
                          const FluidState& /* fluidState */)
     {
         throw std::logic_error("Not implemented: Sn()");
@@ -364,7 +366,7 @@ public:
      * \brief The saturation of the wetting (i.e., water) phase.
      */
     template <class FluidState, class Evaluation = typename FluidState::Scalar>
-    static Evaluation Sw(const Params& /* params */,
+    OPM_HOST_DEVICE static Evaluation Sw(const Params& /* params */,
                          const FluidState& /* fluidState */)
     {
         throw std::logic_error("Not implemented: Sw()");
@@ -386,7 +388,7 @@ public:
      * technical description.
      */
     template <class ContainerT, class FluidState>
-    static void relativePermeabilities(ContainerT& values,
+    OPM_HOST_DEVICE static void relativePermeabilities(ContainerT& values,
                                        const Params& params,
                                        const FluidState& fluidState)
     {
@@ -428,7 +430,7 @@ public:
      * \brief The relative permeability of the gas phase.
      */
     template <class FluidState, class Evaluation = typename FluidState::Scalar>
-    static Evaluation krg(const Params& /* params */,
+    OPM_HOST_DEVICE static Evaluation krg(const Params& /* params */,
                           const FluidState& /* fluidState */)
     {
         throw std::logic_error("Not implemented: krg()");
@@ -438,7 +440,7 @@ public:
      * \brief The relative permeability of the wetting phase.
      */
     template <class FluidState, class Evaluation = typename FluidState::Scalar>
-    static Evaluation krw(const Params& /* params */,
+    OPM_HOST_DEVICE static Evaluation krw(const Params& /* params */,
                           const FluidState& /* fluidState */)
     {
         throw std::logic_error("Not implemented: krw()");
@@ -448,7 +450,7 @@ public:
      * \brief The relative permeability of the non-wetting (i.e., oil) phase.
      */
     template <class FluidState, class Evaluation = typename FluidState::Scalar>
-    static Evaluation krn(const Params& /* params */,
+    OPM_HOST_DEVICE static Evaluation krn(const Params& /* params */,
                           const FluidState& /* fluidState */)
     {
         throw std::logic_error("Not implemented: krn()");
@@ -463,7 +465,7 @@ public:
      * error. (But not calling it will still work.)
      */
     template <class FluidState>
-    static bool updateHysteresis(Params& params, const FluidState& fluidState)
+    OPM_HOST_DEVICE static bool updateHysteresis(Params& params, const FluidState& fluidState)
     {
         OPM_TIMEFUNCTION_LOCAL();
         switch (params.approach()) {
