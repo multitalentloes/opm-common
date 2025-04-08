@@ -161,7 +161,14 @@ private:
 
 namespace gpuistl
 {
-    template<class ScalarGpuBuffer, class NewGasOilParamsT, class NewOilWaterParamsT, class NewGasWaterParamsT, class Traits, class OldGasOilParamsT, class OldOilWaterParamsT, class OldGasWaterParamsT>
+    template<class ScalarGpuBuffer,
+             class NewGasOilParamsT,
+             class NewOilWaterParamsT,
+             class NewGasWaterParamsT,
+             class Traits,
+             class OldGasOilParamsT,
+             class OldOilWaterParamsT,
+             class OldGasWaterParamsT>
     EclTwoPhaseMaterialParams<Traits, NewGasOilParamsT, NewOilWaterParamsT, NewGasWaterParamsT>
     copy_to_gpu(const EclTwoPhaseMaterialParams<Traits, OldGasOilParamsT, OldOilWaterParamsT, OldGasWaterParamsT>& params)
     {
@@ -178,6 +185,41 @@ namespace gpuistl
         // Create the new EclTwoPhaseMaterialParams object
         auto gpuBufBasedEclTwoPhasedMaterialParams =
             EclTwoPhaseMaterialParams<Traits, NewGasOilParamsT, NewOilWaterParamsT, NewGasWaterParamsT>();
+
+        gpuBufBasedEclTwoPhasedMaterialParams.setApproach(params.approach());
+        gpuBufBasedEclTwoPhasedMaterialParams.setGasOilParams(gasOilParamsPtr);
+        gpuBufBasedEclTwoPhasedMaterialParams.setOilWaterParams(oilWaterParamsPtr);
+        gpuBufBasedEclTwoPhasedMaterialParams.setGasWaterParams(gasWaterParamsPtr);
+
+        return gpuBufBasedEclTwoPhasedMaterialParams;
+    }
+
+    template<class ViewType,
+             class NewGasOilParamsT,
+            class NewOilWaterParamsT,
+            class NewGasWaterParamsT,
+            template<class> class PtrType,
+            class Traits,
+            class OldGasOilParamsT,
+            class OldOilWaterParamsT,
+            class OldGasWaterParamsT>
+    EclTwoPhaseMaterialParams<Traits, NewGasOilParamsT, NewOilWaterParamsT, NewGasWaterParamsT, PtrType>
+    make_view(const EclTwoPhaseMaterialParams<Traits, OldGasOilParamsT, OldOilWaterParamsT, OldGasWaterParamsT>& params)
+    {
+        // Maybe I will run into some proble on a twophase case where some of these do not exist?
+        // copy interpolation tables to the GPU - right now assumed to be the piecewiselinear....params
+        auto gasOilParams = gpuistl::make_view<ViewType>(*params.gasOilParamsPtr());
+        auto oilWaterParams = gpuistl::make_view<ViewType>(*params.oilWaterParamsPtr());
+        auto gasWaterParams = gpuistl::make_view<ViewType>(*params.gasWaterParamsPtr());
+
+        // Not immediately convinced this is correct
+        auto gasOilParamsPtr = PtrType<NewGasOilParamsT>(gasOilParams);
+        auto oilWaterParamsPtr = PtrType<NewOilWaterParamsT>(oilWaterParams);
+        auto gasWaterParamsPtr = PtrType<NewGasWaterParamsT>(gasWaterParams);
+
+        // Create the new EclTwoPhaseMaterialParams object
+        auto gpuBufBasedEclTwoPhasedMaterialParams =
+            EclTwoPhaseMaterialParams<Traits, NewGasOilParamsT, NewOilWaterParamsT, NewGasWaterParamsT, PtrType>();
 
         gpuBufBasedEclTwoPhasedMaterialParams.setApproach(params.approach());
         gpuBufBasedEclTwoPhasedMaterialParams.setGasOilParams(gasOilParamsPtr);
