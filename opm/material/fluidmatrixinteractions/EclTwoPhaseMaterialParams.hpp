@@ -51,7 +51,8 @@ enum class EclTwoPhaseApproach {
 template<class Traits,
     class GasOilParamsT,
     class OilWaterParamsT,
-    class GasWaterParamsT>
+    class GasWaterParamsT,
+    template<class> class PtrType = std::shared_ptr>
 class EclTwoPhaseMaterialParams : public EnsureFinalized
 {
     using Scalar = typename Traits::Scalar;
@@ -91,7 +92,7 @@ public:
     /*!
      * \brief Set the parameter object for the gas-oil twophase law.
      */
-    OPM_HOST_DEVICE void setGasOilParams(std::shared_ptr<GasOilParams> val)
+    OPM_HOST_DEVICE void setGasOilParams(PtrType<GasOilParams> val)
     { gasOilParams_ = val; }
 
     /*!
@@ -109,7 +110,7 @@ public:
     /*!
      * \brief Set the parameter object for the oil-water twophase law.
      */
-    OPM_HOST_DEVICE void setOilWaterParams(std::shared_ptr<OilWaterParams> val)
+    OPM_HOST_DEVICE void setOilWaterParams(PtrType<OilWaterParams> val)
     { oilWaterParams_ = val; }
 
   /*!
@@ -127,7 +128,7 @@ public:
     /*!
      * \brief Set the parameter object for the gas-water twophase law.
      */
-    OPM_HOST_DEVICE void setGasWaterParams(std::shared_ptr<GasWaterParams> val)
+    OPM_HOST_DEVICE void setGasWaterParams(PtrType<GasWaterParams> val)
     { gasWaterParams_ = val; }
 
     template<class Serializer>
@@ -142,21 +143,26 @@ public:
 
     OPM_HOST_DEVICE void setSwl(Scalar) {}
 
-    OPM_HOST_DEVICE std::shared_ptr<GasOilParams>& gasOilParamsPtr() { return gasOilParams_; }
-    OPM_HOST_DEVICE std::shared_ptr<OilWaterParams>& oilWaterParamsPtr() { return oilWaterParams_; }
-    OPM_HOST_DEVICE std::shared_ptr<GasWaterParams>& gasWaterParamsPtr() { return gasWaterParams_; }
+    OPM_HOST_DEVICE PtrType<GasOilParams>& gasOilParamsPtr() { return gasOilParams_; }
+    OPM_HOST_DEVICE PtrType<OilWaterParams>& oilWaterParamsPtr() { return oilWaterParams_; }
+    OPM_HOST_DEVICE PtrType<GasWaterParams>& gasWaterParamsPtr() { return gasWaterParams_; }
 
-    OPM_HOST_DEVICE const std::shared_ptr<GasOilParams>& gasOilParamsPtr() const { return gasOilParams_; }
-    OPM_HOST_DEVICE const std::shared_ptr<OilWaterParams>& oilWaterParamsPtr() const { return oilWaterParams_; }
-    OPM_HOST_DEVICE const std::shared_ptr<GasWaterParams>& gasWaterParamsPtr() const { return gasWaterParams_; }
+    OPM_HOST_DEVICE const PtrType<GasOilParams>& gasOilParamsPtr() const { return gasOilParams_; }
+    OPM_HOST_DEVICE const PtrType<OilWaterParams>& oilWaterParamsPtr() const { return oilWaterParams_; }
+    OPM_HOST_DEVICE const PtrType<GasWaterParams>& gasWaterParamsPtr() const { return gasWaterParams_; }
 
 private:
     EclTwoPhaseApproach approach_{EclTwoPhaseApproach::GasOil};
 
-    std::shared_ptr<GasOilParams> gasOilParams_;
-    std::shared_ptr<OilWaterParams> oilWaterParams_;
-    std::shared_ptr<GasWaterParams> gasWaterParams_;
+    PtrType<GasOilParams> gasOilParams_;
+    PtrType<OilWaterParams> oilWaterParams_;
+    PtrType<GasWaterParams> gasWaterParams_;
 };
+
+namespace gpuistl
+{
+
+}
 
 } // namespace Opm
 
