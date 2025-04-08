@@ -161,7 +161,31 @@ private:
 
 namespace gpuistl
 {
+    template<class ScalarGpuBuffer, class NewGasOilParamsT, class NewOilWaterParamsT, class NewGasWaterParamsT, class Traits, class OldGasOilParamsT, class OldOilWaterParamsT, class OldGasWaterParamsT>
+    EclTwoPhaseMaterialParams<Traits, NewGasOilParamsT, NewOilWaterParamsT, NewGasWaterParamsT>
+    copy_to_gpu(const EclTwoPhaseMaterialParams<Traits, OldGasOilParamsT, OldOilWaterParamsT, OldGasWaterParamsT>& params)
+    {
+        // Maybe I will run into some proble on a twophase case where some of these do not exist?
+        // copy interpolation tables to the GPU - right now assumed to be the piecewiselinear....params
+        auto gasOilParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(*params.gasOilParamsPtr());
+        auto oilWaterParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(*params.oilWaterParamsPtr());
+        auto gasWaterParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(*params.gasWaterParamsPtr());
+        // Wrap the copied parameters in a shared_ptr
+        auto gasOilParamsPtr = std::make_shared<NewGasOilParamsT>(gasOilParams);
+        auto oilWaterParamsPtr = std::make_shared<NewOilWaterParamsT>(oilWaterParams);
+        auto gasWaterParamsPtr = std::make_shared<NewGasWaterParamsT>(gasWaterParams);
 
+        // Create the new EclTwoPhaseMaterialParams object
+        auto gpuBufBasedEclTwoPhasedMaterialParams =
+            EclTwoPhaseMaterialParams<Traits, NewGasOilParamsT, NewOilWaterParamsT, NewGasWaterParamsT>();
+
+        gpuBufBasedEclTwoPhasedMaterialParams.setApproach(params.approach());
+        gpuBufBasedEclTwoPhasedMaterialParams.setGasOilParams(gasOilParamsPtr);
+        gpuBufBasedEclTwoPhasedMaterialParams.setOilWaterParams(oilWaterParamsPtr);
+        gpuBufBasedEclTwoPhasedMaterialParams.setGasWaterParams(gasWaterParamsPtr);
+
+        return gpuBufBasedEclTwoPhasedMaterialParams;
+    }
 }
 
 } // namespace Opm
