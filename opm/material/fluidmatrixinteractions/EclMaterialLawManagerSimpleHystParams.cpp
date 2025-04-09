@@ -24,12 +24,15 @@
 #include <opm/material/fluidmatrixinteractions/EclMaterialLawManagerSimple.hpp>
 #include <opm/material/fluidmatrixinteractions/EclEpsGridProperties.hpp>
 
+#include <memory>
+#include <opm/common/utility/VectorWithDefaultAllocator.hpp>
+
 namespace Opm {
 
 /* constructors*/
 template <class Traits>
-EclMaterialLawManagerSimple<Traits>::InitParams::HystParams::
-HystParams(EclMaterialLawManagerSimple<Traits>::InitParams& init_params) :
+EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::InitParams::HystParams::
+HystParams(EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::InitParams& init_params) :
     init_params_{init_params}, parent_{init_params_.parent_},
     eclState_{init_params_.eclState_}
 {
@@ -42,7 +45,7 @@ HystParams(EclMaterialLawManagerSimple<Traits>::InitParams& init_params) :
 
 template <class Traits>
 void
-EclMaterialLawManagerSimple<Traits>::InitParams::HystParams::
+EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::InitParams::HystParams::
 finalize()
 {
     if (hasGasOil_())
@@ -54,24 +57,24 @@ finalize()
 }
 
 template <class Traits>
-std::shared_ptr<typename EclMaterialLawManagerSimple<Traits>::GasOilTwoPhaseHystParams>
-EclMaterialLawManagerSimple<Traits>::InitParams::HystParams::
+std::shared_ptr<typename EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::GasOilTwoPhaseHystParams>
+EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::InitParams::HystParams::
 getGasOilParams()
 {
     return gasOilParams_;
 }
 
 template <class Traits>
-std::shared_ptr<typename EclMaterialLawManagerSimple<Traits>::OilWaterTwoPhaseHystParams>
-EclMaterialLawManagerSimple<Traits>::InitParams::HystParams::
+std::shared_ptr<typename EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::OilWaterTwoPhaseHystParams>
+EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::InitParams::HystParams::
 getOilWaterParams()
 {
     return oilWaterParams_;
 }
 
 template <class Traits>
-std::shared_ptr<typename EclMaterialLawManagerSimple<Traits>::GasWaterTwoPhaseHystParams>
-EclMaterialLawManagerSimple<Traits>::InitParams::HystParams::
+std::shared_ptr<typename EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::GasWaterTwoPhaseHystParams>
+EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::InitParams::HystParams::
 getGasWaterParams()
 {
     return gasWaterParams_;
@@ -79,7 +82,7 @@ getGasWaterParams()
 
 template <class Traits>
 void
-EclMaterialLawManagerSimple<Traits>::InitParams::HystParams::
+EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::InitParams::HystParams::
 setConfig(unsigned satRegionIdx)
 {
     this->gasOilParams_->setConfig(this->parent_.hysteresisConfig_);
@@ -96,7 +99,7 @@ setConfig(unsigned satRegionIdx)
 
 template <class Traits>
 void
-EclMaterialLawManagerSimple<Traits>::InitParams::HystParams::
+EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::InitParams::HystParams::
 setDrainageParamsGasWater(unsigned elemIdx, unsigned satRegionIdx,
                           const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner)
 {
@@ -115,7 +118,7 @@ setDrainageParamsGasWater(unsigned elemIdx, unsigned satRegionIdx,
 
 template <class Traits>
 void
-EclMaterialLawManagerSimple<Traits>::InitParams::HystParams::
+EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::InitParams::HystParams::
 setDrainageParamsOilGas(unsigned elemIdx, unsigned satRegionIdx,
                         const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner)
 {
@@ -134,7 +137,7 @@ setDrainageParamsOilGas(unsigned elemIdx, unsigned satRegionIdx,
 
 template <class Traits>
 void
-EclMaterialLawManagerSimple<Traits>::InitParams::HystParams::
+EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::InitParams::HystParams::
 setDrainageParamsOilWater(unsigned elemIdx, unsigned satRegionIdx,
                           const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner)
 {
@@ -162,7 +165,7 @@ setDrainageParamsOilWater(unsigned elemIdx, unsigned satRegionIdx,
 
 template <class Traits>
 void
-EclMaterialLawManagerSimple<Traits>::InitParams::HystParams::
+EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::InitParams::HystParams::
 setImbibitionParamsGasWater(unsigned elemIdx, unsigned imbRegionIdx,
                             const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner)
 {
@@ -184,7 +187,7 @@ setImbibitionParamsGasWater(unsigned elemIdx, unsigned imbRegionIdx,
 
 template <class Traits>
 void
-EclMaterialLawManagerSimple<Traits>::InitParams::HystParams::
+EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::InitParams::HystParams::
 setImbibitionParamsOilGas(unsigned elemIdx, unsigned imbRegionIdx,
                           const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner)
 {
@@ -206,7 +209,7 @@ setImbibitionParamsOilGas(unsigned elemIdx, unsigned imbRegionIdx,
 
 template <class Traits>
 void
-EclMaterialLawManagerSimple<Traits>::InitParams::HystParams::
+EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::InitParams::HystParams::
 setImbibitionParamsOilWater(unsigned elemIdx, unsigned imbRegionIdx,
                             const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner)
 {
@@ -230,7 +233,7 @@ setImbibitionParamsOilWater(unsigned elemIdx, unsigned imbRegionIdx,
 
 template <class Traits>
 bool
-EclMaterialLawManagerSimple<Traits>::InitParams::HystParams::
+EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::InitParams::HystParams::
 hasGasOil_()
 {
     return this->parent_.hasGas && this->parent_.hasOil;
@@ -238,7 +241,7 @@ hasGasOil_()
 
 template <class Traits>
 bool
-EclMaterialLawManagerSimple<Traits>::InitParams::HystParams::
+EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::InitParams::HystParams::
 hasGasWater_()
 {
     return this->parent_.hasGas && this->parent_.hasWater && !this->parent_.hasOil;
@@ -246,7 +249,7 @@ hasGasWater_()
 
 template <class Traits>
 bool
-EclMaterialLawManagerSimple<Traits>::InitParams::HystParams::
+EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::InitParams::HystParams::
 hasOilWater_()
 {
     return this->parent_.hasOil && this->parent_.hasWater;
@@ -254,10 +257,10 @@ hasOilWater_()
 
 template <class Traits>
 std::tuple<
-  EclEpsScalingPointsInfo<typename EclMaterialLawManagerSimple<Traits>::Scalar>,
-  EclEpsScalingPoints<typename EclMaterialLawManagerSimple<Traits>::Scalar>
+  EclEpsScalingPointsInfo<typename EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::Scalar>,
+  EclEpsScalingPoints<typename EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::Scalar>
 >
-EclMaterialLawManagerSimple<Traits>::InitParams::HystParams::
+EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::InitParams::HystParams::
 readScaledEpsPoints_(const EclEpsGridProperties& epsGridProperties, unsigned elemIdx, EclTwoPhaseSystemType type,
                      const std::function<unsigned(unsigned)>& fieldPropIdxOnLevelZero)
 {
@@ -280,10 +283,10 @@ readScaledEpsPoints_(const EclEpsGridProperties& epsGridProperties, unsigned ele
 
 template <class Traits>
 std::tuple<
-  EclEpsScalingPointsInfo<typename EclMaterialLawManagerSimple<Traits>::Scalar>,
-  EclEpsScalingPoints<typename EclMaterialLawManagerSimple<Traits>::Scalar>
+  EclEpsScalingPointsInfo<typename EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::Scalar>,
+  EclEpsScalingPoints<typename EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::Scalar>
 >
-EclMaterialLawManagerSimple<Traits>::InitParams::HystParams::
+EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::InitParams::HystParams::
 readScaledEpsPointsDrainage_(unsigned elemIdx, EclTwoPhaseSystemType type,
                              const std::function<unsigned(unsigned)>& fieldPropIdxOnLevelZero)
 {
@@ -293,10 +296,10 @@ readScaledEpsPointsDrainage_(unsigned elemIdx, EclTwoPhaseSystemType type,
 
 template <class Traits>
 std::tuple<
-  EclEpsScalingPointsInfo<typename EclMaterialLawManagerSimple<Traits>::Scalar>,
-  EclEpsScalingPoints<typename EclMaterialLawManagerSimple<Traits>::Scalar>
+  EclEpsScalingPointsInfo<typename EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::Scalar>,
+  EclEpsScalingPoints<typename EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::Scalar>
 >
-EclMaterialLawManagerSimple<Traits>::InitParams::HystParams::
+EclMaterialLawManagerSimple<Traits, VectorWithDefaultAllocator, std::shared_ptr, std::unique_ptr>::InitParams::HystParams::
 readScaledEpsPointsImbibition_(unsigned elemIdx, EclTwoPhaseSystemType type,
                                const std::function<unsigned(unsigned)>& fieldPropIdxOnLevelZero)
 {

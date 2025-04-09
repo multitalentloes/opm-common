@@ -35,6 +35,8 @@
 #include <opm/input/eclipse/EclipseState/WagHysteresisConfig.hpp>
 #include "EclTwoPhaseMaterial.hpp"
 
+#include <opm/common/utility/VectorWithDefaultAllocator.hpp>
+
 #include <opm/material/fluidmatrixinteractions/SatCurveMultiplexer.hpp>
 #include <opm/material/fluidmatrixinteractions/EclEpsTwoPhaseLaw.hpp>
 #include <opm/material/fluidmatrixinteractions/EclHysteresisTwoPhaseLaw.hpp>
@@ -70,7 +72,12 @@ class TableColumn;
  * \brief Provides an simple way to create and manage the material law objects
  *        for a complete ECL deck.
  */
-template <class TraitsT>
+template<
+    class TraitsT,
+    template<class> class Storage = VectorWithDefaultAllocator,
+    template<typename> typename SharedPtr = std::shared_ptr,
+    template<typename, typename...> typename UniquePtr = std::unique_ptr
+>
 class EclMaterialLawManagerSimple
 {
 private:
@@ -144,7 +151,7 @@ private:
     // This class' implementation is defined in "EclMaterialLawManagerSimpleInitParams.cpp"
     class InitParams {
     public:
-        InitParams(EclMaterialLawManagerSimple<TraitsT>& parent, const EclipseState& eclState, size_t numCompressedElems);
+        InitParams(EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>& parent, const EclipseState& eclState, size_t numCompressedElems);
         // \brief Function argument 'fieldPropIntOnLeadAssigner' needed to lookup
         //        field properties of cells on the leaf grid view for CpGrid with local grid refinement.
         //        Function argument 'lookupIdxOnLevelZeroAssigner' is added to lookup, for each
@@ -188,7 +195,7 @@ private:
         // This class' implementation is defined in "EclMaterialLawManagerSimpleHystParams.cpp"
         class HystParams {
         public:
-            HystParams(EclMaterialLawManagerSimple<TraitsT>::InitParams& init_params);
+            HystParams(EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::InitParams& init_params);
             void finalize();
             std::shared_ptr<GasOilTwoPhaseHystParams> getGasOilParams();
             std::shared_ptr<OilWaterTwoPhaseHystParams> getOilWaterParams();
@@ -225,19 +232,18 @@ private:
             readScaledEpsPointsImbibition_(unsigned elemIdx, EclTwoPhaseSystemType type,
                                            const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner);
 
-            EclMaterialLawManagerSimple<TraitsT>::InitParams& init_params_;
-            EclMaterialLawManagerSimple<TraitsT>& parent_;
+            EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::InitParams& init_params_;
+            EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>& parent_;
             const EclipseState& eclState_;
             std::shared_ptr<GasOilTwoPhaseHystParams> gasOilParams_;
             std::shared_ptr<OilWaterTwoPhaseHystParams> oilWaterParams_;
             std::shared_ptr<GasWaterTwoPhaseHystParams> gasWaterParams_;
         };
 */
-
         // This class' implementation is defined in "EclMaterialLawManagerSimpleReadEffectiveParams.cpp"
         class ReadEffectiveParams {
         public:
-            ReadEffectiveParams(EclMaterialLawManagerSimple<TraitsT>::InitParams& init_params);
+            ReadEffectiveParams(EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::InitParams& init_params);
             void read();
         private:
             std::vector<double> normalizeKrValues_(const double tolcrit, const TableColumn& krValues) const;
@@ -262,12 +268,12 @@ private:
             void readGasWaterParameters_(GasWaterEffectiveParamVector& dest, unsigned satRegionIdx);
             void readOilWaterParameters_(OilWaterEffectiveParamVector& dest, unsigned satRegionIdx);
 
-            EclMaterialLawManagerSimple<TraitsT>::InitParams& init_params_;
-            EclMaterialLawManagerSimple<TraitsT>& parent_;
+            EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::InitParams& init_params_;
+            EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>& parent_;
             const EclipseState& eclState_;
         }; // end of "class ReadEffectiveParams"
 
-        EclMaterialLawManagerSimple<TraitsT>& parent_;
+        EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>& parent_;
         const EclipseState& eclState_;
         size_t numCompressedElems_;
 

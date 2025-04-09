@@ -33,21 +33,24 @@
 
 #include <opm/input/eclipse/EclipseState/Tables/TableManager.hpp>
 
+#include <memory>
+#include <opm/common/utility/VectorWithDefaultAllocator.hpp>
+
 namespace Opm {
 
 /* constructors*/
-template <class Traits>
-EclMaterialLawManagerSimple<Traits>::InitParams::ReadEffectiveParams::
-ReadEffectiveParams(EclMaterialLawManagerSimple<Traits>::InitParams& init_params) :
+template <class Traits, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
+EclMaterialLawManagerSimple<Traits, Storage, SharedPtr, UniquePtr>::InitParams::ReadEffectiveParams::
+ReadEffectiveParams(EclMaterialLawManagerSimple<Traits, Storage, SharedPtr, UniquePtr>::InitParams& init_params) :
     init_params_{init_params}, parent_{init_params_.parent_},
     eclState_{init_params_.eclState_}
 {
 }
 
 /* public methods */
-template <class Traits>
+template <class Traits, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
 void
-EclMaterialLawManagerSimple<Traits>::InitParams::ReadEffectiveParams::
+EclMaterialLawManagerSimple<Traits, Storage, SharedPtr, UniquePtr>::InitParams::ReadEffectiveParams::
 read() {
     auto& gasOilVector = this->parent_.gasOilEffectiveParamVector_;
     auto& oilWaterVector = this->parent_.oilWaterEffectiveParamVector_;
@@ -67,9 +70,9 @@ read() {
 /* private methods, alphabetically sorted*/
 
 // Relative permeability values not strictly greater than 'tolcrit' treated as zero.
-template <class Traits>
+template <class Traits, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
 std::vector<double>
-EclMaterialLawManagerSimple<Traits>::InitParams::ReadEffectiveParams::
+EclMaterialLawManagerSimple<Traits, Storage, SharedPtr, UniquePtr>::InitParams::ReadEffectiveParams::
 normalizeKrValues_(const double tolcrit, const TableColumn& krValues) const
 {
     auto kr = krValues.vectorCopy();
@@ -82,9 +85,9 @@ normalizeKrValues_(const double tolcrit, const TableColumn& krValues) const
     return kr;
 }
 
-template <class Traits>
+template <class Traits, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
 void
-EclMaterialLawManagerSimple<Traits>::InitParams::ReadEffectiveParams::
+EclMaterialLawManagerSimple<Traits, Storage, SharedPtr, UniquePtr>::InitParams::ReadEffectiveParams::
 readGasOilParameters_(GasOilEffectiveParamVector& dest, unsigned satRegionIdx)
 {
     if (!this->parent_.hasGas || !this->parent_.hasOil)
@@ -143,10 +146,10 @@ readGasOilParameters_(GasOilEffectiveParamVector& dest, unsigned satRegionIdx)
     }
 }
 
-template <class Traits>
+template <class Traits, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
 template <class TableType>
 void
-EclMaterialLawManagerSimple<Traits>::InitParams::ReadEffectiveParams::
+EclMaterialLawManagerSimple<Traits, Storage, SharedPtr, UniquePtr>::InitParams::ReadEffectiveParams::
 readGasOilFamily2_(GasOilEffectiveTwoPhaseParams& effParams,
                         const Scalar Swco,
                         const double tolcrit,
@@ -169,9 +172,9 @@ readGasOilFamily2_(GasOilEffectiveTwoPhaseParams& effParams,
     realParams.finalize();
 }
 
-template <class Traits>
+template <class Traits, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
 void
-EclMaterialLawManagerSimple<Traits>::InitParams::ReadEffectiveParams::
+EclMaterialLawManagerSimple<Traits, Storage, SharedPtr, UniquePtr>::InitParams::ReadEffectiveParams::
 readGasOilSgof_(GasOilEffectiveTwoPhaseParams& effParams,
                         const Scalar Swco,
                         const double tolcrit,
@@ -191,9 +194,9 @@ readGasOilSgof_(GasOilEffectiveTwoPhaseParams& effParams,
     realParams.finalize();
 }
 
-template <class Traits>
+template <class Traits, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
 void
-EclMaterialLawManagerSimple<Traits>::InitParams::ReadEffectiveParams::
+EclMaterialLawManagerSimple<Traits, Storage, SharedPtr, UniquePtr>::InitParams::ReadEffectiveParams::
 readGasOilSlgof_(GasOilEffectiveTwoPhaseParams& effParams,
                         const Scalar Swco,
                         const double tolcrit,
@@ -213,9 +216,9 @@ readGasOilSlgof_(GasOilEffectiveTwoPhaseParams& effParams,
     realParams.finalize();
 }
 
-template <class Traits>
+template <class Traits, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
 void
-EclMaterialLawManagerSimple<Traits>::InitParams::ReadEffectiveParams::
+EclMaterialLawManagerSimple<Traits, Storage, SharedPtr, UniquePtr>::InitParams::ReadEffectiveParams::
 readGasWaterParameters_(GasWaterEffectiveParamVector& dest, unsigned satRegionIdx)
 {
     if (!this->parent_.hasGas || !this->parent_.hasWater || this->parent_.hasOil)
@@ -294,9 +297,9 @@ readGasWaterParameters_(GasWaterEffectiveParamVector& dest, unsigned satRegionId
     }
 }
 
-template <class Traits>
+template <class Traits, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
 void
-EclMaterialLawManagerSimple<Traits>::InitParams::ReadEffectiveParams::
+EclMaterialLawManagerSimple<Traits, Storage, SharedPtr, UniquePtr>::InitParams::ReadEffectiveParams::
 readOilWaterParameters_(OilWaterEffectiveParamVector& dest, unsigned satRegionIdx)
 {
     if (!this->parent_.hasOil || !this->parent_.hasWater)
