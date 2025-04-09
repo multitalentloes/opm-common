@@ -53,7 +53,7 @@ InitParams(EclMaterialLawManagerSimple<Traits, Storage, SharedPtr, UniquePtr>& p
 template <class Traits, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
 void
 EclMaterialLawManagerSimple<Traits, Storage, SharedPtr, UniquePtr>::InitParams::
-run(const std::function<std::vector<int>(const FieldPropsManager&, const std::string&, bool)>&
+run(const std::function<Storage<int>(const FieldPropsManager&, const std::string&, bool)>&
     fieldPropIntOnLeafAssigner,
     const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner) {
     // readUnscaledEpsPointsVectors_();
@@ -62,9 +62,9 @@ run(const std::function<std::vector<int>(const FieldPropsManager&, const std::st
     copySatnumArrays_(fieldPropIntOnLeafAssigner);
     initOilWaterScaledEpsInfo_();
     initMaterialLawParamVectors_();
-    std::vector<std::vector<int>*> satnumArray;
-    std::vector<std::vector<int>*> imbnumArray;
-    std::vector<std::vector<MaterialLawParams>*> mlpArray;
+    Storage<Storage<int>*> satnumArray;
+    Storage<Storage<int>*> imbnumArray;
+    Storage<Storage<MaterialLawParams>*> mlpArray;
     initArrays_(satnumArray, imbnumArray, mlpArray);
     auto num_arrays = mlpArray.size();
     for (unsigned i=0; i<num_arrays; i++) {
@@ -93,7 +93,7 @@ run(const std::function<std::vector<int>(const FieldPropsManager&, const std::st
 template <class Traits, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
 void
 EclMaterialLawManagerSimple<Traits, Storage, SharedPtr, UniquePtr>::InitParams::
-copySatnumArrays_(const std::function<std::vector<int>(const FieldPropsManager&, const std::string&, bool)>& fieldPropIntOnLeafAssigner)
+copySatnumArrays_(const std::function<Storage<int>(const FieldPropsManager&, const std::string&, bool)>& fieldPropIntOnLeafAssigner)
 {
     copyIntArray_(this->parent_.krnumXArray_, "KRNUMX", fieldPropIntOnLeafAssigner);
     copyIntArray_(this->parent_.krnumYArray_, "KRNUMY", fieldPropIntOnLeafAssigner);
@@ -112,8 +112,8 @@ copySatnumArrays_(const std::function<std::vector<int>(const FieldPropsManager&,
 template <class Traits, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
 void
 EclMaterialLawManagerSimple<Traits, Storage, SharedPtr, UniquePtr>::InitParams::
-copyIntArray_(std::vector<int>& dest, const std::string keyword,
-              const std::function<std::vector<int>(const FieldPropsManager&, const std::string&, bool)>& fieldPropIntOnLeafAssigner)
+copyIntArray_(Storage<int>& dest, const std::string keyword,
+              const std::function<Storage<int>(const FieldPropsManager&, const std::string&, bool)>& fieldPropIntOnLeafAssigner)
 {
     if (this->eclState_.fieldProps().has_int(keyword)) {
         dest = fieldPropIntOnLeafAssigner(this->eclState_.fieldProps(), keyword, /*needsTranslation*/true);
@@ -123,9 +123,9 @@ copyIntArray_(std::vector<int>& dest, const std::string keyword,
 template <class Traits, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
 unsigned
 EclMaterialLawManagerSimple<Traits, Storage, SharedPtr, UniquePtr>::InitParams::
-imbRegion_(std::vector<int>& array, unsigned elemIdx)
+imbRegion_(Storage<int>& array, unsigned elemIdx)
 {
-    std::vector<int>& default_vec = this->parent_.imbnumRegionArray_;
+    Storage<int>& default_vec = this->parent_.imbnumRegionArray_;
     return satOrImbRegion_(array, default_vec, elemIdx);
 }
 
@@ -133,9 +133,9 @@ template <class Traits, template<class> class Storage, template<class> class Sha
 void
 EclMaterialLawManagerSimple<Traits, Storage, SharedPtr, UniquePtr>::InitParams::
 initArrays_(
-        std::vector<std::vector<int>*>& satnumArray,
-        std::vector<std::vector<int>*>& imbnumArray,
-        std::vector<std::vector<MaterialLawParams>*>& mlpArray)
+        Storage<Storage<int>*>& satnumArray,
+        Storage<Storage<int>*>& imbnumArray,
+        Storage<Storage<MaterialLawParams>*>& mlpArray)
 {
     satnumArray.push_back(&this->parent_.satnumRegionArray_);
     imbnumArray.push_back(&this->parent_.imbnumRegionArray_);
@@ -181,7 +181,7 @@ initOilWaterScaledEpsInfo_()
 template <class Traits, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
 void
 EclMaterialLawManagerSimple<Traits, Storage, SharedPtr, UniquePtr>::InitParams::
-initSatnumRegionArray_(const std::function<std::vector<int>(const FieldPropsManager&, const std::string&, bool)>& fieldPropIntOnLeafAssigner)
+initSatnumRegionArray_(const std::function<Storage<int>(const FieldPropsManager&, const std::string&, bool)>& fieldPropIntOnLeafAssigner)
 {
     // copy the SATNUM grid property. in some cases this is not necessary, but it
     // should not require much memory anyway...
@@ -273,16 +273,16 @@ readEffectiveParameters_()
 template <class Traits, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
 unsigned
 EclMaterialLawManagerSimple<Traits, Storage, SharedPtr, UniquePtr>::InitParams::
-satRegion_(std::vector<int>& array, unsigned elemIdx)
+satRegion_(Storage<int>& array, unsigned elemIdx)
 {
-    std::vector<int>& default_vec = this->parent_.satnumRegionArray_;
+    Storage<int>& default_vec = this->parent_.satnumRegionArray_;
     return satOrImbRegion_(array, default_vec, elemIdx);
 }
 
 template <class Traits, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
 unsigned
 EclMaterialLawManagerSimple<Traits, Storage, SharedPtr, UniquePtr>::InitParams::
-satOrImbRegion_(std::vector<int>& array, std::vector<int>& default_vec, unsigned elemIdx)
+satOrImbRegion_(Storage<int>& array, Storage<int>& default_vec, unsigned elemIdx)
 {
     int value;
     if (array.size() > 0) {

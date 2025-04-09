@@ -135,7 +135,7 @@ initFromState(const EclipseState& eclState)
 template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
 void EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::
 initParamsForElements(const EclipseState& eclState, size_t numCompressedElems,
-                      const std::function<std::vector<int>(const FieldPropsManager&, const std::string&, bool)>& fieldPropIntOnLeafAssigner,
+                      const std::function<Storage<int>(const FieldPropsManager&, const std::string&, bool)>& fieldPropIntOnLeafAssigner,
                       const std::function<unsigned(unsigned)>& lookupIdxOnLevelZeroAssigner)
 {
     InitParams initParams {*this, eclState, numCompressedElems};
@@ -268,7 +268,7 @@ int EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>::
 getKrnumSatIdx(unsigned elemIdx, FaceDir::DirEnum facedir) const
 {
     using Dir = FaceDir::DirEnum;
-    const std::vector<int>* array = nullptr;
+    const Storage<int>* array = nullptr;
     switch(facedir) {
     case Dir::XPlus:
       array = &krnumXArray_;
