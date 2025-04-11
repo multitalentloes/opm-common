@@ -177,9 +177,9 @@ namespace gpuistl
     {
         // Maybe I will run into some proble on a twophase case where some of these do not exist?
         // copy interpolation tables to the GPU - right now assumed to be the piecewiselinear....params
-        auto gasOilParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(*params.gasOilParamsPtr());
-        auto oilWaterParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(*params.oilWaterParamsPtr());
-        auto gasWaterParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(*params.gasWaterParamsPtr());
+        auto gasOilParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(params.gasOilParams());
+        auto oilWaterParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(params.oilWaterParams());
+        auto gasWaterParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(params.gasWaterParams());
         // Wrap the copied parameters in a shared_ptr
         auto gasOilParamsPtr = std::make_shared<NewGasOilParamsT>(gasOilParams);
         auto oilWaterParamsPtr = std::make_shared<NewOilWaterParamsT>(oilWaterParams);
