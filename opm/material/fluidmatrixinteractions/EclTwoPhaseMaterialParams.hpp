@@ -31,6 +31,9 @@
 
 #include <opm/material/common/EnsureFinalized.hpp>
 
+// tmp due to copy to gpu
+#include <opm/material/fluidmatrixinteractions/PiecewiseLinearTwoPhaseMaterialParams.hpp>
+
 #include <opm/common/utility/gpuDecorators.hpp>
 
 namespace Opm {
