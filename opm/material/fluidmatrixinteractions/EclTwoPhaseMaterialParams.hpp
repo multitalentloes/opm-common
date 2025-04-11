@@ -215,21 +215,21 @@ namespace gpuistl
         auto oilWaterParams = gpuistl::make_view<ViewType>(*params.oilWaterParamsPtr());
         auto gasWaterParams = gpuistl::make_view<ViewType>(*params.gasWaterParamsPtr());
 
-        // Not immediately convinced this is correct
-        auto gasOilParamsPtr = PtrType<NewGasOilParamsT>(gasOilParams);
-        auto oilWaterParamsPtr = PtrType<NewOilWaterParamsT>(oilWaterParams);
-        auto gasWaterParamsPtr = PtrType<NewGasWaterParamsT>(gasWaterParams);
+        // TODO: avoid the extra creation of a shared pointer
+        auto gasOilParamsPtr = PtrType<NewGasOilParamsT>(std::make_shared<NewGasOilParamsT>(gasOilParams));
+        auto oilWaterParamsPtr = PtrType<NewOilWaterParamsT>(std::make_shared<NewGasOilParamsT>(oilWaterParams));
+        auto gasWaterParamsPtr = PtrType<NewGasWaterParamsT>(std::make_shared<NewGasOilParamsT>(gasWaterParams));
 
         // Create the new EclTwoPhaseMaterialParams object
-        auto gpuBufBasedEclTwoPhasedMaterialParams =
+        auto gpuViewBasedEclTwoPhasedMaterialParams =
             EclTwoPhaseMaterialParams<Traits, NewGasOilParamsT, NewOilWaterParamsT, NewGasWaterParamsT, PtrType>();
 
-        gpuBufBasedEclTwoPhasedMaterialParams.setApproach(params.approach());
-        gpuBufBasedEclTwoPhasedMaterialParams.setGasOilParams(gasOilParamsPtr);
-        gpuBufBasedEclTwoPhasedMaterialParams.setOilWaterParams(oilWaterParamsPtr);
-        gpuBufBasedEclTwoPhasedMaterialParams.setGasWaterParams(gasWaterParamsPtr);
+        gpuViewBasedEclTwoPhasedMaterialParams.setApproach(params.approach());
+        gpuViewBasedEclTwoPhasedMaterialParams.setGasOilParams(gasOilParamsPtr);
+        gpuViewBasedEclTwoPhasedMaterialParams.setOilWaterParams(oilWaterParamsPtr);
+        gpuViewBasedEclTwoPhasedMaterialParams.setGasWaterParams(gasWaterParamsPtr);
 
-        return gpuBufBasedEclTwoPhasedMaterialParams;
+        return gpuViewBasedEclTwoPhasedMaterialParams;
     }
 }
 
