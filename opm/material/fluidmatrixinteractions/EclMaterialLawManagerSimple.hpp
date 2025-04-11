@@ -121,17 +121,6 @@ private:
     using OilWaterTwoPhaseLaw = OilWaterEffectiveTwoPhaseLaw;
     using GasWaterTwoPhaseLaw = GasWaterEffectiveTwoPhaseLaw;
 
-public:
-    // the three-phase material law used by the simulation
-    // using MaterialLaw = EclMultiplexerMaterial<Traits, GasOilTwoPhaseLaw, OilWaterTwoPhaseLaw, GasWaterTwoPhaseLaw>;
-    using MaterialLaw = EclTwoPhaseMaterial<TraitsT, GasOilTwoPhaseLaw, OilWaterTwoPhaseLaw, GasWaterTwoPhaseLaw>;
-    using MaterialLawParams = typename MaterialLaw::Params;
-    using DirectionalMaterialLawParamsPtr = UniquePtr<DirectionalMaterialLawParams<MaterialLawParams>>;
-
-    EclMaterialLawManagerSimple();
-    ~EclMaterialLawManagerSimple();
-
-private:
     // internal typedefs
     using GasOilEffectiveParamVector = Storage<SharedPtr<GasOilEffectiveTwoPhaseParams>>;
     using OilWaterEffectiveParamVector = Storage<SharedPtr<OilWaterEffectiveTwoPhaseParams>>;
@@ -144,6 +133,79 @@ private:
     // using GasOilParamVector = Storage<SharedPtr<GasOilTwoPhaseHystParams>>;
     // using OilWaterParamVector = Storage<SharedPtr<OilWaterTwoPhaseHystParams>>;
     // using GasWaterParamVector = Storage<SharedPtr<GasWaterTwoPhaseHystParams>>;
+public:
+    // the three-phase material law used by the simulation
+    // using MaterialLaw = EclMultiplexerMaterial<Traits, GasOilTwoPhaseLaw, OilWaterTwoPhaseLaw, GasWaterTwoPhaseLaw>;
+    using MaterialLaw = EclTwoPhaseMaterial<TraitsT, GasOilTwoPhaseLaw, OilWaterTwoPhaseLaw, GasWaterTwoPhaseLaw>;
+    using MaterialLawParams = typename MaterialLaw::Params;
+    using DirectionalMaterialLawParamsPtr = UniquePtr<DirectionalMaterialLawParams<MaterialLawParams>>;
+
+    EclMaterialLawManagerSimple();
+    ~EclMaterialLawManagerSimple();
+
+    EclMaterialLawManagerSimple(
+        bool enableEndPointScaling,
+        SharedPtr<EclEpsConfig> oilWaterEclEpsConfig,
+        Storage<EclEpsScalingPointsInfo<Scalar>> unscaledEpsInfo,
+        OilWaterScalingInfoVector oilWaterScaledEpsInfoDrainage,
+        GasOilEffectiveParamVector gasOilEffectiveParamVector,
+        OilWaterEffectiveParamVector oilWaterEffectiveParamVector,
+        GasWaterEffectiveParamVector gasWaterEffectiveParamVector,
+        EclMultiplexerApproach threePhaseApproach,
+        EclTwoPhaseApproach twoPhaseApproach,
+        Storage<MaterialLawParams> materialLawParams,
+        DirectionalMaterialLawParamsPtr dirMaterialLawParams,
+        Storage<int> satnumRegionArray,
+        Storage<int> krnumXArray,
+        Storage<int> krnumYArray,
+        Storage<int> krnumZArray,
+        Storage<int> imbnumXArray,
+        Storage<int> imbnumYArray,
+        Storage<int> imbnumZArray,
+        Storage<int> imbnumRegionArray,
+        Storage<Scalar> stoneEtas,
+        bool enablePpcwmax,
+        Storage<Scalar> maxAllowPc,
+        Storage<bool> modifySwl,
+        bool hasGas_arg,
+        bool hasOil_arg,
+        bool hasWater_arg,
+        SharedPtr<EclEpsConfig> gasOilConfig,
+        SharedPtr<EclEpsConfig> oilWaterConfig,
+        SharedPtr<EclEpsConfig> gasWaterConfig)
+        : enableEndPointScaling_(enableEndPointScaling),
+          oilWaterEclEpsConfig_(oilWaterEclEpsConfig),
+          unscaledEpsInfo_(unscaledEpsInfo),
+          oilWaterScaledEpsInfoDrainage_(oilWaterScaledEpsInfoDrainage),
+          gasOilEffectiveParamVector_(gasOilEffectiveParamVector),
+          oilWaterEffectiveParamVector_(oilWaterEffectiveParamVector),
+          gasWaterEffectiveParamVector_(gasWaterEffectiveParamVector),
+          threePhaseApproach_(threePhaseApproach),
+          twoPhaseApproach_(twoPhaseApproach),
+          materialLawParams_(materialLawParams),
+          dirMaterialLawParams_(std::move(dirMaterialLawParams)), // I do not think this will work
+          satnumRegionArray_(satnumRegionArray),
+          krnumXArray_(krnumXArray),
+          krnumYArray_(krnumYArray),
+          krnumZArray_(krnumZArray),
+          imbnumXArray_(imbnumXArray),
+          imbnumYArray_(imbnumYArray),
+          imbnumZArray_(imbnumZArray),
+          imbnumRegionArray_(imbnumRegionArray),
+          stoneEtas_(stoneEtas),
+          enablePpcwmax_(enablePpcwmax),
+          maxAllowPc_(maxAllowPc),
+          modifySwl_(modifySwl),
+          hasGas(hasGas_arg),
+          hasOil(hasOil_arg),
+          hasWater(hasWater_arg),
+          gasOilConfig_(gasOilConfig),
+          oilWaterConfig_(oilWaterConfig),
+          gasWaterConfig_(gasWaterConfig)
+    {}
+
+private:
+
     using MaterialLawParamsVector = Storage<SharedPtr<MaterialLawParams>>;
 
     // helper classes
@@ -508,6 +570,17 @@ private:
     SharedPtr<EclEpsConfig> oilWaterConfig_;
     SharedPtr<EclEpsConfig> gasWaterConfig_;
 };
+
+namespace gpuistl {
+template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
+EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr> copy_to_gpu(
+    const EclMaterialLawManagerSimple<TraitsT>& materialLawManager)
+    {
+        return EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr>();
+    }
+
+}
+
 } // namespace Opm
 
 #endif
