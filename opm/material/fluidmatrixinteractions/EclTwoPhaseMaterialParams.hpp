@@ -194,6 +194,8 @@ namespace gpuistl
         gpuBufBasedEclTwoPhasedMaterialParams.setOilWaterParams(oilWaterParamsPtr);
         gpuBufBasedEclTwoPhasedMaterialParams.setGasWaterParams(gasWaterParamsPtr);
 
+        gpuBufBasedEclTwoPhasedMaterialParams.finalize();
+
         return gpuBufBasedEclTwoPhasedMaterialParams;
     }
 
@@ -228,6 +230,8 @@ namespace gpuistl
         gpuViewBasedEclTwoPhasedMaterialParams.setGasOilParams(gasOilParamsPtr);
         gpuViewBasedEclTwoPhasedMaterialParams.setOilWaterParams(oilWaterParamsPtr);
         gpuViewBasedEclTwoPhasedMaterialParams.setGasWaterParams(gasWaterParamsPtr);
+
+        gpuViewBasedEclTwoPhasedMaterialParams.finalize();
 
         return gpuViewBasedEclTwoPhasedMaterialParams;
     }
