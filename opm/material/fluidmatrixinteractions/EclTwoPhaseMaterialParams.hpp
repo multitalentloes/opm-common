@@ -183,11 +183,11 @@ namespace gpuistl
         // TODO: avoid the new, this is just to be sure that memory is not deallocated before access in kernel
         // TODO: the new probably does nothing as the cpuversion of the params class makes another shared pointer
         // TODO: which ensures that this memory is not deallocated, even if this local pointer goes out of scope
-        auto gasWaterParams = new NewGasWaterParamsT(gpuistl::copy_to_gpu<ScalarGpuBuffer>(params.gasWaterParams()));
+        auto gasWaterParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(params.gasWaterParams());
         // Wrap the copied parameters in a shared_ptr
         // auto gasOilParamsPtr = std::make_shared<NewGasOilParamsT>(gasOilParams);
         // auto oilWaterParamsPtr = std::make_shared<NewOilWaterParamsT>(oilWaterParams);
-        auto gasWaterParamsPtr = std::make_shared<NewGasWaterParamsT>(*gasWaterParams);
+        auto gasWaterParamsPtr = std::make_shared<NewGasWaterParamsT>(gasWaterParams);
         // gasWaterParamsPtr->finalize();
 
         // Create the new EclTwoPhaseMaterialParams object

@@ -411,6 +411,11 @@ public:
         return materialLawParams_[elemIdx];
     }
 
+    std::size_t numMaterialLawParams() const
+    {
+        return materialLawParams_.size();
+    }
+
     const MaterialLawParams& materialLawParams(unsigned elemIdx) const
     {
         assert(elemIdx <  materialLawParams_.size());
