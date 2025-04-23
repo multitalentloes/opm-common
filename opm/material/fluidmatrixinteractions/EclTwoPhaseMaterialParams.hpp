@@ -175,23 +175,28 @@ namespace gpuistl
     EclTwoPhaseMaterialParams<Traits, NewGasOilParamsT, NewOilWaterParamsT, NewGasWaterParamsT>
     copy_to_gpu(const EclTwoPhaseMaterialParams<Traits, OldGasOilParamsT, OldOilWaterParamsT, OldGasWaterParamsT>& params)
     {
+
         // Maybe I will run into some proble on a twophase case where some of these do not exist?
         // copy interpolation tables to the GPU - right now assumed to be the piecewiselinear....params
-        auto gasOilParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(params.gasOilParams());
-        auto oilWaterParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(params.oilWaterParams());
-        auto gasWaterParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(params.gasWaterParams());
+        // auto gasOilParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(params.gasOilParams());
+        // auto oilWaterParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(params.oilWaterParams());
+        // TODO: avoid the new, this is just to be sure that memory is not deallocated before access in kernel
+        // TODO: the new probably does nothing as the cpuversion of the params class makes another shared pointer
+        // TODO: which ensures that this memory is not deallocated, even if this local pointer goes out of scope
+        auto gasWaterParams = new NewGasWaterParamsT(gpuistl::copy_to_gpu<ScalarGpuBuffer>(params.gasWaterParams()));
         // Wrap the copied parameters in a shared_ptr
-        auto gasOilParamsPtr = std::make_shared<NewGasOilParamsT>(gasOilParams);
-        auto oilWaterParamsPtr = std::make_shared<NewOilWaterParamsT>(oilWaterParams);
-        auto gasWaterParamsPtr = std::make_shared<NewGasWaterParamsT>(gasWaterParams);
+        // auto gasOilParamsPtr = std::make_shared<NewGasOilParamsT>(gasOilParams);
+        // auto oilWaterParamsPtr = std::make_shared<NewOilWaterParamsT>(oilWaterParams);
+        auto gasWaterParamsPtr = std::make_shared<NewGasWaterParamsT>(*gasWaterParams);
+        // gasWaterParamsPtr->finalize();
 
         // Create the new EclTwoPhaseMaterialParams object
         auto gpuBufBasedEclTwoPhasedMaterialParams =
             EclTwoPhaseMaterialParams<Traits, NewGasOilParamsT, NewOilWaterParamsT, NewGasWaterParamsT>();
 
         gpuBufBasedEclTwoPhasedMaterialParams.setApproach(params.approach());
-        gpuBufBasedEclTwoPhasedMaterialParams.setGasOilParams(gasOilParamsPtr);
-        gpuBufBasedEclTwoPhasedMaterialParams.setOilWaterParams(oilWaterParamsPtr);
+        // gpuBufBasedEclTwoPhasedMaterialParams.setGasOilParams(gasOilParamsPtr);
+        // gpuBufBasedEclTwoPhasedMaterialParams.setOilWaterParams(oilWaterParamsPtr);
         gpuBufBasedEclTwoPhasedMaterialParams.setGasWaterParams(gasWaterParamsPtr);
 
         gpuBufBasedEclTwoPhasedMaterialParams.finalize();
@@ -213,22 +218,27 @@ namespace gpuistl
     {
         // Maybe I will run into some proble on a twophase case where some of these do not exist?
         // copy interpolation tables to the GPU - right now assumed to be the piecewiselinear....params
-        auto gasOilParams = gpuistl::make_view<ViewType>(*params.gasOilParamsPtr());
-        auto oilWaterParams = gpuistl::make_view<ViewType>(*params.oilWaterParamsPtr());
+        // auto gasOilParams = gpuistl::make_view<ViewType>(*params.gasOilParamsPtr());
+        // auto oilWaterParams = gpuistl::make_view<ViewType>(*params.oilWaterParamsPtr());
         auto gasWaterParams = gpuistl::make_view<ViewType>(*params.gasWaterParamsPtr());
 
+        using expectedGasWaterParamsType = PiecewiseLinearTwoPhaseMaterialParams<typename OldGasWaterParamsT::Traits, ViewType>;
+        using trueGasWaterParamsType = typename std::remove_reference_t<decltype(gasWaterParams)>;
+        static_assert(std::is_same_v<trueGasWaterParamsType, expectedGasWaterParamsType>);
+
         // TODO: avoid the extra creation of a shared pointer
-        auto gasOilParamsPtr = PtrType<NewGasOilParamsT>(std::make_shared<NewGasOilParamsT>(gasOilParams));
-        auto oilWaterParamsPtr = PtrType<NewOilWaterParamsT>(std::make_shared<NewGasOilParamsT>(oilWaterParams));
-        auto gasWaterParamsPtr = PtrType<NewGasWaterParamsT>(std::make_shared<NewGasOilParamsT>(gasWaterParams));
+        // auto gasOilParamsPtr = PtrType<NewGasOilParamsT>(std::make_shared<NewGasOilParamsT>(gasOilParams));
+        // auto oilWaterParamsPtr = PtrType<NewOilWaterParamsT>(std::make_shared<NewGasOilParamsT>(oilWaterParams));
+        auto gasWaterParamsPtr = PtrType<NewGasWaterParamsT>(gasWaterParams);
+        // gasWaterParamsPtr->finalize();
 
         // Create the new EclTwoPhaseMaterialParams object
         auto gpuViewBasedEclTwoPhasedMaterialParams =
             EclTwoPhaseMaterialParams<Traits, NewGasOilParamsT, NewOilWaterParamsT, NewGasWaterParamsT, PtrType>();
 
         gpuViewBasedEclTwoPhasedMaterialParams.setApproach(params.approach());
-        gpuViewBasedEclTwoPhasedMaterialParams.setGasOilParams(gasOilParamsPtr);
-        gpuViewBasedEclTwoPhasedMaterialParams.setOilWaterParams(oilWaterParamsPtr);
+        // gpuViewBasedEclTwoPhasedMaterialParams.setGasOilParams(gasOilParamsPtr);
+        // gpuViewBasedEclTwoPhasedMaterialParams.setOilWaterParams(oilWaterParamsPtr);
         gpuViewBasedEclTwoPhasedMaterialParams.setGasWaterParams(gasWaterParamsPtr);
 
         gpuViewBasedEclTwoPhasedMaterialParams.finalize();
