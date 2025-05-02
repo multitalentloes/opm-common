@@ -334,6 +334,8 @@ public:
     const MaterialLawParams& materialLawParams(unsigned elemIdx) const
     {
         assert(elemIdx <  materialLawParams_.size());
+        // printf("list size, %u idx: %u\n", materialLawParams_.size(), elemIdx);
+        printf("m");
         return materialLawParams_[elemIdx];
     }
 

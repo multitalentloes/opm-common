@@ -66,6 +66,7 @@ public:
     using GasOilParams = GasOilParamsT;
     using OilWaterParams = OilWaterParamsT;
     using GasWaterParams = GasWaterParamsT;
+    using TraitsType = Traits;
 
     /*!
      * \brief The default constructor.
@@ -162,8 +163,56 @@ private:
     PtrType<GasWaterParams> gasWaterParams_;
 };
 
-namespace gpuistl
+} // namespace Opm
+
+// TODO: improve the cmake to simplify away this extra logic on the include path
+#if HAVE_CUDA
+    #if USE_HIP
+        #include <opm/simulators/linalg/gpuistl_hip/GpuBuffer.hpp>
+        #include <opm/simulators/linalg/gpuistl_hip/GpuView.hpp>
+        #include <opm/simulators/linalg/gpuistl_hip/gpu_smart_pointer.hpp>
+    #else
+        #include <opm/simulators/linalg/gpuistl/GpuBuffer.hpp>
+        #include <opm/simulators/linalg/gpuistl/GpuView.hpp>
+        #include <opm/simulators/linalg/gpuistl/gpu_smart_pointer.hpp>
+    #endif
+
+namespace Opm::gpuistl
 {
+
+    template<
+        class Traits,
+        class GasOilParamsT,
+        class OilWaterParamsT,
+        class GasWaterParamsT
+    >
+    struct GPUType<EclTwoPhaseMaterialParams<Traits, GasOilParamsT, OilWaterParamsT, GasWaterParamsT>> {
+        using type = EclTwoPhaseMaterialParams<
+                        Traits,
+                        typename GPUType<GasOilParamsT>::type,
+                        typename GPUType<OilWaterParamsT>::type,
+                        typename GPUType<GasWaterParamsT>::type
+                    >;
+    };
+
+    template<
+        class Traits,
+        class GasOilParamsT,
+        class OilWaterParamsT,
+        class GasWaterParamsT
+    >
+    struct ViewType<EclTwoPhaseMaterialParams<Traits, GasOilParamsT, OilWaterParamsT, GasWaterParamsT>> {
+        using type = EclTwoPhaseMaterialParams<
+                        Traits,
+                        typename ViewType<GasOilParamsT>::type,
+                        typename ViewType<OilWaterParamsT>::type,
+                        typename ViewType<GasWaterParamsT>::type,
+                        Opm::gpuistl::ValueAsPointer>;
+    };
+
+
+
+
     template<class ScalarGpuBuffer,
              class NewGasOilParamsT,
              class NewOilWaterParamsT,
@@ -245,8 +294,9 @@ namespace gpuistl
 
         return gpuViewBasedEclTwoPhasedMaterialParams;
     }
-}
 
-} // namespace Opm
+} // namespace gpuistl
+
+#endif
 
 #endif

@@ -301,7 +301,30 @@ private:
 };
 } // namespace Opm
 
+
+// TODO: improve the cmake to simplify away this extra logic on the include path
+#if HAVE_CUDA
+    #if USE_HIP
+        #include <opm/simulators/linalg/gpuistl_hip/GpuBuffer.hpp>
+        #include <opm/simulators/linalg/gpuistl_hip/GpuView.hpp>
+    #else
+        #include <opm/simulators/linalg/gpuistl/GpuBuffer.hpp>
+        #include <opm/simulators/linalg/gpuistl/GpuView.hpp>
+    #endif
+
 namespace Opm::gpuistl{
+
+template <class TraitsT>
+struct GPUType<PiecewiseLinearTwoPhaseMaterialParams<TraitsT>>
+{
+    using type = PiecewiseLinearTwoPhaseMaterialParams<TraitsT, Opm::gpuistl::GpuBuffer<typename TraitsT::Scalar>>;
+};
+
+template <class TraitsT>
+struct ViewType<PiecewiseLinearTwoPhaseMaterialParams<TraitsT>>
+{
+    using type = PiecewiseLinearTwoPhaseMaterialParams<TraitsT, Opm::gpuistl::GpuView<typename TraitsT::Scalar>>;
+};
 
 /// @brief Move a PiecewiseLinearTwoPhaseMaterialParams-object to the GPU
 /// @tparam TraitsT the same traits as in PiecewiseLinearTwoPhaseMaterialParams
@@ -360,5 +383,7 @@ PiecewiseLinearTwoPhaseMaterialParams<TraitsT, ViewType> make_view(PiecewiseLine
 }
 
 }
+
+#endif // HAVE_CUDA
 
 #endif
