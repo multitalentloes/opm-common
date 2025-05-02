@@ -207,11 +207,8 @@ namespace Opm::gpuistl
                         typename ViewType<GasOilParamsT>::type,
                         typename ViewType<OilWaterParamsT>::type,
                         typename ViewType<GasWaterParamsT>::type,
-                        Opm::gpuistl::ValueAsPointer>;
+                        ValueAsPointer>;
     };
-
-
-
 
     template<class ScalarGpuBuffer,
              class NewGasOilParamsT,

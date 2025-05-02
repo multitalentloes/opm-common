@@ -317,13 +317,13 @@ namespace Opm::gpuistl{
 template <class TraitsT>
 struct GPUType<PiecewiseLinearTwoPhaseMaterialParams<TraitsT>>
 {
-    using type = PiecewiseLinearTwoPhaseMaterialParams<TraitsT, Opm::gpuistl::GpuBuffer<typename TraitsT::Scalar>>;
+    using type = PiecewiseLinearTwoPhaseMaterialParams<TraitsT, GpuBuffer<typename TraitsT::Scalar>>;
 };
 
 template <class TraitsT>
 struct ViewType<PiecewiseLinearTwoPhaseMaterialParams<TraitsT>>
 {
-    using type = PiecewiseLinearTwoPhaseMaterialParams<TraitsT, Opm::gpuistl::GpuView<typename TraitsT::Scalar>>;
+    using type = PiecewiseLinearTwoPhaseMaterialParams<TraitsT, GpuView<typename TraitsT::Scalar>>;
 };
 
 /// @brief Move a PiecewiseLinearTwoPhaseMaterialParams-object to the GPU
