@@ -314,14 +314,14 @@ private:
 
 namespace Opm::gpuistl{
 
-template <class TraitsT>
-struct GPUType<PiecewiseLinearTwoPhaseMaterialParams<TraitsT>>
+template <class TraitsT, class VectorT>
+struct GPUType<PiecewiseLinearTwoPhaseMaterialParams<TraitsT, VectorT>>
 {
     using type = PiecewiseLinearTwoPhaseMaterialParams<TraitsT, GpuBuffer<typename TraitsT::Scalar>>;
 };
 
-template <class TraitsT>
-struct ViewType<PiecewiseLinearTwoPhaseMaterialParams<TraitsT>>
+template <class TraitsT, class VectorT>
+struct ViewType<PiecewiseLinearTwoPhaseMaterialParams<TraitsT, VectorT>>
 {
     using type = PiecewiseLinearTwoPhaseMaterialParams<TraitsT, GpuView<typename TraitsT::Scalar>>;
 };

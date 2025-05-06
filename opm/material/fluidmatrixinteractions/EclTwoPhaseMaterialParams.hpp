@@ -250,7 +250,7 @@ namespace Opm::gpuistl
         return gpuBufBasedEclTwoPhasedMaterialParams;
     }
 
-    template<class ViewType,
+    template<class ScalarView,
              class NewGasOilParamsT,
             class NewOilWaterParamsT,
             class NewGasWaterParamsT,
@@ -264,11 +264,11 @@ namespace Opm::gpuistl
     {
         // Maybe I will run into some proble on a twophase case where some of these do not exist?
         // copy interpolation tables to the GPU - right now assumed to be the piecewiselinear....params
-        // auto gasOilParams = gpuistl::make_view<ViewType>(*params.gasOilParamsPtr());
-        // auto oilWaterParams = gpuistl::make_view<ViewType>(*params.oilWaterParamsPtr());
-        auto gasWaterParams = gpuistl::make_view<ViewType>(*params.gasWaterParamsPtr());
+        // auto gasOilParams = gpuistl::make_view<ScalarView>(*params.gasOilParamsPtr());
+        // auto oilWaterParams = gpuistl::make_view<ScalarView>(*params.oilWaterParamsPtr());
+        auto gasWaterParams = gpuistl::make_view<ScalarView>(*params.gasWaterParamsPtr());
 
-        using expectedGasWaterParamsType = PiecewiseLinearTwoPhaseMaterialParams<typename OldGasWaterParamsT::Traits, ViewType>;
+        using expectedGasWaterParamsType = PiecewiseLinearTwoPhaseMaterialParams<typename OldGasWaterParamsT::Traits, ScalarView>;
         using trueGasWaterParamsType = typename std::remove_reference_t<decltype(gasWaterParams)>;
         static_assert(std::is_same_v<trueGasWaterParamsType, expectedGasWaterParamsType>);
 
