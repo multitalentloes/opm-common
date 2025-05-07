@@ -399,18 +399,18 @@ public:
         case EclTwoPhaseApproach::GasOil: {
             const Evaluation& So =
                 decay<Evaluation>(fluidState.saturation(oilPhaseIdx));
-
-            values[oilPhaseIdx] = GasOilMaterialLaw::twoPhaseSatKrw(params.gasOilParams(), So);
-            values[gasPhaseIdx] = GasOilMaterialLaw::twoPhaseSatKrn(params.gasOilParams(), So);
+            // TODO: uncomment
+            // values[oilPhaseIdx] = GasOilMaterialLaw::twoPhaseSatKrw(params.gasOilParams(), So);
+            // values[gasPhaseIdx] = GasOilMaterialLaw::twoPhaseSatKrn(params.gasOilParams(), So);
             break;
         }
 
         case EclTwoPhaseApproach::OilWater: {
             const Evaluation& sw =
                 decay<Evaluation>(fluidState.saturation(waterPhaseIdx));
-
-            values[waterPhaseIdx] = OilWaterMaterialLaw::twoPhaseSatKrw(params.oilWaterParams(), sw);
-            values[oilPhaseIdx] = OilWaterMaterialLaw::twoPhaseSatKrn(params.oilWaterParams(), sw);
+            // TODO: uncomment
+            // values[waterPhaseIdx] = OilWaterMaterialLaw::twoPhaseSatKrw(params.oilWaterParams(), sw);
+            // values[oilPhaseIdx] = OilWaterMaterialLaw::twoPhaseSatKrn(params.oilWaterParams(), sw);
             break;
         }
 
@@ -489,6 +489,40 @@ public:
         return false;
     }
 };
+
+namespace gpuistl {
+#if HAVE_CUDA
+    #if USE_HIP
+        #include <opm/simulators/linalg/gpuistl_hip/GpuView.hpp>
+    #else
+        #include <opm/simulators/linalg/gpuistl/GpuView.hpp>
+    #endif
+
+    template<
+        class Traits,
+        class GasOilMaterialLawT,
+        class OilWaterMaterialLawT,
+        class GasWaterMaterialLawT
+    >
+    struct ViewType<EclTwoPhaseMaterial<Traits, GasOilMaterialLawT, OilWaterMaterialLawT, GasWaterMaterialLawT>> {
+        using type = EclTwoPhaseMaterial<
+            Traits,
+            typename ViewType<GasOilMaterialLawT>::type,
+            typename ViewType<OilWaterMaterialLawT>::type,
+            typename ViewType<GasWaterMaterialLawT>::type,
+            typename ViewType<
+                EclTwoPhaseMaterialParams<
+                    Traits,
+                    typename GasOilMaterialLawT::Params,
+                    typename OilWaterMaterialLawT::Params,
+                    typename GasWaterMaterialLawT::Params
+                >
+            >::type /* The type of the params should be the ViewType of the Params class*/
+        >;
+    };
+#endif // HAVE_CUDA
+}
+
 
 } // namespace Opm
 
