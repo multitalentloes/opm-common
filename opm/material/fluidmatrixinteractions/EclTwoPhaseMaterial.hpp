@@ -400,8 +400,8 @@ public:
             const Evaluation& So =
                 decay<Evaluation>(fluidState.saturation(oilPhaseIdx));
             // TODO: uncomment
-            // values[oilPhaseIdx] = GasOilMaterialLaw::twoPhaseSatKrw(params.gasOilParams(), So);
-            // values[gasPhaseIdx] = GasOilMaterialLaw::twoPhaseSatKrn(params.gasOilParams(), So);
+            values[oilPhaseIdx] = GasOilMaterialLaw::twoPhaseSatKrw(params.gasOilParams(), So);
+            values[gasPhaseIdx] = GasOilMaterialLaw::twoPhaseSatKrn(params.gasOilParams(), So);
             break;
         }
 
@@ -409,8 +409,8 @@ public:
             const Evaluation& sw =
                 decay<Evaluation>(fluidState.saturation(waterPhaseIdx));
             // TODO: uncomment
-            // values[waterPhaseIdx] = OilWaterMaterialLaw::twoPhaseSatKrw(params.oilWaterParams(), sw);
-            // values[oilPhaseIdx] = OilWaterMaterialLaw::twoPhaseSatKrn(params.oilWaterParams(), sw);
+            values[waterPhaseIdx] = OilWaterMaterialLaw::twoPhaseSatKrw(params.oilWaterParams(), sw);
+            values[oilPhaseIdx] = OilWaterMaterialLaw::twoPhaseSatKrn(params.oilWaterParams(), sw);
             break;
         }
 
