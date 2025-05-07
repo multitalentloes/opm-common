@@ -294,6 +294,6 @@ namespace Opm::gpuistl
 
 } // namespace gpuistl
 
-#endif
+#endif // HAVE_CUDA
 
 #endif
