@@ -93,9 +93,9 @@ private:
     using GasWaterTraits = TwoPhaseMaterialTraits<Scalar, waterPhaseIdx, gasPhaseIdx>;
 
     // the two-phase material law which is defined on effective (unscaled) saturations
-    using GasOilEffectiveTwoPhaseLaw = PiecewiseLinearTwoPhaseMaterial<GasOilTraits>;
-    using OilWaterEffectiveTwoPhaseLaw = PiecewiseLinearTwoPhaseMaterial<OilWaterTraits>;
-    using GasWaterEffectiveTwoPhaseLaw = PiecewiseLinearTwoPhaseMaterial<GasWaterTraits>;
+    using GasOilEffectiveTwoPhaseLaw = PiecewiseLinearTwoPhaseMaterial<GasOilTraits, PiecewiseLinearTwoPhaseMaterialParams<GasOilTraits, Storage<Scalar>>>;
+    using OilWaterEffectiveTwoPhaseLaw = PiecewiseLinearTwoPhaseMaterial<OilWaterTraits, PiecewiseLinearTwoPhaseMaterialParams<OilWaterTraits, Storage<Scalar>>>;
+    using GasWaterEffectiveTwoPhaseLaw = PiecewiseLinearTwoPhaseMaterial<GasWaterTraits, PiecewiseLinearTwoPhaseMaterialParams<GasWaterTraits, Storage<Scalar>>>;
 
     using GasOilEffectiveTwoPhaseParams = typename GasOilEffectiveTwoPhaseLaw::Params;
     using OilWaterEffectiveTwoPhaseParams = typename OilWaterEffectiveTwoPhaseLaw::Params;
@@ -577,6 +577,33 @@ private:
 };
 
 namespace gpuistl {
+
+#if HAVE_CUDA
+    #if USE_HIP
+        #include <opm/simulators/linalg/gpuistl_hip/GpuView.hpp>
+        #include <opm/simulators/linalg/gpuistl_hip/gpu_smart_pointer.hpp>
+    #else
+        #include <opm/simulators/linalg/gpuistl/GpuView.hpp>
+        #include <opm/simulators/linalg/gpuistl/gpu_smart_pointer.hpp>
+    #endif
+
+    template<
+        class Scalar,
+        template<class> class Storage,
+        template<typename> typename SharedPtr,
+        template<typename, typename...> typename UniquePtr
+    >
+    struct GPUType<EclMaterialLawManagerSimple<Scalar, Storage, SharedPtr, UniquePtr>> {
+        using type = EclMaterialLawManagerSimple<
+            Scalar,
+            GpuView,
+            ValueAsPointer,
+            UniquePtr
+        >;
+    };
+#endif
+
+
 template<class TraitsT, template<class> class Storage, template<class> class SharedPtr, template<typename, typename...> typename UniquePtr>
 EclMaterialLawManagerSimple<TraitsT, Storage, SharedPtr, UniquePtr> copy_to_gpu(
     const EclMaterialLawManagerSimple<TraitsT>& materialLawManager)
