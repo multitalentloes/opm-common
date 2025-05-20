@@ -242,13 +242,16 @@ readGasWaterParameters_(GasWaterEffectiveParamVector& dest, unsigned satRegionId
 
     case SatFuncControls::KeywordFamily::Family_II:
     {
+        printf("SGWFN tables being initialized\n");
         const TableContainer& sgwfnTables = tableManager.getSgwfnTables();
         auto& realParams = effParams;
         if (!sgwfnTables.empty()){
+            printf("IF BRANCH TRUE\n");
             const SgwfnTable& sgwfnTable = tableManager.getSgwfnTables().template getTable<SgwfnTable>( satRegionIdx );
             Storage<double> SwSamples(sgwfnTable.numRows());
             for (size_t sampleIdx = 0; sampleIdx < sgwfnTable.numRows(); ++ sampleIdx)
                 SwSamples[sampleIdx] = 1 - sgwfnTable.get("SG", sampleIdx);
+            printf("%zu\n", SwSamples.size());
             realParams.setKrwSamples(SwSamples, normalizeKrValues_(tolcrit, sgwfnTable.getColumn("KRGW")));
             realParams.setKrnSamples(SwSamples, normalizeKrValues_(tolcrit, sgwfnTable.getColumn("KRG")));
             realParams.setPcnwSamples(SwSamples, sgwfnTable.getColumn("PCGW").vectorCopy());

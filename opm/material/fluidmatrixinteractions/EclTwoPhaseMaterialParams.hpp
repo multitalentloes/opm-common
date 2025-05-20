@@ -221,7 +221,6 @@ namespace Opm::gpuistl
     EclTwoPhaseMaterialParams<Traits, NewGasOilParamsT, NewOilWaterParamsT, NewGasWaterParamsT>
     copy_to_gpu(const EclTwoPhaseMaterialParams<Traits, OldGasOilParamsT, OldOilWaterParamsT, OldGasWaterParamsT>& params)
     {
-
         // Maybe I will run into some proble on a twophase case where some of these do not exist?
         // copy interpolation tables to the GPU - right now assumed to be the piecewiselinear....params
         // auto gasOilParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(params.gasOilParams());
@@ -230,6 +229,7 @@ namespace Opm::gpuistl
         // TODO: the new probably does nothing as the cpuversion of the params class makes another shared pointer
         // TODO: which ensures that this memory is not deallocated, even if this local pointer goes out of scope
         auto gasWaterParams = gpuistl::copy_to_gpu<ScalarGpuBuffer>(params.gasWaterParams());
+        exit(9999); // THIS EXIT DOES NOT OCCUR BECAUSE THE LINE ABOVE CAUSES A RUNTIME ERROR
         // Wrap the copied parameters in a shared_ptr
         // auto gasOilParamsPtr = std::make_shared<NewGasOilParamsT>(gasOilParams);
         // auto oilWaterParamsPtr = std::make_shared<NewOilWaterParamsT>(oilWaterParams);
