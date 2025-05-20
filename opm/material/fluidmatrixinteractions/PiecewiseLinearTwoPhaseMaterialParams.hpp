@@ -201,6 +201,7 @@ public:
     {
         assert(SwValues.size() == values.size());
 
+        printf("SwValues.size() = %zu\n", SwValues.size());
         size_t n = SwValues.size();
         SwKrwSamples_.resize(n);
         krwSamples_.resize(n);
@@ -265,6 +266,15 @@ public:
     bool update([[maybe_unused]] Scalar pcSw, [[maybe_unused]] Scalar krwSw, [[maybe_unused]] Scalar krnSw)
     {
         return false;
+    }
+
+    void printme() const {
+        printf("SwPcwnSamples_.size() = %zu\n", SwPcwnSamples_.size());
+        printf("SwKrwSamples_.size() = %zu\n", SwKrwSamples_.size());
+        printf("SwKrnSamples_.size() = %zu\n", SwKrnSamples_.size());
+        printf("pcwnSamples_.size() = %zu\n", pcwnSamples_.size());
+        printf("krwSamples_.size() = %zu\n", krwSamples_.size());
+        printf("krnSamples_.size() = %zu\n", krnSamples_.size());
     }
 
 private:
@@ -334,11 +344,16 @@ struct ViewType<PiecewiseLinearTwoPhaseMaterialParams<TraitsT, VectorT>>
 /// @return the GPU PiecewiseLinearTwoPhaseMaterialParams object
 template <class GPUContainerType, class TraitsT>
 PiecewiseLinearTwoPhaseMaterialParams<TraitsT, GPUContainerType> copy_to_gpu(const PiecewiseLinearTwoPhaseMaterialParams<TraitsT>& params) {
-
     // only create the GPU object if the CPU object is finalized
     params.checkFinalized();
-
+    printf("%d\n", params.SwPcwnSamples().size());
+    printf("%d\n", params.SwKrwSamples().size());
+    printf("%d\n", params.SwKrnSamples().size());
+    printf("%d\n", params.pcwnSamples().size());
+    printf("%d\n", params.krwSamples().size());
+    printf("%d\n", params.krnSamples().size());
     auto SwPcwnSamples = GPUContainerType(params.SwPcwnSamples());
+    exit(1);
     auto pcwnSamples = GPUContainerType(params.pcwnSamples());
     auto SwKrwSamples = GPUContainerType(params.SwKrwSamples());
     auto krwSamples = GPUContainerType(params.krwSamples());
