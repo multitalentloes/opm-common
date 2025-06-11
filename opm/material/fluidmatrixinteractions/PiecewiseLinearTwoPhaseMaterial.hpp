@@ -149,14 +149,16 @@ public:
     OPM_HOST_DEVICE static Evaluation twoPhaseSatPcnw(const Params& params, const Evaluation& Sw)
     {
         OPM_TIMEFUNCTION_LOCAL();
-        printf("i");
+        // printf("i");
         return eval_(params.SwPcwnSamples(), params.pcwnSamples(), Sw);
     }
 
     template <class Evaluation>
     static Evaluation twoPhaseSatPcnwInv(const Params& params, const Evaluation& pcnw)
     { 
-        printf("i"); return eval_(params.pcwnSamples(), params.SwPcwnSamples(), pcnw); }
+        // printf("i");
+        return eval_(params.pcwnSamples(), params.SwPcwnSamples(), pcnw); 
+    }
 
     /*!
      * \brief The saturation-capillary pressure curve
@@ -199,7 +201,7 @@ public:
     OPM_HOST_DEVICE static Evaluation twoPhaseSatKrw(const Params& params, const Evaluation& Sw)
     {
         OPM_TIMEFUNCTION_LOCAL();
-        printf("i");
+        // printf("i");
         return eval_(params.SwKrwSamples(), params.krwSamples(), Sw);
     }
 

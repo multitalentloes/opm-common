@@ -154,13 +154,13 @@ public:
                                    const Params& params,
                                    const FluidState& fluidState)
     {
-        printf("START OF CAPILLARY PRESSURE IN ECL\n");
+        // printf("START OF CAPILLARY PRESSURE IN ECL\n");
         OPM_TIMEFUNCTION_LOCAL();
         using Evaluation = typename std::remove_reference<decltype(values[0])>::type;
-        printf("EVALUATION FETCHED\n");
+        // printf("EVALUATION FETCHED\n");
         switch (params.approach()) {
         case EclTwoPhaseApproach::GasOil: {
-            printf("GAS-OIL CAPILLARY PRESSURE\n");
+            // printf("GAS-OIL CAPILLARY PRESSURE\n");
             const Evaluation& So =
                 decay<Evaluation>(fluidState.saturation(oilPhaseIdx));
 
@@ -170,7 +170,7 @@ public:
         }
 
         case EclTwoPhaseApproach::OilWater: {
-            printf("OIL-WATER CAPILLARY PRESSURE\n");
+            // printf("OIL-WATER CAPILLARY PRESSURE\n");
             const Evaluation& Sw =
                 decay<Evaluation>(fluidState.saturation(waterPhaseIdx));
 
@@ -180,17 +180,17 @@ public:
         }
 
         case EclTwoPhaseApproach::GasWater: {
-            printf("GAS-WATER CAPILLARY PRESSURE\n");
+            // printf("GAS-WATER CAPILLARY PRESSURE\n");
             const Evaluation& Sw =
                 decay<Evaluation>(fluidState.saturation(waterPhaseIdx));
 
             values[waterPhaseIdx] = 0.0;
-            printf("COMPUTING GAS-WATER CAPILLARY PRESSURE\n");
+            // printf("COMPUTING GAS-WATER CAPILLARY PRESSURE\n");
             values[gasPhaseIdx] = GasWaterMaterialLaw::twoPhaseSatPcnw(params.gasWaterParams(), Sw);
-            printf("GAS-WATER CAPILLARY PRESSURE DONE\n");
+            // printf("GAS-WATER CAPILLARY PRESSURE DONE\n");
             break;
         }
-        printf("END OF CAPILLARY PRESSURE IN ECL\n");
+        // printf("END OF CAPILLARY PRESSURE IN ECL\n");
         }
     }
 
