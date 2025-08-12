@@ -407,11 +407,12 @@ private:
                                                     xgH2O,
                                                     activityModel_,
                                                     extrapolate);
+        return LhsEval(0.0);
 
-        // normalize the phase compositions
-        xgH2O = max(0.0, min(1.0, xgH2O));
-
-        return convertXgWToRvw(convertxgWToXgW(xgH2O, salinity), regionIdx);
+        // // normalize the phase compositions
+        // xgH2O = max(0.0, min(1.0, xgH2O));
+        
+        // return convertXgWToRvw(convertxgWToXgW(xgH2O, salinity), regionIdx);
     }
 
     /*!

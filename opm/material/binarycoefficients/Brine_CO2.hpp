@@ -593,7 +593,8 @@ private:
                                                           iterate, extrapolate);
             
             // Check for convergence
-            if (abs(xCO2_new - xCO2) < tol && abs(yH2O_new - yH2O) < tol) {
+            // The commented out part makes the update fail, this is tested with both true and false instead to rule out the code within being the problem
+            if (false /*abs(xCO2_new - xCO2) < tol && abs(yH2O_new - yH2O) < tol */) {
                 xCO2 = xCO2_new;
                 yH2O = yH2O_new;
                 break;
