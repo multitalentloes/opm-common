@@ -275,7 +275,7 @@ initNullCond_()
     thermalConductionLawParams_[0].finalize();
 }
 
-using FS = BlackOilFluidSystem<float, BlackOilDefaultFluidSystemIndices>;
-template class EclThermalLawManager<float,FS>;
+using FS = BlackOilFluidSystem<double, BlackOilDefaultFluidSystemIndices>;
+template class EclThermalLawManager<double,FS>;
 
 } // namespace Opm
