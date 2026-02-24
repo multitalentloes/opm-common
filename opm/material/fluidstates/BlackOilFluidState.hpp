@@ -147,10 +147,10 @@ public:
      *
      * \param fluidSystem The fluid system which is used to compute various quantities
      */
-    explicit OPM_HOST_DEVICE BlackOilFluidState(const FluidSystem* fluidSystem)
+    explicit OPM_HOST_DEVICE BlackOilFluidState(const FluidSystem& fluidSystem)
     {
         if constexpr (fluidSystemIsStatic) {
-            fluidSystemPtr_ = fluidSystem;
+            fluidSystemPtr_ = &fluidSystem;
         }
     }
 
