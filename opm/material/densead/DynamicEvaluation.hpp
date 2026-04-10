@@ -36,6 +36,7 @@
 #include <opm/material/common/Valgrind.hpp>
 #endif
 #include <opm/material/common/FastSmallVector.hpp>
+#include <opm/common/ErrorMacros.hpp>
 
 #include <cassert>
 #include <iosfwd>
@@ -183,8 +184,10 @@ public:
     template <class RhsValueType>
     OPM_HOST_DEVICE static Evaluation createVariable(const RhsValueType&, int)
     {
-        throw std::logic_error("Dynamically sized evaluations require that the number of "
-                               "derivatives is specified when creating an evaluation");
+        // throw std::logic_error("Dynamically sized evaluations require that the number of "
+        //                        "derivatives is specified when creating an evaluation");
+        OPM_THROW(std::logic_error, "Dynamically sized evaluations require that the number of "
+                                     "derivatives is specified when creating an evaluation");
     }
 
     template <class RhsValueType>
@@ -265,10 +268,13 @@ public:
                 data_[i] = other.data_[i];
             return *this;
         }
-        throw std::logic_error(
-                "Cannot operate Evaluations with different number of derivatives "
-                "unless one of them has no derivatives"
-        );
+        // throw std::logic_error(
+        //         "Cannot operate Evaluations with different number of derivatives "
+        //         "unless one of them has no derivatives"
+        // );
+        OPM_THROW(std::logic_error,
+                  "Cannot operate Evaluations with different number of derivatives "
+                  "unless one of them has no derivatives");
     }
 
     // add value from other to this values
@@ -306,10 +312,13 @@ public:
                 data_[i] -= other.data_[i];
             return *this;
         }
-        throw std::logic_error(
-                "Cannot operate Evaluations with different number of derivatives "
-                "unless one of them has no derivatives"
-        );
+        // throw std::logic_error(
+        //         "Cannot operate Evaluations with different number of derivatives "
+        //         "unless one of them has no derivatives"
+        // );
+        OPM_THROW(std::logic_error,
+                  "Cannot operate Evaluations with different number of derivatives "
+                  "unless one of them has no derivatives");
     }
 
     // subtract other's value from this values
@@ -361,10 +370,13 @@ public:
             }
             return *this;
         }
-        throw std::logic_error(
-                "Cannot operate Evaluations with different number of derivatives "
-                "unless one of them has no derivatives"
-        );
+        // throw std::logic_error(
+        //         "Cannot operate Evaluations with different number of derivatives "
+        //         "unless one of them has no derivatives"
+        // );
+        OPM_THROW(std::logic_error,
+                  "Cannot operate Evaluations with different number of derivatives "
+                  "unless one of them has no derivatives");
     }
 
     // m(c*u)' = c*u'
@@ -428,10 +440,13 @@ public:
 
             return *this;
         }
-        throw std::logic_error(
-                "Cannot operate Evaluations with different number of derivatives "
-                "unless one of them has no derivatives"
-        );
+        // throw std::logic_error(
+        //         "Cannot operate Evaluations with different number of derivatives "
+        //         "unless one of them has no derivatives"
+        // );
+        OPM_THROW(std::logic_error,
+                  "Cannot operate Evaluations with different number of derivatives "
+                  "unless one of them has no derivatives");
     }
 
     // divide value and derivatives by value of other
@@ -694,8 +709,10 @@ public:
 
         if (size() == 0) {
             if (nVars < 0) {
-                throw std::logic_error("Cannot set derivative for a DynamicEvaluation initialized from a scalar "
-                                       "without specifying a positive number of derivatives");
+                // throw std::logic_error("Cannot set derivative for a DynamicEvaluation initialized from a scalar "
+                //                        "without specifying a positive number of derivatives");
+                OPM_THROW(std::logic_error, "Cannot set derivative for a DynamicEvaluation initialized from a scalar "
+                                             "without specifying a positive number of derivatives");
             }
 
             this->appendDerivativesToConstant(nVars);
