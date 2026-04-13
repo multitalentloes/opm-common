@@ -377,6 +377,8 @@ friend class BlackOilFluidState;
             saturation_[i] = fs.saturation_[i];
             density_[i] = fs.density_[i];
             invB_[i] = fs.invB_[i];
+            if constexpr (storeEnthalpy)
+                (*enthalpy_)[i] = (*fs.enthalpy_)[i];
         }
     }
 
