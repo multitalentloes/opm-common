@@ -36,6 +36,7 @@
 #include <opm/material/common/Valgrind.hpp>
 #endif
 #include <opm/material/common/FastSmallVector.hpp>
+#include <opm/common/ErrorMacros.hpp>
 
 #include <cassert>
 #include <iosfwd>
