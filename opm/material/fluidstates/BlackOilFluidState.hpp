@@ -139,6 +139,19 @@ template <class ValueT,
 class BlackOilFluidState
 {
 public:
+
+template <class OtherScalarT,
+          class OtherFluidSystemT,
+          bool otherStoreTemperature,
+          bool otherStoreEnthalpy,
+          bool otherEnableDissolution,
+          bool otherEnableVapwat,
+          bool otherEnableBrine,
+          bool otherEnableSaltPrecipitation,
+          bool otherEnableDissolutionInWater,
+          bool otherEnableSolvent,
+          unsigned otherNumStoragePhases>
+friend class BlackOilFluidState;
     using FluidSystem = FluidSystemT;
     using ValueType = ValueT;
 
@@ -160,6 +173,40 @@ public:
      *
      * \param fluidSystem The fluid system which is used to compute various quantities
      */
+    explicit OPM_HOST_DEVICE BlackOilFluidState(const FluidSystem* fluidSystem)
+    {
+        if constexpr (!fluidSystemIsStatic) {
+            fluidSystemPtr_ = fluidSystem;
+        }
+    }
+
+    // Pointer version
+    template<class OtherFluidSystemType, unsigned NewNumStoragePhases = numStoragePhases>
+        requires std::is_pointer_v<std::decay_t<OtherFluidSystemType>>
+    auto withOtherFluidSystem(OtherFluidSystemType other) const
+    {
+        using Raw = std::decay_t<OtherFluidSystemType>;
+        using FS  = std::remove_pointer_t<Raw>;
+
+        auto bfstate = BlackOilFluidState<
+            ValueType,
+            FS,
+            storeTemperature,
+            storeEnthalpy,
+            enableDissolution,
+            enableVapwat,
+            enableBrine,
+            enableSaltPrecipitation,
+            enableDissolutionInWater,
+            enableSolvent,
+            NewNumStoragePhases
+        >(other);
+
+        bfstate.assign(*this);
+        return bfstate;
+    }
+
+
     explicit OPM_HOST_DEVICE BlackOilFluidState(const FluidSystem& fluidSystem)
     {
         if constexpr (!fluidSystemIsStatic) {
@@ -167,11 +214,37 @@ public:
         }
     }
 
+    // Non-pointer version
+    template<class OtherFluidSystemType, unsigned NewNumStoragePhases = numStoragePhases>
+        requires (!std::is_pointer_v<std::decay_t<OtherFluidSystemType>>)
+    auto withOtherFluidSystem(const OtherFluidSystemType& other) const
+    {
+        using FS = std::decay_t<OtherFluidSystemType>;
+
+        auto bfstate = BlackOilFluidState<
+            ValueType,
+            FS,
+            storeTemperature,
+            storeEnthalpy,
+            enableDissolution,
+            enableVapwat,
+            enableBrine,
+            enableSaltPrecipitation,
+            enableDissolutionInWater,
+            enableSolvent,
+            NewNumStoragePhases
+        >(other);
+
+        bfstate.assign(*this);
+        return bfstate;
+    }
+
     // This is intended to be used when we are converting fluid
     // state from a version that uses the static fluidsystem to
     // a version that uses a dynamic fluid system.
     template<class OtherFluidSystemType>
-    auto withOtherFluidSystem(const OtherFluidSystemType& other) const
+    auto withOtherFluidSystem(typename std::enable_if<!std::is_pointer_v<OtherFluidSystemType>,
+                                                      const OtherFluidSystemType&>::type other) const
     {
         auto bfstate = BlackOilFluidState<ValueType, OtherFluidSystemType,
                                   storeTemperature,
@@ -290,16 +363,25 @@ public:
             setSolventInvB(BlackOil::getSolventInvB_<FluidState, ValueType>(fs, pvtRegionIdx));
             setRsSolw(BlackOil::getRsSolw_<FluidState, ValueType>(fs, pvtRegionIdx));
         }
-        for (unsigned storagePhaseIdx = 0; storagePhaseIdx < numStoragePhases; ++storagePhaseIdx) {
-            unsigned phaseIdx = storageToCanonicalPhaseIndex_(storagePhaseIdx, fluidSystem());
-            setSaturation(phaseIdx, fs.saturation(phaseIdx));
-            setPressure(phaseIdx, fs.pressure(phaseIdx));
-            setDensity(phaseIdx, fs.density(phaseIdx));
+        // for (unsigned storagePhaseIdx = 0; storagePhaseIdx < numStoragePhases; ++storagePhaseIdx) {
+        //     // unsigned phaseIdx = storageToCanonicalPhaseIndex_(storagePhaseIdx, fluidSystem());
+        //     // setSaturation(phaseIdx, fs.saturation(phaseIdx));
+        //     // setPressure(phaseIdx, fs.pressure(phaseIdx));
+        //     // setDensity(phaseIdx, fs.density(phaseIdx));
 
+        //     // if constexpr (storeEnthalpy)
+        //     //     setEnthalpy(phaseIdx, fs.enthalpy(phaseIdx));
+
+        //     // setInvB(phaseIdx, getInvB_<FluidSystem, FluidState, Scalar>(fs, phaseIdx, pvtRegionIdx, fluidSystem()));
+        // }
+
+        for (unsigned int i = 0; i < numStoragePhases; ++i) {
+            pressure_[i] = fs.pressure_[i];
+            saturation_[i] = fs.saturation_[i];
+            density_[i] = fs.density_[i];
+            invB_[i] = fs.invB_[i];
             if constexpr (storeEnthalpy)
-                setEnthalpy(phaseIdx, fs.enthalpy(phaseIdx));
-
-            setInvB(phaseIdx, getInvB_<FluidSystem, FluidState, ValueType>(fs, phaseIdx, pvtRegionIdx, fluidSystem()));
+                (*enthalpy_)[i] = (*fs.enthalpy_)[i];
         }
     }
 
