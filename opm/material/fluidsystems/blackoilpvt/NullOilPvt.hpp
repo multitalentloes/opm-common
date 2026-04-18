@@ -101,6 +101,14 @@ public:
         return 0.0;
     }
 
+    // Combined formation volume factor and viscosity
+    template <class FluidState, class LhsEval = typename FluidState::ValueType>
+    OPM_HOST_DEVICE std::pair<LhsEval, LhsEval>
+    inverseFormationVolumeFactorAndViscosity(const FluidState& /*fluidState*/, unsigned /*regionIdx*/) const
+    {
+        return { LhsEval(1.0), LhsEval(0.0) };
+    }
+
     template <class Evaluation>
     OPM_HOST_DEVICE Evaluation saturatedViscosity(unsigned /*regionIdx*/,
                                                   const Evaluation& /*temperature*/,
