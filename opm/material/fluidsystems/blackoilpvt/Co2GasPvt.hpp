@@ -169,6 +169,12 @@ public:
     OPM_HOST_DEVICE Scalar hVap(unsigned ) const
     { return 0.0;  }
 
+    /*! \brief Indicates whether this PVT object computes the gas internal
+     *         energy via a thermal mixing model. \c Co2GasPvt always uses
+     *         the simple direct-internal-energy path, so returns \c false. */
+    OPM_HOST_DEVICE static constexpr bool mixingEnergy()
+    { return false; }
+
     /*!
      * \brief Returns the specific enthalpy [J/kg] of gas given a set of parameters.
      */

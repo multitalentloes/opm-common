@@ -199,6 +199,12 @@ public:
         return 0;
     }
 
+    /*! \brief Indicates whether this PVT object computes the water internal
+     *         energy via a thermal mixing model. \c BrineCo2Pvt always uses
+     *         the simple direct-internal-energy path, so returns \c false. */
+    OPM_HOST_DEVICE static constexpr bool mixingEnergy()
+    { return false; }
+
     /*!
      * \brief Returns the specific enthalpy [J/kg] of gas given a set of parameters.
      */

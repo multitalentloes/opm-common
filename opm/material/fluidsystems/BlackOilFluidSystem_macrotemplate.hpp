@@ -1205,9 +1205,8 @@ public:
             break;
 
         default:
-            throw std::logic_error {
-                "Phase index " + std::to_string(phaseIdx) + " does not support internal energy"
-            };
+            OPM_THROW(std::logic_error,
+                      "Phase index does not support internal energy");
         }
 
         return internalMixingTotalEnergy<FluidState,LhsEval>(fluidState, phaseIdx, regionIdx)
