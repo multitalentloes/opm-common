@@ -149,6 +149,7 @@ template <class OtherScalarT,
           bool otherEnableBrine,
           bool otherEnableSaltPrecipitation,
           bool otherEnableDissolutionInWater,
+          bool otherEnableSolvent,
           unsigned otherNumStoragePhases>
 friend class BlackOilFluidState;
     using FluidSystem = FluidSystemT;
@@ -180,7 +181,7 @@ friend class BlackOilFluidState;
     }
 
     // Pointer version
-    template<class OtherFluidSystemType>
+    template<class OtherFluidSystemType, unsigned NewNumStoragePhases = numStoragePhases>
         requires std::is_pointer_v<std::decay_t<OtherFluidSystemType>>
     auto withOtherFluidSystem(OtherFluidSystemType other) const
     {
@@ -188,7 +189,7 @@ friend class BlackOilFluidState;
         using FS  = std::remove_pointer_t<Raw>;
 
         auto bfstate = BlackOilFluidState<
-            Scalar,
+            ValueType,
             FS,
             storeTemperature,
             storeEnthalpy,
@@ -197,7 +198,8 @@ friend class BlackOilFluidState;
             enableBrine,
             enableSaltPrecipitation,
             enableDissolutionInWater,
-            numStoragePhases
+            enableSolvent,
+            NewNumStoragePhases
         >(other);
 
         bfstate.assign(*this);
@@ -213,14 +215,14 @@ friend class BlackOilFluidState;
     }
 
     // Non-pointer version
-    template<class OtherFluidSystemType>
+    template<class OtherFluidSystemType, unsigned NewNumStoragePhases = numStoragePhases>
         requires (!std::is_pointer_v<std::decay_t<OtherFluidSystemType>>)
     auto withOtherFluidSystem(const OtherFluidSystemType& other) const
     {
         using FS = std::decay_t<OtherFluidSystemType>;
 
         auto bfstate = BlackOilFluidState<
-            Scalar,
+            ValueType,
             FS,
             storeTemperature,
             storeEnthalpy,
@@ -229,7 +231,8 @@ friend class BlackOilFluidState;
             enableBrine,
             enableSaltPrecipitation,
             enableDissolutionInWater,
-            numStoragePhases
+            enableSolvent,
+            NewNumStoragePhases
         >(other);
 
         bfstate.assign(*this);
