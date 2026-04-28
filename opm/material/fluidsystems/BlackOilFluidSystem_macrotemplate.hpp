@@ -177,8 +177,11 @@ public:
         , useSaturatedTables_(other.useSaturatedTables_)
         , enthalpy_eq_energy_(other.enthalpy_eq_energy_)
     {
+        printf("Copy ctor called, refdensity size: %zu\n", other.referenceDensity_.size());
     }
 
+
+    // TODO: changed this code to copy more instead of using && and move semantics while debugging, revert to an efficient and safe version!
     FLUIDSYSTEM_CLASSNAME(Scalar _surfacePressure_,
                           Scalar _surfaceTemperature_,
                           Scalar _reservoirTemperature_,
@@ -191,9 +194,9 @@ public:
                           bool _enableVaporizedWater_,
                           bool _enableConstantRs_,
                           bool _enableDiffusion_,
-                          Storage<std::array<Scalar, 3>>&& _referenceDensity_,
-                          Storage<std::array<Scalar, 3>>&& _molarMass_,
-                          Storage<std::array<Scalar, 3 * 3>>&& _diffusionCoefficients_,
+                          const Storage<std::array<Scalar, 3>>& _referenceDensity_,
+                          const Storage<std::array<Scalar, 3>>& _molarMass_,
+                          const Storage<std::array<Scalar, 3 * 3>>& _diffusionCoefficients_,
                           const PhaseUsageInfo<IndexTraits>& _phaseUsageInfo_,
                           bool _isInitialized_,
                           bool _useSaturatedTables_,
@@ -210,14 +213,15 @@ public:
         , enableVaporizedWater_(_enableVaporizedWater_)
         , enableConstantRs_(_enableConstantRs_)
         , enableDiffusion_(_enableDiffusion_)
-        , referenceDensity_(std::move(_referenceDensity_))
-        , molarMass_(std::move(_molarMass_))
-        , diffusionCoefficients_(std::move(_diffusionCoefficients_))
+        , referenceDensity_(Storage<std::array<Scalar, 3>>(_referenceDensity_))
+        , molarMass_(Storage<std::array<Scalar, 3>>(_molarMass_))
+        , diffusionCoefficients_(Storage<std::array<Scalar, 3 * 3>>(_diffusionCoefficients_))
         , phaseUsageInfo_(_phaseUsageInfo_)
         , isInitialized_(_isInitialized_)
         , useSaturatedTables_(_useSaturatedTables_)
         , enthalpy_eq_energy_(_enthalpy_eq_energy_)
     {
+        printf("Ctor called, refdensity size: %zu\n", _referenceDensity_.size());
     }
 
     #if HAVE_CUDA
@@ -1832,6 +1836,7 @@ private:
         , useSaturatedTables_(other.useSaturatedTables_)
         , enthalpy_eq_energy_(other.enthalpy_eq_energy_)
     {
+        printf("OtherCtor called, refdensity size: %zu\n", other.referenceDensity_.size());
             OPM_ERROR_IF(!other.isInitialized(), "The fluid system must be initialized before it can be copied.");
     }
 
@@ -2028,6 +2033,7 @@ resizeArrays_(std::size_t numRegions)
 {
     molarMass_.resize(numRegions);
     referenceDensity_.resize(numRegions);
+    printf("Resizing arrays to size %zu\n", numRegions);
 }
 
 #ifdef COMPILING_STATIC_FLUID_SYSTEM
