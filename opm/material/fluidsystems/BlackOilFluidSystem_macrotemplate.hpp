@@ -177,7 +177,6 @@ public:
         , useSaturatedTables_(other.useSaturatedTables_)
         , enthalpy_eq_energy_(other.enthalpy_eq_energy_)
     {
-        printf("Copy ctor called, refdensity size: %zu\n", other.referenceDensity_.size());
     }
 
 
@@ -221,7 +220,6 @@ public:
         , useSaturatedTables_(_useSaturatedTables_)
         , enthalpy_eq_energy_(_enthalpy_eq_energy_)
     {
-        printf("Ctor called, refdensity size: %zu\n", _referenceDensity_.size());
     }
 
     #if HAVE_CUDA
@@ -1836,7 +1834,6 @@ private:
         , useSaturatedTables_(other.useSaturatedTables_)
         , enthalpy_eq_energy_(other.enthalpy_eq_energy_)
     {
-        printf("OtherCtor called, refdensity size: %zu\n", other.referenceDensity_.size());
             OPM_ERROR_IF(!other.isInitialized(), "The fluid system must be initialized before it can be copied.");
     }
 
@@ -2033,7 +2030,6 @@ resizeArrays_(std::size_t numRegions)
 {
     molarMass_.resize(numRegions);
     referenceDensity_.resize(numRegions);
-    printf("Resizing arrays to size %zu\n", numRegions);
 }
 
 #ifdef COMPILING_STATIC_FLUID_SYSTEM
