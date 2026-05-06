@@ -58,9 +58,12 @@ namespace Opm {
 >>>>>>> 2ae970437 (First version)
 =======
         constexpr EclMultiplexerApproach approach = EclMultiplexerApproach::Default;                                   \
+<<<<<<< HEAD
         OPM_ERROR_IF(params.approach() != approach,                                                                    \
                      "EclMultiplexerMaterial: Only default multiphase-approach is supported in a device function.");   \
 >>>>>>> 3c3d9553a (improve robustness and formatting)
+=======
+>>>>>>> c7a97b3cd (remove checks per cell)
         auto& realParams = params.template getRealParams<approach>();                                                  \
         using ActualLaw = DefaultMaterial;                                                                             \
         codeToCall;                                                                                                    \
@@ -122,9 +125,12 @@ namespace Opm {
 >>>>>>> 2ae970437 (First version)
 =======
         constexpr EclMultiplexerApproach approach = EclMultiplexerApproach::Default;                                   \
+<<<<<<< HEAD
         OPM_ERROR_IF(params.approach() != approach,                                                                    \
                      "EclMultiplexerMaterial: Only default multiphase-approach is supported in a device function.");   \
 >>>>>>> 3c3d9553a (improve robustness and formatting)
+=======
+>>>>>>> c7a97b3cd (remove checks per cell)
         auto& realParams = params.template getRealParams<approach>();                                                  \
         using ActualLaw = DefaultMaterial;                                                                             \
         codeToCall;                                                                                                    \
