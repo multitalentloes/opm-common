@@ -29,18 +29,7 @@
 
 #include "SatCurveMultiplexerParams.hpp"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 #include <opm/common/ErrorMacros.hpp>
-=======
->>>>>>> 2ae970437 (First version)
-=======
-#include <opm/common/ErrorMacros.hpp>
-<<<<<<< HEAD
-
->>>>>>> 3c3d9553a (improve robustness and formatting)
-=======
->>>>>>> c7a97b3cd (remove checks per cell)
 #include <opm/common/utility/gpuDecorators.hpp>
 
 #include <stdexcept>

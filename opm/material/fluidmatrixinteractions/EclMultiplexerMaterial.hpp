@@ -35,11 +35,8 @@
 
 #include <opm/common/TimingMacros.hpp>
 #include <opm/common/ErrorMacros.hpp>
-<<<<<<< HEAD
 
 #include <opm/common/utility/gpuDecorators.hpp>
-=======
->>>>>>> 3c3d9553a (improve robustness and formatting)
 
 #include <opm/common/utility/gpuDecorators.hpp>
 
@@ -50,20 +47,7 @@ namespace Opm {
 #if OPM_IS_INSIDE_DEVICE_FUNCTION
 #define OPM_ECL_MULTIPLEXER_MATERIAL_CALL(codeToCall, onePhaseCode)                                                    \
     {                                                                                                                  \
-<<<<<<< HEAD
-<<<<<<< HEAD
         constexpr EclMultiplexerApproach approach = EclMultiplexerApproach::Default;                                   \
-=======
-        [[maybe_unused]] constexpr EclMultiplexerApproach approach = EclMultiplexerApproach::Default;                  \
->>>>>>> 2ae970437 (First version)
-=======
-        constexpr EclMultiplexerApproach approach = EclMultiplexerApproach::Default;                                   \
-<<<<<<< HEAD
-        OPM_ERROR_IF(params.approach() != approach,                                                                    \
-                     "EclMultiplexerMaterial: Only default multiphase-approach is supported in a device function.");   \
->>>>>>> 3c3d9553a (improve robustness and formatting)
-=======
->>>>>>> c7a97b3cd (remove checks per cell)
         auto& realParams = params.template getRealParams<approach>();                                                  \
         using ActualLaw = DefaultMaterial;                                                                             \
         codeToCall;                                                                                                    \
@@ -117,34 +101,13 @@ namespace Opm {
 #if OPM_IS_INSIDE_DEVICE_FUNCTION
 #define OPM_ECL_MULTIPLEXER_MATERIAL_CALL_COMPILETIME(codeToCall, onePhaseCode)                                        \
     if constexpr (Head::approach == EclMultiplexerApproach::Default) {                                                 \
-<<<<<<< HEAD
-<<<<<<< HEAD
         constexpr EclMultiplexerApproach approach = EclMultiplexerApproach::Default;                                   \
-=======
-        [[maybe_unused]] constexpr EclMultiplexerApproach approach = EclMultiplexerApproach::Default;                  \
->>>>>>> 2ae970437 (First version)
-=======
-        constexpr EclMultiplexerApproach approach = EclMultiplexerApproach::Default;                                   \
-<<<<<<< HEAD
-        OPM_ERROR_IF(params.approach() != approach,                                                                    \
-                     "EclMultiplexerMaterial: Only default multiphase-approach is supported in a device function.");   \
->>>>>>> 3c3d9553a (improve robustness and formatting)
-=======
->>>>>>> c7a97b3cd (remove checks per cell)
         auto& realParams = params.template getRealParams<approach>();                                                  \
         using ActualLaw = DefaultMaterial;                                                                             \
         codeToCall;                                                                                                    \
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 #else
-=======
-#else 
->>>>>>> 2ae970437 (First version)
-=======
-#else
->>>>>>> 3c3d9553a (improve robustness and formatting)
 #define OPM_ECL_MULTIPLEXER_MATERIAL_CALL_COMPILETIME(codeToCall, onePhaseCode)                                        \
     if constexpr (Head::approach == EclMultiplexerApproach::Stone1) {                                                  \
         [[maybe_unused]] constexpr EclMultiplexerApproach approach = EclMultiplexerApproach::Stone1;                   \
@@ -269,18 +232,8 @@ public:
      */
     template <class ContainerT, class FluidState, class ...Args>
     OPM_HOST_DEVICE static void capillaryPressures(ContainerT& values,
-<<<<<<< HEAD
-<<<<<<< HEAD
                                                    const Params& params,
                                                    const FluidState& fluidState)
-=======
-                                   const Params& params,
-                                   const FluidState& fluidState)
->>>>>>> 2ae970437 (First version)
-=======
-                                                   const Params& params,
-                                                   const FluidState& fluidState)
->>>>>>> 3c3d9553a (improve robustness and formatting)
     {
         OPM_TIMEFUNCTION_LOCAL(Subsystem::SatProps);
         if constexpr (FrontIsEclMultiplexerDispatchV<Args...>) {
@@ -494,18 +447,8 @@ public:
      */
     template <class ContainerT, class FluidState, class ...Args>
     OPM_HOST_DEVICE static void relativePermeabilities(ContainerT& values,
-<<<<<<< HEAD
-<<<<<<< HEAD
                                                        const Params& params,
                                                        const FluidState& fluidState)
-=======
-                                       const Params& params,
-                                       const FluidState& fluidState)
->>>>>>> 2ae970437 (First version)
-=======
-                                                       const Params& params,
-                                                       const FluidState& fluidState)
->>>>>>> 3c3d9553a (improve robustness and formatting)
     {
         OPM_TIMEFUNCTION_LOCAL(Subsystem::SatProps);
         if constexpr (FrontIsEclMultiplexerDispatchV<Args...>) {
