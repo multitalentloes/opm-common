@@ -37,22 +37,6 @@ namespace Opm
 
 enum class EclTwoPhaseApproach { GasOil, OilWater, GasWater };
 
-namespace EclTwoPhaseMaterialParamsDetail
-{
-
-    /*!
-     * \brief Single-argument alias for std::shared_ptr.
-     *
-     * Used as the default storage policy for EclTwoPhaseMaterialParams so the
-     * class can be templated on a `template <class> class` parameter while
-     * retaining full backward compatibility with existing call sites that pass
-     * std::shared_ptr instances.
-     */
-    template <class T>
-    using SharedPointer = std::shared_ptr<T>;
-
-} // namespace EclTwoPhaseMaterialParamsDetail
-
 /*!
  * \brief Implementation for the parameters required by the material law for two-phase
  *        simulations.
@@ -70,7 +54,7 @@ template <class Traits,
           class GasOilParamsT,
           class OilWaterParamsT,
           class GasWaterParamsT,
-          template <class> class StoragePolicy = EclTwoPhaseMaterialParamsDetail::SharedPointer>
+          template <class> class StoragePolicy = std::shared_ptr>
 class EclTwoPhaseMaterialParams : public EnsureFinalized
 {
     using Scalar = typename Traits::Scalar;
