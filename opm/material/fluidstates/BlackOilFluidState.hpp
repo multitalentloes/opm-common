@@ -169,6 +169,11 @@ friend class BlackOilFluidState;
 
     static constexpr bool fluidSystemIsStatic = std::is_empty_v<FluidSystem>;
 
+    /**
+     * \brief Construct a fluid state object.
+     *
+     * \param fluidSystem The fluid system which is used to compute various quantities
+     */
     explicit OPM_HOST_DEVICE BlackOilFluidState(const FluidSystem& fluidSystem)
     {
         if constexpr (!fluidSystemIsStatic) {
